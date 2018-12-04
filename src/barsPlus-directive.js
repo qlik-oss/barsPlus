@@ -1,6 +1,6 @@
 /**
  * barsPlus AngularJS Directive
- * 
+ *
  * Define AngularJS directive
  * Sets up properties of object ldwBarsPlus (variable 'g') and defines watches
  *
@@ -14,23 +14,26 @@
  *  V1.3.0		L. Woodside		15-Jan-2017		Improved color options
  *
 */
+
+/* global d3 */
+
 define( [
   "jquery",
   "qvangular",
   "./ldw-barsPlus",
-  "css!./barsPlus.css",
+  "css-loader!./barsPlus.css",
   "./lib/d3.v3"
 ],
 
 function ($, qvangular, ldwBarsPlus) {
   'use strict';
-	
+
   qvangular.directive("barsPlus", [
     function() {
       return {
         restrict: "EA",
         link: function($scope, $element, $attrs) {
-          $scope.g = Object.create(ldwbarsPlus);
+          $scope.g = Object.create(ldwBarsPlus.default);
 
           var g = $scope.g;
 
@@ -43,7 +46,7 @@ function ($, qvangular, ldwBarsPlus) {
             g.inSelections = false;
             g.editMode = false;
             g.selectionMode = l.selectionMode;
-						
+
             // number of defined dimensions and measures
             g.defDims = l.qHyperCube.qDimensionInfo.length;
             g.defMeas = l.qHyperCube.qMeasureInfo.length;
@@ -52,7 +55,7 @@ function ($, qvangular, ldwBarsPlus) {
               g.axisTitleD = p.axisTitleD;
             else
               g.axisTitleD = l.qHyperCube.qDimensionInfo[0].qFallbackTitle;
-						
+
             if (g.defDims == 0 || (g.defDims == 1 && g.defMeas > 1)) {
               g.measures = [];
               for (var i = 0; i < g.defMeas; i++) {
@@ -64,7 +67,7 @@ function ($, qvangular, ldwBarsPlus) {
             else
               g.axisTitleM = l.qHyperCube.qMeasureInfo[0].qFallbackTitle;
 
-            // Presentation				
+            // Presentation
             g.orientation = p.orientation;
             g.normalized = p.normalized;
             g.showDeltas = p.showDeltas;
@@ -72,7 +75,7 @@ function ($, qvangular, ldwBarsPlus) {
             g.outerGap = p.outerGap;
             g.gridHeight = p.gridHeight;
             g.backgroundColor = p.backgroundColor;
-						
+
             // Colors and Legend
             g.colorSource = p.colorSource;
             g.colorAttr = p.colorAttr;
@@ -83,7 +86,7 @@ function ($, qvangular, ldwBarsPlus) {
             g.legendPosition = p.legendPosition;
             g.legendSize = p.legendSize;
             g.legendSpacing = p.legendSpacing;
-						
+
             // Dimension Axis
             g.labelTitleD = p.labelTitleD;
             g.labelStyleD = p.labelStyleD;
@@ -98,7 +101,7 @@ function ($, qvangular, ldwBarsPlus) {
             g.ticks = p.ticks;
             g.axisFormatM = p.axisFormatM;
             g.axisFormatMs = p.axisFormatMs;
-						
+
             // Text on bars
 
             g.showTexts = p.showTexts;
@@ -122,7 +125,7 @@ function ($, qvangular, ldwBarsPlus) {
             g.transitionDuration = p.transitionDuration;
             g.ease = p.ease;
           };
-					
+
           $scope.initProps();
 
           g.component = d3.select($element[0]).attr("id",g.id);
@@ -130,7 +133,7 @@ function ($, qvangular, ldwBarsPlus) {
           g.width = $element.parent().width();
           g.height = $element.parent().height();
           g.rawData = $scope.layout.qHyperCube.qDataPages[0].qMatrix;
-					
+
           g.initData();
           g.refreshChart();
 
@@ -153,7 +156,7 @@ function ($, qvangular, ldwBarsPlus) {
                 var t = newValue.split(",");
                 g.width = t[0];
                 g.height = t[1];
-								
+
                 g.refreshChart();
               }
             }

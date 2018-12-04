@@ -22,6 +22,12 @@ const config = {
       commonjs2: 'jquery',
       root: '_'
     },
+    qvangular: {
+      amd: 'qvangular',
+      commonjs: 'qvangular',
+      commonjs2: 'qvangular',
+      root: '_'
+    },
   },
   module: {
     rules: [

@@ -20,19 +20,29 @@
  *  V1.2.0		L. Woodside		07-Jan-2017		Allow multiple measures
  *
 */
+
+
 define( [
-  "jquery",
-  "./barsPlus-initprops",
   "./barsPlus-props",
-  "text!./barsPlus-template.html",
   "./barsPlus-directive"
 ],
 
-function ($, initprops, props, template) {
+function (props) {
   'use strict';
 
   return {
-    initialProperties: initprops,
+    initialProperties: {
+      qHyperCubeDef: {
+        qDimensions: [],
+        qMeasures: [],
+        qInitialDataFetch: [
+          {
+            qWidth: 10,
+            qHeight: 1000 // max qWidth*qHeight 10000
+          }
+        ]
+      }
+    },
     definition: props,
     support: {
       snapshot: true,
@@ -42,7 +52,7 @@ function ($, initprops, props, template) {
     //		resize: function($element, layout) {
     //			console.log('resize>',$element,layout,$element.scope());
     //		},
-    template: template,
+    template: '<bars-plus qv-extension />',
     controller: ['$scope', function($scope) {
     }],
     paint: function ($element, layout) {

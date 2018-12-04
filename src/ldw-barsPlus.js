@@ -1,10 +1,10 @@
 /**
 
  barsPlus - Create D3 bar chart, stacked bar chart, area chart
- 
+
  Author: L. Woodside
  Modification History:
- 
+
 	Version		Person			Date			Description
 	V1.0.0		L. Woodside		19-Dec-2016		Initial Release
 	V1.1.0		L. Woodside		29-Dec-2016		Added text on bars
@@ -15,7 +15,7 @@
  Dependencies: d3.v3.js
 
  This script creates an object with the following methods:
- 
+
 	initData()		Initialize chart data
 	initChart()		Initialize a bar chart
 	createBars()	Create the bars in the chart
@@ -23,7 +23,7 @@
 	refreshChart()	refresh chart (calls three above excluding initData)
 
  Presentation Properties
- 
+
  orientation		Orientation: H - Horizontal, V - Vertical
  normalized			Whether 100% bars
  showDeltas			Whether to show bar connectors (delta quadrangles)
@@ -33,7 +33,7 @@
  backgroundColor	Grid background color
 
  Colors and Legend
- 
+
  colorSource		A - Assigned, C - Calculated
  colorAttr			Attribute is: O - an offset in scheme, C - a color value
  colorScheme		Named color scheme
@@ -45,7 +45,7 @@
  legendSpacing		Legend spacing: N - narrow, M - medium, W - wide
 
  Dimension Axis
- 
+
  axisTitleD			Dimension axis title
  labelTitleD		Dimension axis: B - labels & title, L - labels only, T - titles only, N - none
  labelStyleD		Dimension style: A - Auto, H - horizontal, S - staggered, T - tilted
@@ -53,7 +53,7 @@
  axisMarginD		Dimension margin size: N - narrow, M - medium, W - wide
 
  Measure Axis
- 
+
  axisTitleM			Measure axis title
  labelTitleM		Measure axis: B - labels & title, L - labels only, T - titles only, N - none
  labelStyleM		Measure style: A - Auto, H - horizontal, S - staggered, T - tilted
@@ -62,7 +62,7 @@
  ticks				Recommended number of ticks
  axisFormatM		Number format for measure axis, A - Auto, N - Number, P - Percent, S - SI, C - Custom
  axisFormatMs		Number format string for measure axis, D3 format
- 
+
  Text on Bars
 
  showTexts			Whether to show text on bars: B - on bars, T - total, A - both, N - none
@@ -81,7 +81,7 @@
  totalFormatMs		Number format string for total, D3 format
 
  Transitions
- 
+
  transitions		Whether to enable transitions
  transitionDelay	Delay before start of transition
  transitionDuration	Duration of transition
@@ -94,7 +94,7 @@
  measures			Array of measure names
 
  UI-determined Properties
- 
+
  id					Unique id of enclosing element
  component			D3 selection of enclosing element
  width				Width of enclosing element
@@ -103,9 +103,12 @@
  editMode			Whether edit mode is enabled in Qlik Sense
  selectionMode		Selection mode: QUICK or CONFIRM
  rawData			Raw data from hypercube
- 
+
 */
-var ldwbarsPlus = {
+
+/* global d3 */
+
+export default {
 
   /**
  *--------------------------------------
@@ -142,7 +145,7 @@ var ldwbarsPlus = {
             g.rawData[i][j]
           ]);
         }
-      }		
+      }
     }
     else if (g.defDims == 1 && g.defMeas > 1) {
       for (var i = 0; i < g.rawData.length; i++) {
@@ -169,7 +172,7 @@ var ldwbarsPlus = {
       var cn = 0;
       if (g.colorSource == "C") {
         var cv = e[cx].qAttrExps.qValues[0].qNum;
-        if (!isNaN(cv)) 
+        if (!isNaN(cv))
           cn = Math.floor(Math.abs(cv));
         if (g.colorAttr == "C") {
           // if text attribute exists, use it
@@ -185,7 +188,7 @@ var ldwbarsPlus = {
         }
       }
       return cn;
-    };	
+    };
 
     // Process one dimension data
     if (inData[0].length == 2) {
@@ -194,10 +197,10 @@ var ldwbarsPlus = {
       inData.forEach(function(d) {
         struc.push({ dim1: d[0].qText, offset: d[1].qNum });
         flatData.push({
-          dim1: d[0].qText, 
-          dim2: d[0].qText, 
-          offset: 0, 
-          qNum: d[1].qNum, 
+          dim1: d[0].qText,
+          dim2: d[0].qText,
+          offset: 0,
+          qNum: d[1].qNum,
           qText: d[1].qText,
           qTextPct: "",
           qElemNumber: d[0].qElemNumber
@@ -211,9 +214,9 @@ var ldwbarsPlus = {
       g.flatData = flatData;
       g.allDim2 = q;
       g.allCol2 = r;
-      return;		
+      return;
     }
-	
+
     // Process two dimensional data
     g.nDims = 2;
 
@@ -259,7 +262,7 @@ var ldwbarsPlus = {
     catch(err) {
       qs = q;
     }
-    q = qs;		
+    q = qs;
 
     var n = d3.nest()
       .key(function(d) {return d[0].qText;})
@@ -269,7 +272,7 @@ var ldwbarsPlus = {
     // sort all nodes in order specified by q
     n.forEach(function(d) {
       d.values.sort(function(a,b) {
-        return ( q.indexOf(a.key) < q.indexOf(b.key) ? -1 
+        return ( q.indexOf(a.key) < q.indexOf(b.key) ? -1
           : ( q.indexOf(a.key) > q.indexOf(b.key) ? 1 : 0));
       });
     });
@@ -297,7 +300,7 @@ var ldwbarsPlus = {
           qNum: num,
           qText: txt,
           qElemNumber: elm,
-          offset: t		
+          offset: t
         });
         t += num;
       }
@@ -311,7 +314,7 @@ var ldwbarsPlus = {
       });
       flatData.push.apply(flatData,v);
       struc.push({ dim1: d.key, offset: t, values: v });
-		
+
       if (idx > 0 && g.showDeltas) {
         var p = struc[idx-1].values;
         var c = struc[idx].values;
@@ -350,13 +353,13 @@ var ldwbarsPlus = {
     var g = this;
 
     var xLabelTitle = g.orientation == "V" ? g.labelTitleD : g.labelTitleM;
-    g.xAxisHeight = xLabelTitle == "B" || xLabelTitle == "L" 
+    g.xAxisHeight = xLabelTitle == "B" || xLabelTitle == "L"
       ? [70,40,25]["WMN".indexOf(g.orientation == "V" ? g.axisMarginD : g.axisMarginM)] : 0;
     var xTitleHeight = xLabelTitle == "B" || xLabelTitle == "T" ? 20 : 0;
     var xAxisPad = 20;
 
     var yLabelTitle = g.orientation == "V" ? g.labelTitleM : g.labelTitleD;
-    g.yAxisWidth = yLabelTitle == "B" || yLabelTitle == "L" 
+    g.yAxisWidth = yLabelTitle == "B" || yLabelTitle == "L"
       ? [90,50,30]["WMN".indexOf(g.orientation == "V" ? g.axisMarginM : g.axisMarginD)] : 0;
     var yTitleWidth = yLabelTitle == "B" || yLabelTitle == "T" ? 20 : 0;
     var yAxisPad = 20;
@@ -364,8 +367,8 @@ var ldwbarsPlus = {
     var tr; // translate string
     var dTitleHeight = g.labelTitleD == "B" || g.labelTitleD == "T" ? 20 : 0;
     var margin = {
-      top: 10, //yAxisPad, 
-      right: xAxisPad, 
+      top: 10, //yAxisPad,
+      right: xAxisPad,
       bottom: g.xAxisHeight + xTitleHeight + xAxisPad,
       left: g.yAxisWidth + yTitleWidth + yAxisPad
     };
@@ -381,7 +384,7 @@ var ldwbarsPlus = {
       itmHeight : 20,
     };
     g.lgn.txtOff = g.lgn.box[0] + g.lgn.pad + g.lgn.sep;
-	
+
     // adjust for legend if any
     g.lgn.use = g.showLegend ? g.legendPosition : "";
     if (g.lgn.use) {
@@ -401,7 +404,7 @@ var ldwbarsPlus = {
           }
           else {
             g.lgn.x = margin.left + innerWidth + yAxisPad;
-          }	
+          }
         }
       }
       else if (g.lgn.use == "T" || g.lgn.use == "B") {
@@ -421,7 +424,7 @@ var ldwbarsPlus = {
           else {
             g.lgn.y = margin.bottom + innerHeight;
             innerHeight -= 10;
-          }	
+          }
         }
       }
     }
@@ -437,7 +440,7 @@ var ldwbarsPlus = {
     ;
     tooltip.append("p")
       .attr("class","ldwttvalue")
-    ;	
+    ;
     g.svg = g.component
       .append("svg")
       .attr("width",g.width)
@@ -445,7 +448,7 @@ var ldwbarsPlus = {
       .style("background-color",g.backgroundColor)
       .append("g")
       .attr("transform","translate(" + margin.left + "," + margin.top + ")")
-    ;	
+    ;
     var dim1 = g.data.map(function(d) { return d.dim1; });
     if (g.orientation == "H") dim1.reverse();
     g.dScale = d3.scale.ordinal()
@@ -517,9 +520,9 @@ var ldwbarsPlus = {
       ;
     }
     if (Object.getPrototypeOf(this).hasOwnProperty(g.colorScheme))
-      ca = this[g.colorScheme];
+      var ca = this[g.colorScheme];
     else
-      ca = d3.scale[g.colorScheme]().range();
+      var ca = d3.scale[g.colorScheme]().range();
     g.colorOffset %= ca.length;
     // define various ways to get color
     if (g.nDims == 1 && g.colorSource != "C" && g.singleColor) {
@@ -543,7 +546,7 @@ var ldwbarsPlus = {
         ca.slice(g.colorOffset,ca.length).concat(ca.slice(0,ca.length))
       ).domain(g.allDim2);
     }
-	
+
     // Create Legend
     if (g.lgn.use) {
       var lgn = d3.select("#" + g.id + " svg")
@@ -610,7 +613,7 @@ var ldwbarsPlus = {
       ;
     }
   },
-		
+
   /**
  *--------------------------------------
  * Create Bars
@@ -643,7 +646,7 @@ var ldwbarsPlus = {
             var t = d3.select(this).classed("selected");
             g.self.selectValues(0,[d.qElemNumber],true);
             // following to address QS bug where clear button does not clear class names
-            g.self.clearSelectedValues = function() { 
+            g.self.clearSelectedValues = function() {
               d3.selectAll("#" + g.id +" .selected").classed("selected",false);
             };
             var x = d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
@@ -667,10 +670,10 @@ var ldwbarsPlus = {
         d3.select("#" + g.id + " .ldwttheading")
           .text(g.nDims == 2 ? d.dim1 + ", " + d.dim2 : d.dim1);
         d3.select("#" + g.id + " .ldwttvalue")
-          .text(g.nDims == 2 
+          .text(g.nDims == 2
             ? (g.normalized ? d.qTextPct + ", " + d.qText : d.qText)
             : d.qText);
-				
+
         var matrix = this.getScreenCTM()
           .translate(+this.getAttribute("x"),+this.getAttribute("y"));
 
@@ -748,7 +751,7 @@ var ldwbarsPlus = {
         })
       ;
     }
-			
+
     if (g.showDeltas && g.nDims == 2) {
       // Create deltas
       g.polys
@@ -758,7 +761,7 @@ var ldwbarsPlus = {
           var p;
           if (g.orientation == "V") {
             p =	(g.dScale(d.dim1p)+g.dScale.rangeBand()) + ","
-						+ g.mScale(0) + " "						
+						+ g.mScale(0) + " "
 						+ (g.dScale(d.dim1p)+g.dScale.rangeBand()) + ","
 						+ g.mScale(0) + " "
 						+ (g.dScale(d.dim1c)) + ","
@@ -773,7 +776,7 @@ var ldwbarsPlus = {
 						+ g.mScale(0) + "," + g.dScale(d.dim1c) + " "
 						+ g.mScale(0) + "," + g.dScale(d.dim1c)
             ;
-          }	
+          }
           return p;
         })
         .style("fill",function(d) {
@@ -800,7 +803,7 @@ var ldwbarsPlus = {
           sy /= 2;
 
           if (g.inSelections || g.editMode) return;
-				
+
           d3.select(this)
             .style("opacity","0.5")
             .attr("stroke","white")
@@ -810,7 +813,7 @@ var ldwbarsPlus = {
             .text(d.dim2 + ", " + d.dim1p + "-" + d.dim1c);
           d3.select("#" + g.id + " .ldwttvalue")
             .text(d3.format(g.normalized ? "+.1%" : "+.3s")(d.delta));
-					
+
           var matrix = this.getScreenCTM()
             .translate(sx,sy);
 
@@ -851,7 +854,7 @@ var ldwbarsPlus = {
           d3.select(this)
             .append("rect")
           //					.attr("x","0")		// Initialize to zero to have legend grow from top
-          //					.attr("y","0")					
+          //					.attr("y","0")
             .attr("x",function(e) {
               var x;
               if (g.lgn.use == "T" || g.lgn.use == "B") {
@@ -862,7 +865,7 @@ var ldwbarsPlus = {
               }
               return x;
             })
-            .attr("y",function(e) { 
+            .attr("y",function(e) {
               var y;
               if (g.lgn.use == "T" || g.lgn.use == "B") {
                 y = g.lgn.pad;
@@ -880,7 +883,7 @@ var ldwbarsPlus = {
           d3.select(this)
             .append("text")
           //					.attr("x","0")		// Initialize to zero to have legend grow from top
-          //					.attr("y","0")					
+          //					.attr("y","0")
             .attr("x",function(e) {
               var x;
               if (g.lgn.use == "T" || g.lgn.use == "B") {
@@ -891,7 +894,7 @@ var ldwbarsPlus = {
               }
               return x;
             })
-            .attr("y",function(e) { 
+            .attr("y",function(e) {
               var y;
               if (g.lgn.use == "T" || g.lgn.use == "B") {
                 y = g.lgn.pad + 11;
@@ -902,7 +905,7 @@ var ldwbarsPlus = {
               return y;
             })
             .style("opacity","0")
-            .text(function(e) { 
+            .text(function(e) {
               return e;
             })
           ;
@@ -912,8 +915,8 @@ var ldwbarsPlus = {
   },
   /**
  *--------------------------------------
- * Bar Text 
- *-------------------------------------- 
+ * Bar Text
+ *--------------------------------------
  * Get bar text information: x, y and text
 */
   barText: function(d, total) {
@@ -922,8 +925,8 @@ var ldwbarsPlus = {
 
     // Relative text sizing, relative to bar width
     // For total, make larger by reducing unneeded padding
-    var hAlign = g.hAlign, vAlign = g.vAlign, 
-      innerBarPadV = +g.innerBarPadV, 
+    var hAlign = g.hAlign, vAlign = g.vAlign,
+      innerBarPadV = +g.innerBarPadV,
       innerBarPadH = +g.innerBarPadH;
     if (g.textSizeAbs)
       ts = g.textSize;
@@ -949,8 +952,8 @@ var ldwbarsPlus = {
     bHeight = g.orientation == "V" ? g.mScale(0) - g.mScale(d.qNum) : g.dScale.rangeBand();
     textX = g.orientation == "V" ? g.dScale.rangeBand() : g.mScale(d.qNum);
 
-    g.tref.text(d.qNum == 0 ? "" 
-      : (total 
+    g.tref.text(d.qNum == 0 ? ""
+      : (total
         ? (g.showTot == "D" ? d.dim1 : d.qText)
         : (g.showDim == "D" ? d.dim2 : (g.showDim == "P" && g.normalized ? d.qTextPct : d.qText))
       )
@@ -959,11 +962,11 @@ var ldwbarsPlus = {
     bb = g.tref.node().getBBox();
     tx = origX + innerBarPadH;
     if (vAlign == "C")
-      textY = g.orientation == "V" ? g.mScale(d.offset) - (g.mScale(0) - g.mScale(d.qNum)) 
+      textY = g.orientation == "V" ? g.mScale(d.offset) - (g.mScale(0) - g.mScale(d.qNum))
 									+ (g.mScale(0) - g.mScale(d.qNum) + bb.height)/2
         : g.dScale(d.dim1) + (g.dScale.rangeBand() + bb.height)/2;
     else if (vAlign == "T")
-      textY = g.orientation == "V" ? g.mScale(d.offset) - (g.mScale(0) - g.mScale(d.qNum)) 
+      textY = g.orientation == "V" ? g.mScale(d.offset) - (g.mScale(0) - g.mScale(d.qNum))
 									+ bb.height + innerBarPadV
         : g.dScale(d.dim1) + innerBarPadV + bb.height;
     else
@@ -1069,7 +1072,7 @@ var ldwbarsPlus = {
     updateAxis(g.labelTitleD, g.labelStyleD, g.dAxis, "ldw-d", g.orientation == "V");
     // Update measure axis
     updateAxis(g.labelTitleM, g.labelStyleM, g.mAxis, "ldw-m", g.orientation != "V");
-	
+
     g.bars = g.svg.selectAll("#" + g.id + " .ldwbar")
       .data(g.flatData, function(d) { return d.dim1 + '|' + d.dim2; } )
     ;
@@ -1114,8 +1117,8 @@ var ldwbarsPlus = {
         .remove()
       ;
     }
-	
-    if (g.showDeltas && g.nDims == 2) {			
+
+    if (g.showDeltas && g.nDims == 2) {
       g.polys = g.svg.selectAll("#" + g.id + " polygon")
         .data(g.deltas, function(d) { return d.dim1p + "-" + d.dim1c + "," + d.dim2; } )
       ;
@@ -1146,7 +1149,7 @@ var ldwbarsPlus = {
         .remove()
       ;
     }
-	
+
     // Add any new bars/deltas/legend items
     this.createBars();
 
@@ -1242,13 +1245,13 @@ var ldwbarsPlus = {
           if (g.orientation == "V") {
             p = (g.dScale(d.dim1p)+g.dScale.rangeBand()) + ","
 						+ (g.mScale(d.points[0]) - (g.mScale(0) - g.mScale(d.points[2]))) + " "
-						
+
 						+ (g.dScale(d.dim1p)+g.dScale.rangeBand()) + ","
 						+ g.mScale(d.points[0]) + " "
-						
+
 						+ (g.dScale(d.dim1c)) + ","
 						+ g.mScale(d.points[1]) + " "
-						
+
 						+ (g.dScale(d.dim1c)) + ","
 						+ (g.mScale(d.points[1]) - (g.mScale(0) - g.mScale(d.points[3])))
             ;
@@ -1256,13 +1259,13 @@ var ldwbarsPlus = {
           else {
             p =	(g.mScale(d.points[0]) + g.mScale(d.points[2])) + ","
 						+ (g.dScale(d.dim1p) + g.dScale.rangeBand()) + " "
-						
+
 						+ g.mScale(d.points[0]) + ","
 						+ (g.dScale(d.dim1p) + g.dScale.rangeBand()) + " "
-						
+
 						+ g.mScale(d.points[1]) + ","
 						+ g.dScale(d.dim1c) + " "
-						
+
 						+ (g.mScale(d.points[1]) + g.mScale(d.points[3])) + ","
 						+ g.dScale(d.dim1c)
             ;
@@ -1281,7 +1284,7 @@ var ldwbarsPlus = {
         var maxprow = Math.floor(g.lgn.width/(g.lgn.txtOff + g.lgn.txtWidth));
         var nprow = maxprow;
       }
-	
+
       g.lgn.items
  			.each(function(d, i) {
           d3.select(this)
@@ -1299,7 +1302,7 @@ var ldwbarsPlus = {
               }
               return x;
             })
-            .attr("y",function(e) { 
+            .attr("y",function(e) {
               var y;
               if (g.lgn.use == "T" || g.lgn.use == "B") {
                 y = g.lgn.pad + Math.floor(i/nprow) * g.lgn.itmHeight;
@@ -1326,7 +1329,7 @@ var ldwbarsPlus = {
               }
               return x;
             })
-            .attr("y",function(e) { 
+            .attr("y",function(e) {
               var y;
               if (g.lgn.use == "T" || g.lgn.use == "B") {
                 y = g.lgn.pad + Math.floor(i/nprow) * g.lgn.itmHeight + 11;
