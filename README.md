@@ -1,4 +1,7 @@
 # barsPlus
+
+[![CircleCI](https://circleci.com/gh/qlik-oss/barsPlus.svg?style=svg)](https://circleci.com/gh/qlik-oss/barsPlus)
+
 Add another "dimension" to your dashboard with *transitions*.  Transitions show the user how the data changes with different selections. Chart elements will slowly morph into new chart, giving the user extra information about how the selections have affected the chart.
 
 barsPlus is a single extension that allows creating bar charts (horizontal and vertical), stacked bar charts, 100% stacked bar charts, stacked bars showing changes, and area charts.
