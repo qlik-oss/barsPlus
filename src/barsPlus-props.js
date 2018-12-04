@@ -1,21 +1,22 @@
-﻿define( [ ],
-/**
- * barsPlus Properties - set up appearance of accordion properties panel in Qlik Sense
- * 
- * Defaults are defined here.
- * Settings modify objects in object: layout.props
- *
- * Author: L. Woodside
- * Modification History:
- *
- *	Version		Person			Date			Description
- *	V1.0.0		L. Woodside		19-Dec-2016		Initial Release
- *  V1.1.0		L. Woodside		29-Dec-2016		Added text on bars
- *  V1.2.0		L. Woodside		07-Jan-2017		Allow multiple measures
- *  V1.3.0		L. Woodside		15-Jan-2017		Improved color options
- *  V1.3.1		L. Woodside		27-Jan-2017		Fix problem with legend properties
- *
-*/
+﻿/**
+   * barsPlus Properties - set up appearance of accordion properties panel in Qlik Sense
+   *
+   * Defaults are defined here.
+   * Settings modify objects in object: layout.props
+   *
+   * Author: L. Woodside
+   * Modification History:
+   *
+   *	Version		Person			Date			Description
+   *	V1.0.0		L. Woodside		19-Dec-2016		Initial Release
+   *  V1.1.0		L. Woodside		29-Dec-2016		Added text on bars
+   *  V1.2.0		L. Woodside		07-Jan-2017		Allow multiple measures
+   *  V1.3.0		L. Woodside		15-Jan-2017		Improved color options
+   *  V1.3.1		L. Woodside		27-Jan-2017		Fix problem with legend properties
+   *
+  */
+
+define([],
   function () {
     'use strict';
     var dimensions = {
@@ -52,7 +53,7 @@
     };
     var addons = {
       uses: "addons"
-      ,items: {
+      , items: {
         dataHandling: {
           uses: "dataHandling"
         },
@@ -69,7 +70,7 @@
         }
       }
     };
-	
+
     var appearance = {
       uses: "settings",
       items: {
@@ -98,11 +99,11 @@
                 { value: false, label: "Not 100%" },
                 { value: true, label: "100% bars" }
               ],
-              show: function(data) { 
+              show: function (data) {
                 return (data.qHyperCubeDef.qDimensions.length > 1
-								|| (data.qHyperCubeDef.qDimensions.length == 1 
-										&& data.qHyperCubeDef.qMeasures.length > 1
-								)); 
+                  || (data.qHyperCubeDef.qDimensions.length == 1
+                    && data.qHyperCubeDef.qMeasures.length > 1
+                  ));
               }
             },
             showDeltas: {
@@ -115,11 +116,11 @@
                 { value: false, label: "Standard bars" },
                 { value: true, label: "Bars with connectors" }
               ],
-              show: function(data) { 
+              show: function (data) {
                 return (data.qHyperCubeDef.qDimensions.length > 1
-								|| (data.qHyperCubeDef.qDimensions.length == 1 
-										&& data.qHyperCubeDef.qMeasures.length > 1
-								)); 
+                  || (data.qHyperCubeDef.qDimensions.length == 1
+                    && data.qHyperCubeDef.qMeasures.length > 1
+                  ));
               }
             },
             barSpacing: {
@@ -205,7 +206,7 @@
                 { value: "O", label: "Attribute is offset in scheme" },
                 { value: "C", label: "Attribute is color value" }
               ],
-              show: function(data) {
+              show: function (data) {
                 return data.props.colorSource == "C";
               }
             },
@@ -225,9 +226,9 @@
                 { value: "qlikView18", label: "qlikView18" },
                 { value: "qlikSense12", label: "qlikSense12" }
               ],
-              show: function(data) {
+              show: function (data) {
                 return (data.props.colorSource != "C"
-								|| (data.props.colorSource == "C" && data.props.colorAttr == "O"));
+                  || (data.props.colorSource == "C" && data.props.colorAttr == "O"));
               }
             },
             colorOffset: {
@@ -236,7 +237,7 @@
               ref: "props.colorOffset",
               defaultValue: 0,
               expression: "optional",
-              show: function(data) {
+              show: function (data) {
                 return data.props.colorSource != "C";
               }
             },
@@ -250,11 +251,11 @@
                 { value: true, label: "Single Color" },
                 { value: false, label: "Multi-color" }
               ],
-              show: function(data) { 
-                return ((data.qHyperCubeDef.qDimensions.length == 0 
-								|| (data.qHyperCubeDef.qDimensions.length == 1 
-										&& data.qHyperCubeDef.qMeasures.length == 1
-								)) && data.props.colorSource != "C"); 
+              show: function (data) {
+                return ((data.qHyperCubeDef.qDimensions.length == 0
+                  || (data.qHyperCubeDef.qDimensions.length == 1
+                    && data.qHyperCubeDef.qMeasures.length == 1
+                  )) && data.props.colorSource != "C");
               }
             },
             showLegend: {
@@ -267,21 +268,21 @@
                 { value: false, label: "No legend" },
                 { value: true, label: "Show legend" }
               ],
-              show: function(data) { 
+              show: function (data) {
                 return (
                   (
                     (
-                      (data.qHyperCubeDef.qDimensions.length == 0	&& data.qHyperCubeDef.qMeasures.length > 1)
-									|| (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length == 1)
+                      (data.qHyperCubeDef.qDimensions.length == 0 && data.qHyperCubeDef.qMeasures.length > 1)
+                      || (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length == 1)
                     )
-								&& (
-								  (data.props.colorSource != "C" && !data.props.singleColor)
-									|| data.props.colorSource == "C"
-								)
+                    && (
+                      (data.props.colorSource != "C" && !data.props.singleColor)
+                      || data.props.colorSource == "C"
+                    )
                   )
-							|| data.qHyperCubeDef.qDimensions.length > 1
-							|| (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length > 1)
-                ); 
+                  || data.qHyperCubeDef.qDimensions.length > 1
+                  || (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length > 1)
+                );
               }
             },
             legendPosition: {
@@ -296,21 +297,21 @@
                 { value: "T", label: "Top" },
                 { value: "B", label: "Bottom" }
               ],
-              show: function(data) { 
+              show: function (data) {
                 return data.props.showLegend && (
                   (
                     (
-                      (data.qHyperCubeDef.qDimensions.length == 0	&& data.qHyperCubeDef.qMeasures.length > 1)
-									|| (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length == 1)
+                      (data.qHyperCubeDef.qDimensions.length == 0 && data.qHyperCubeDef.qMeasures.length > 1)
+                      || (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length == 1)
                     )
-								&& (
-								  (data.props.colorSource != "C" && !data.props.singleColor)
-									|| data.props.colorSource == "C"
-								)
+                    && (
+                      (data.props.colorSource != "C" && !data.props.singleColor)
+                      || data.props.colorSource == "C"
+                    )
                   )
-							|| data.qHyperCubeDef.qDimensions.length > 1
-							|| (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length > 1)
-                ); 
+                  || data.qHyperCubeDef.qDimensions.length > 1
+                  || (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length > 1)
+                );
               }
             },
             legendSize: {
@@ -324,21 +325,21 @@
                 { value: "M", label: "Medium" },
                 { value: "W", label: "Wide" }
               ],
-              show: function(data) { 
+              show: function (data) {
                 return data.props.showLegend && (
                   (
                     (
-                      (data.qHyperCubeDef.qDimensions.length == 0	&& data.qHyperCubeDef.qMeasures.length > 1)
-									|| (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length == 1)
+                      (data.qHyperCubeDef.qDimensions.length == 0 && data.qHyperCubeDef.qMeasures.length > 1)
+                      || (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length == 1)
                     )
-								&& (
-								  (data.props.colorSource != "C" && !data.props.singleColor)
-									|| data.props.colorSource == "C"
-								)
+                    && (
+                      (data.props.colorSource != "C" && !data.props.singleColor)
+                      || data.props.colorSource == "C"
+                    )
                   )
-							|| data.qHyperCubeDef.qDimensions.length > 1
-							|| (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length > 1)
-                ); 
+                  || data.qHyperCubeDef.qDimensions.length > 1
+                  || (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length > 1)
+                );
               }
             },
             legendSpacing: {
@@ -352,28 +353,28 @@
                 { value: "M", label: "Medium" },
                 { value: "W", label: "Wide" }
               ],
-              show: function(data) { 
+              show: function (data) {
                 return data.props.showLegend && (data.props.legendPosition == "T" || data.props.legendPosition == "B") && (
                   (
                     (
-                      (data.qHyperCubeDef.qDimensions.length == 0	&& data.qHyperCubeDef.qMeasures.length > 1)
-									|| (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length == 1)
+                      (data.qHyperCubeDef.qDimensions.length == 0 && data.qHyperCubeDef.qMeasures.length > 1)
+                      || (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length == 1)
                     )
-								&& (
-								  (data.props.colorSource != "C" && !data.props.singleColor)
-									|| data.props.colorSource == "C"
-								)
+                    && (
+                      (data.props.colorSource != "C" && !data.props.singleColor)
+                      || data.props.colorSource == "C"
+                    )
                   )
-							|| data.qHyperCubeDef.qDimensions.length > 1
-							|| (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length > 1)
-                ); 
+                  || data.qHyperCubeDef.qDimensions.length > 1
+                  || (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length > 1)
+                );
               }
             }
           }
         },
         dimensionAxis: {
           type: "items",
-          label: function(data) {
+          label: function (data) {
             var t = "";
             if (data.qHyperCubeDef.qDimensions.length == 0) {
               if (data.props.axisTitleD.length > 0)
@@ -408,9 +409,9 @@
               ref: "props.axisTitleD",
               defaultValue: "Dimension axis",
               expression: "optional",
-              show: function(data) { 
-                return (data.qHyperCubeDef.qDimensions.length == 0 
-								&& (data.props.labelTitleD == 'B' || data.props.labelTitleD == 'T'));
+              show: function (data) {
+                return (data.qHyperCubeDef.qDimensions.length == 0
+                  && (data.props.labelTitleD == 'B' || data.props.labelTitleD == 'T'));
               }
             },
             LabelStyleD: {
@@ -425,7 +426,7 @@
                 { value: "S", label: "Staggered" },
                 { value: "T", label: "Tilted" }
               ],
-              show: function(data) { 
+              show: function (data) {
                 return data.props.labelTitleD != 'N' && data.props.labelTitleD != 'T';
               }
             },
@@ -439,7 +440,7 @@
                 { value: true, label: "Gridlines" },
                 { value: false, label: "No gridlines" }
               ],
-              show: function(data) { 
+              show: function (data) {
                 return data.props.labelTitleD != 'N' && data.props.labelTitleD != 'T';
               }
             },
@@ -454,7 +455,7 @@
                 { value: "M", label: "Medium" },
                 { value: "W", label: "Wide" }
               ],
-              show: function(data) { 
+              show: function (data) {
                 return data.props.labelTitleD != 'N' && data.props.labelTitleD != 'T';
               }
             }
@@ -462,7 +463,7 @@
         },
         measureAxis: {
           type: "items",
-          label: function(data) {
+          label: function (data) {
             var t = "";
             if (data.qHyperCubeDef.qDimensions.length == 0 || data.qHyperCubeDef.qMeasures.length > 1) {
               if (data.props.axisTitleM.length > 0)
@@ -499,15 +500,15 @@
               ref: "props.axisTitleM",
               defaultValue: "Measure axis",
               expression: "optional",
-              show: function(data) { 
+              show: function (data) {
                 return ((
                   data.qHyperCubeDef.qDimensions.length == 0
-									|| (
-									  data.qHyperCubeDef.qDimensions.length == 1
-										&& data.qHyperCubeDef.qMeasures.length > 1
-									)
+                  || (
+                    data.qHyperCubeDef.qDimensions.length == 1
+                    && data.qHyperCubeDef.qMeasures.length > 1
+                  )
                 )
-								&& (data.props.labelTitleM == 'B' || data.props.labelTitleM == 'T'));
+                  && (data.props.labelTitleM == 'B' || data.props.labelTitleM == 'T'));
               }
             },
             LabelStyleM: {
@@ -522,7 +523,7 @@
                 { value: "S", label: "Staggered" },
                 { value: "T", label: "Tilted" }
               ],
-              show: function(data) { 
+              show: function (data) {
                 return data.props.labelTitleM != 'N' && data.props.labelTitleM != 'T';
               }
             },
@@ -536,7 +537,7 @@
                 { value: true, label: "Gridlines" },
                 { value: false, label: "No gridlines" }
               ],
-              show: function(data) { 
+              show: function (data) {
                 return data.props.labelTitleM != 'N' && data.props.labelTitleM != 'T';
               }
             },
@@ -551,7 +552,7 @@
                 { value: "M", label: "Medium" },
                 { value: "W", label: "Wide" }
               ],
-              show: function(data) { 
+              show: function (data) {
                 return data.props.labelTitleM != 'N' && data.props.labelTitleM != 'T';
               }
             },
@@ -566,7 +567,7 @@
                 { value: "10", label: "Medium" },
                 { value: "20", label: "Narrow" }
               ],
-              show: function(data) { 
+              show: function (data) {
                 return data.props.labelTitleM != 'N' && data.props.labelTitleM != 'T';
               }
             },
@@ -583,7 +584,7 @@
                 { value: "S", label: "SI-notation (K, M, etc.)" },
                 { value: "C", label: "Custom" }
               ],
-              show: function(data) { 
+              show: function (data) {
                 return data.props.labelTitleM != 'N' && data.props.labelTitleM != 'T';
               }
             },
@@ -593,8 +594,8 @@
               ref: "props.axisFormatMs",
               defaultValue: "s",
               expression: "optional",
-              show: function(data) { 
-                return data.props.axisFormatM == "C"; 
+              show: function (data) {
+                return data.props.axisFormatM == "C";
               }
             },
             axisFormatMURL: {
@@ -633,8 +634,8 @@
                 { value: "D", label: "Dimension" },
                 { value: "P", label: "Percent" }
               ],
-              show: function(data) {
-                return ~"BA".indexOf(data.props.showTexts) && data.props.normalized; 
+              show: function (data) {
+                return ~"BA".indexOf(data.props.showTexts) && data.props.normalized;
               }
             },
             showDim2: {
@@ -647,8 +648,8 @@
                 { value: "M", label: "Measure" },
                 { value: "D", label: "Dimension" }
               ],
-              show: function(data) { 
-                return ~"BA".indexOf(data.props.showTexts) && !data.props.normalized; 
+              show: function (data) {
+                return ~"BA".indexOf(data.props.showTexts) && !data.props.normalized;
               }
             },
             showTot: {
@@ -661,8 +662,8 @@
                 { value: "M", label: "Measure" },
                 { value: "D", label: "Dimension" }
               ],
-              show: function(data) { 
-                return ~"TA".indexOf(data.props.showTexts); 
+              show: function (data) {
+                return ~"TA".indexOf(data.props.showTexts);
               }
             },
             innerBarPadH: {
@@ -671,8 +672,8 @@
               ref: "props.innerBarPadH",
               defaultValue: 2,
               expression: "optional",
-              show: function(data) { 
-                return data.props.showTexts != "N"; 
+              show: function (data) {
+                return data.props.showTexts != "N";
               }
             },
             innerBarPadV: {
@@ -681,8 +682,8 @@
               ref: "props.innerBarPadV",
               defaultValue: 2,
               expression: "optional",
-              show: function(data) { 
-                return data.props.showTexts != "N"; 
+              show: function (data) {
+                return data.props.showTexts != "N";
               }
             },
             textSizeAbs: {
@@ -695,8 +696,8 @@
                 { value: true, label: "Not proportional" },
                 { value: false, label: "Proportional" }
               ],
-              show: function(data) { 
-                return data.props.showTexts != "N"; 
+              show: function (data) {
+                return data.props.showTexts != "N";
               }
             },
             textSizeFactor: {
@@ -704,8 +705,8 @@
               label: "Text size proportion factor",
               ref: "props.textSizeFactor",
               defaultValue: 1,
-              show: function(data) { 
-                return data.props.showTexts != "N" && !data.props.textSizeAbs; 
+              show: function (data) {
+                return data.props.showTexts != "N" && !data.props.textSizeAbs;
               }
             },
             textSize: {
@@ -714,8 +715,8 @@
               ref: "props.textSize",
               defaultValue: 10,
               expression: "optional",
-              show: function(data) { 
-                return data.props.showTexts != "N" && data.props.textSizeAbs; 
+              show: function (data) {
+                return data.props.showTexts != "N" && data.props.textSizeAbs;
               }
             },
             textSizeMax: {
@@ -724,8 +725,8 @@
               ref: "props.textSize",
               defaultValue: 18,
               expression: "optional",
-              show: function(data) { 
-                return data.props.showTexts != "N" && !data.props.textSizeAbs; 
+              show: function (data) {
+                return data.props.showTexts != "N" && !data.props.textSizeAbs;
               }
             },
             textDots: {
@@ -738,8 +739,8 @@
                 { value: true, label: "Show" },
                 { value: false, label: "Don't show" }
               ],
-              show: function(data) { 
-                return data.props.showTexts != "N"; 
+              show: function (data) {
+                return data.props.showTexts != "N";
               }
             },
             textColor: {
@@ -753,8 +754,8 @@
                 { value: "Black", label: "Black" },
                 { value: "White", label: "White" }
               ],
-              show: function(data) { 
-                return data.props.showTexts != "N"; 
+              show: function (data) {
+                return data.props.showTexts != "N";
               }
             },
             vAlign: {
@@ -768,8 +769,8 @@
                 { value: "T", label: "Top" },
                 { value: "B", label: "Bottom" }
               ],
-              show: function(data) { 
-                return data.props.showTexts != "N"; 
+              show: function (data) {
+                return data.props.showTexts != "N";
               }
             },
             hAlign: {
@@ -783,8 +784,8 @@
                 { value: "L", label: "Left" },
                 { value: "R", label: "Right" }
               ],
-              show: function(data) { 
-                return data.props.showTexts != "N"; 
+              show: function (data) {
+                return data.props.showTexts != "N";
               }
             },
             totalFormatM: {
@@ -799,8 +800,8 @@
                 { value: "S", label: "SI-notation (K, M, etc.)" },
                 { value: "C", label: "Custom" }
               ],
-              show: function(data) { 
-                return data.props.showTexts != "N"; 
+              show: function (data) {
+                return data.props.showTexts != "N";
               }
             },
             totalFormatMs: {
@@ -809,8 +810,8 @@
               ref: "props.totalFormatMs",
               defaultValue: ",.3s",
               expression: "optional",
-              show: function(data) { 
-                return data.props.showTexts != "N" && data.props.totalFormatM == "C"; 
+              show: function (data) {
+                return data.props.showTexts != "N" && data.props.totalFormatM == "C";
               }
             },
             totalFormatMURL: {
@@ -818,8 +819,8 @@
               component: "link",
               label: "D3 format strings",
               url: "https://github.com/d3/d3-3.x-api-reference/blob/master/Formatting.md",
-              show: function(data) { 
-                return data.props.showTexts != "N" && data.props.totalFormatM == "C"; 
+              show: function (data) {
+                return data.props.showTexts != "N" && data.props.totalFormatM == "C";
               }
             }
           }
@@ -845,8 +846,8 @@
               ref: "props.transitionDelay",
               defaultValue: "500",
               expression: "optional",
-              show: function(data) { 
-                return data.props.transitions; 
+              show: function (data) {
+                return data.props.transitions;
               }
             },
             transitionDuration: {
@@ -855,8 +856,8 @@
               ref: "props.transitionDuration",
               defaultValue: "1000",
               expression: "optional",
-              show: function(data) { 
-                return data.props.transitions; 
+              show: function (data) {
+                return data.props.transitions;
               }
             },
             transitionStyle: {
@@ -876,8 +877,8 @@
                 { value: "back", label: "Back" },
                 { value: "bounce", label: "Bounce" }
               ],
-              show: function(data) { 
-                return data.props.transitions; 
+              show: function (data) {
+                return data.props.transitions;
               }
             }
           }
@@ -895,4 +896,4 @@
         appearance: appearance
       }
     };
-  } );
+  });

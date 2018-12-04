@@ -123,7 +123,7 @@ export default {
  *			g.nDims
  *			g.deltas
 */
-  initData: function() {
+  initData: function () {
     /*
 	To support multiple measures, take the input raw data and transform it
 	to look like previously supported formats:
@@ -141,7 +141,7 @@ export default {
       for (var i = 0; i < g.rawData.length; i++) {
         for (var j = 0; j < g.measures.length; j++) {
           inData.push([
-            { qElemNumber: -1, qNum: j+1, qText: g.measures[j] },
+            { qElemNumber: -1, qNum: j + 1, qText: g.measures[j] },
             g.rawData[i][j]
           ]);
         }
@@ -152,8 +152,8 @@ export default {
         for (var j = 0; j < g.measures.length; j++) {
           inData.push([
             g.rawData[i][0],
-            { qElemNumber: -1, qNum: j+1, qText: g.measures[j] },
-            g.rawData[i][j+1]
+            { qElemNumber: -1, qNum: j + 1, qText: g.measures[j] },
+            g.rawData[i][j + 1]
           ]);
         }
       }
@@ -168,7 +168,7 @@ export default {
     if (g.colorSource == "C" && !inData[0][cx].qAttrExps) g.colorSource = "A";
 
     // Function to get dimension/measure attribute for color
-    var cf = function(e) {
+    var cf = function (e) {
       var cn = 0;
       if (g.colorSource == "C") {
         var cv = e[cx].qAttrExps.qValues[0].qNum;
@@ -182,8 +182,8 @@ export default {
           else {
             // number present, convert to hex
             cv = cv.toString(16);
-            if (cv.length > 6) cv = cv.substring(cv.length-6);
-            cn = "#" + "000000".substring(0,6-cv.length) + cv;
+            if (cv.length > 6) cv = cv.substring(cv.length - 6);
+            cn = "#" + "000000".substring(0, 6 - cv.length) + cv;
           }
         }
       }
@@ -194,7 +194,7 @@ export default {
     if (inData[0].length == 2) {
       g.nDims = 1;
       g.normalized = false;
-      inData.forEach(function(d) {
+      inData.forEach(function (d) {
         struc.push({ dim1: d[0].qText, offset: d[1].qNum });
         flatData.push({
           dim1: d[0].qText,
@@ -205,7 +205,7 @@ export default {
           qTextPct: "",
           qElemNumber: d[0].qElemNumber
         });
-        if(q.indexOf(d[0].qText) == -1) {
+        if (q.indexOf(d[0].qText) == -1) {
           q.push(d[0].qText);
           r.push(cf(d));
         }
@@ -221,7 +221,7 @@ export default {
     g.nDims = 2;
 
     var p1 = "", p2, edges = [], b, p = [];
-    inData.forEach(function(d) {
+    inData.forEach(function (d) {
       var c2 = d[1].qText;
       if (p.indexOf(d[0].qText) == -1) {
         p.push(d[0].qText);
@@ -242,7 +242,7 @@ export default {
           }
         }
         if (!b) {
-          edges.push([p2,c2]);
+          edges.push([p2, c2]);
         }
       }
       p2 = c2;
@@ -252,36 +252,36 @@ export default {
     var qs, ps, rs = [];
     try {
       ps = q.slice();
-      qs = this.toposort(q,edges);
+      qs = this.toposort(q, edges);
       // Replicate qs order in r
       for (var i = 0; i < ps.length; i++) {
         rs.push(r[ps.indexOf(qs[i])]);
       }
       r = rs;
     }
-    catch(err) {
+    catch (err) {
       qs = q;
     }
     q = qs;
 
     var n = d3.nest()
-      .key(function(d) {return d[0].qText;})
-      .key(function(d) {return d[1].qText;})
+      .key(function (d) { return d[0].qText; })
+      .key(function (d) { return d[1].qText; })
       .entries(inData)
-		;
+      ;
     // sort all nodes in order specified by q
-    n.forEach(function(d) {
-      d.values.sort(function(a,b) {
-        return ( q.indexOf(a.key) < q.indexOf(b.key) ? -1
-          : ( q.indexOf(a.key) > q.indexOf(b.key) ? 1 : 0));
+    n.forEach(function (d) {
+      d.values.sort(function (a, b) {
+        return (q.indexOf(a.key) < q.indexOf(b.key) ? -1
+          : (q.indexOf(a.key) > q.indexOf(b.key) ? 1 : 0));
       });
     });
     // nest messes up dim1 sort order, sort by order specified in p
-    n.sort(function(a,b) {
-      return ( p.indexOf(a.key) < p.indexOf(b.key) ? -1
-        : ( p.indexOf(a.key) > p.indexOf(b.key) ? 1 : 0));
+    n.sort(function (a, b) {
+      return (p.indexOf(a.key) < p.indexOf(b.key) ? -1
+        : (p.indexOf(a.key) > p.indexOf(b.key) ? 1 : 0));
     });
-    n.forEach(function(d, idx) {
+    n.forEach(function (d, idx) {
       var t = 0, v = [], j = 0, num, txt;
       for (var i = 0; i < q.length; i++) {
         if (d.values.length <= j || d.values[j].key != q[i]) {
@@ -304,19 +304,19 @@ export default {
         });
         t += num;
       }
-      v.forEach(function(e) {
+      v.forEach(function (e) {
         e.dim1 = d.key;
         if (g.normalized) {
-          e.offset = e.offset/t;
-          e.qNum = e.qNum/t;
+          e.offset = e.offset / t;
+          e.qNum = e.qNum / t;
           e.qTextPct = d3.format(".1%")(e.qNum);
         }
       });
-      flatData.push.apply(flatData,v);
+      flatData.push.apply(flatData, v);
       struc.push({ dim1: d.key, offset: t, values: v });
 
       if (idx > 0 && g.showDeltas) {
-        var p = struc[idx-1].values;
+        var p = struc[idx - 1].values;
         var c = struc[idx].values;
         for (var k = 0; k < p.length; k++) {
           deltas.push({
@@ -349,18 +349,18 @@ export default {
  * Set up initial elements, create axes, create legend
  * create bars, deltas and legend items and bind data
 */
-  initChart: function() {
+  initChart: function () {
     var g = this;
 
     var xLabelTitle = g.orientation == "V" ? g.labelTitleD : g.labelTitleM;
     g.xAxisHeight = xLabelTitle == "B" || xLabelTitle == "L"
-      ? [70,40,25]["WMN".indexOf(g.orientation == "V" ? g.axisMarginD : g.axisMarginM)] : 0;
+      ? [70, 40, 25]["WMN".indexOf(g.orientation == "V" ? g.axisMarginD : g.axisMarginM)] : 0;
     var xTitleHeight = xLabelTitle == "B" || xLabelTitle == "T" ? 20 : 0;
     var xAxisPad = 20;
 
     var yLabelTitle = g.orientation == "V" ? g.labelTitleM : g.labelTitleD;
     g.yAxisWidth = yLabelTitle == "B" || yLabelTitle == "L"
-      ? [90,50,30]["WMN".indexOf(g.orientation == "V" ? g.axisMarginM : g.axisMarginD)] : 0;
+      ? [90, 50, 30]["WMN".indexOf(g.orientation == "V" ? g.axisMarginM : g.axisMarginD)] : 0;
     var yTitleWidth = yLabelTitle == "B" || yLabelTitle == "T" ? 20 : 0;
     var yAxisPad = 20;
 
@@ -376,12 +376,12 @@ export default {
     var innerHeight = g.height - margin.top - margin.bottom;
 
     g.lgn = {
-      minDim  : [200,100], // min inner dimensions for legend to be displayed
-      use : "",
-      pad : 0,
-      sep : 5,
-      box : [12,12], // legend item color box
-      itmHeight : 20,
+      minDim: [200, 100], // min inner dimensions for legend to be displayed
+      use: "",
+      pad: 0,
+      sep: 5,
+      box: [12, 12], // legend item color box
+      itmHeight: 20,
     };
     g.lgn.txtOff = g.lgn.box[0] + g.lgn.pad + g.lgn.sep;
 
@@ -393,7 +393,7 @@ export default {
           g.lgn.use = "";
         }
         else {
-          g.lgn.width = innerWidth/([4,6,10]["WMN".indexOf(g.legendSize)]);
+          g.lgn.width = innerWidth / ([4, 6, 10]["WMN".indexOf(g.legendSize)]);
           innerWidth -= (g.lgn.width + yAxisPad);
           g.lgn.height = innerHeight + g.xAxisHeight + xTitleHeight;
           g.lgn.y = margin.top;
@@ -416,7 +416,7 @@ export default {
           g.lgn.height = g.lgn.itmHeight * (3 - "WMN".indexOf(g.legendSize));
           innerHeight -= g.lgn.height;
           g.lgn.x = yAxisPad;
-          g.lgn.txtWidth = [100,75,50]["WMN".indexOf(g.legendSpacing)];
+          g.lgn.txtWidth = [100, 75, 50]["WMN".indexOf(g.legendSpacing)];
           if (g.lgn.use == "T") {
             g.lgn.y = margin.top;
             margin.top += g.lgn.height;
@@ -432,32 +432,32 @@ export default {
       .remove()
     ;
     var tooltip = g.component.append("div")
-      .attr("class","ldwtooltip")
-      .style("opacity","0")
-		;
+      .attr("class", "ldwtooltip")
+      .style("opacity", "0")
+      ;
     tooltip.append("p")
-      .attr("class","ldwttheading")
+      .attr("class", "ldwttheading")
     ;
     tooltip.append("p")
-      .attr("class","ldwttvalue")
+      .attr("class", "ldwttvalue")
     ;
     g.svg = g.component
       .append("svg")
-      .attr("width",g.width)
-      .attr("height",g.height)
-      .style("background-color",g.backgroundColor)
+      .attr("width", g.width)
+      .attr("height", g.height)
+      .style("background-color", g.backgroundColor)
       .append("g")
-      .attr("transform","translate(" + margin.left + "," + margin.top + ")")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
     ;
-    var dim1 = g.data.map(function(d) { return d.dim1; });
+    var dim1 = g.data.map(function (d) { return d.dim1; });
     if (g.orientation == "H") dim1.reverse();
     g.dScale = d3.scale.ordinal()
       .domain(dim1)
-      .rangeRoundBands(g.orientation == "V" ? [0, innerWidth] : [innerHeight,0], g.barGap, g.outerGap)
+      .rangeRoundBands(g.orientation == "V" ? [0, innerWidth] : [innerHeight, 0], g.barGap, g.outerGap)
     ;
     g.mScale = d3.scale.linear()
-      .domain([0, d3.max(g.data, function(d) { return (g.normalized ? 1 : d.offset)*g.gridHeight; })])
-      .range(g.orientation == "V" ? [innerHeight,0] : [0, innerWidth])
+      .domain([0, d3.max(g.data, function (d) { return (g.normalized ? 1 : d.offset) * g.gridHeight; })])
+      .range(g.orientation == "V" ? [innerHeight, 0] : [0, innerWidth])
       .nice()
     ;
     var dGrp = g.svg.append("g")
@@ -475,22 +475,22 @@ export default {
       dGrp.call(g.dAxis);
     }
     if (g.labelTitleD == 'B' || g.labelTitleD == 'T') {
-      if(g.orientation == "V") {
-        tr = "translate(" + (innerWidth/2) + "," + (g.xAxisHeight + xTitleHeight) + ")";
+      if (g.orientation == "V") {
+        tr = "translate(" + (innerWidth / 2) + "," + (g.xAxisHeight + xTitleHeight) + ")";
       }
       else {
-        tr = "translate(-" + (g.yAxisWidth + yTitleWidth/2 + 2) + "," + (innerHeight/2) + ")rotate(-90)";
+        tr = "translate(-" + (g.yAxisWidth + yTitleWidth / 2 + 2) + "," + (innerHeight / 2) + ")rotate(-90)";
       }
       dGrp.append("text")
-        .attr("class","axisTitle")
-        .attr("text-anchor","middle")
-        .attr("transform",tr)
+        .attr("class", "axisTitle")
+        .attr("text-anchor", "middle")
+        .attr("transform", tr)
         .text(g.axisTitleD)
       ;
     }
     var mGrp = g.svg.append("g")
       .attr("class", "ldw-m ldwaxis")
-		;
+      ;
     if (g.orientation != "V") {
       mGrp.attr("transform", "translate(0," + innerHeight + ")");
     }
@@ -506,16 +506,16 @@ export default {
       mGrp.call(g.mAxis);
     }
     if (g.labelTitleM == 'B' || g.labelTitleM == 'T') {
-      if(g.orientation == "V") {
-        tr = "translate(-" + (g.yAxisWidth + yTitleWidth/2 + 2) + "," + (innerHeight/2) + ")rotate(-90)";
+      if (g.orientation == "V") {
+        tr = "translate(-" + (g.yAxisWidth + yTitleWidth / 2 + 2) + "," + (innerHeight / 2) + ")rotate(-90)";
       }
       else {
-        tr = "translate(" + (innerWidth/2) + "," + (g.xAxisHeight + xTitleHeight) + ")";
+        tr = "translate(" + (innerWidth / 2) + "," + (g.xAxisHeight + xTitleHeight) + ")";
       }
       mGrp.append("text")
-        .attr("class","axisTitle")
-        .attr("text-anchor","middle")
-        .attr("transform",tr)
+        .attr("class", "axisTitle")
+        .attr("text-anchor", "middle")
+        .attr("transform", tr)
         .text(g.axisTitleM)
       ;
     }
@@ -527,23 +527,23 @@ export default {
     // define various ways to get color
     if (g.nDims == 1 && g.colorSource != "C" && g.singleColor) {
       var rc = ca[g.colorOffset];
-      g.cScale = function(d) { return rc; };
+      g.cScale = function (d) { return rc; };
     }
     else if (g.colorSource == "C") {
       if (g.colorAttr == "O") { // color from calculated offset
-        g.cScale = function(d) {
+        g.cScale = function (d) {
           return ca[g.allCol2[g.allDim2.indexOf(d)] % ca.length];
         };
       }
       else { // color is direct value
-        g.cScale = function(d) {
+        g.cScale = function (d) {
           return g.allCol2[g.allDim2.indexOf(d)];
         };
       }
     }
     else {
       g.cScale = d3.scale.ordinal().range(
-        ca.slice(g.colorOffset,ca.length).concat(ca.slice(0,ca.length))
+        ca.slice(g.colorOffset, ca.length).concat(ca.slice(0, ca.length))
       ).domain(g.allDim2);
     }
 
@@ -551,58 +551,58 @@ export default {
     if (g.lgn.use) {
       var lgn = d3.select("#" + g.id + " svg")
         .append("g")
-        .attr("class","ldwlegend")
-        .attr("clip-path","url(#" + g.id + "_lgnClip)")
-        .attr("transform","translate(" + g.lgn.x + "," + g.lgn.y + ")")
-			;
+        .attr("class", "ldwlegend")
+        .attr("clip-path", "url(#" + g.id + "_lgnClip)")
+        .attr("transform", "translate(" + g.lgn.x + "," + g.lgn.y + ")")
+        ;
       lgn.append("rect")
-        .attr("x",0)
-        .attr("y",0)
-        .attr("width",g.lgn.width)
-        .attr("height",g.lgn.height)
-        .style("fill",g.backgroundColor)
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", g.lgn.width)
+        .attr("height", g.lgn.height)
+        .style("fill", g.backgroundColor)
       ;
       lgn.append("clipPath")
-        .attr("id",g.id + "_lgnClip")
+        .attr("id", g.id + "_lgnClip")
         .append("rect")
-        .attr("x","0")
-        .attr("y","0")
-        .attr("width",g.lgn.width)
-        .attr("height",g.lgn.height)
+        .attr("x", "0")
+        .attr("y", "0")
+        .attr("width", g.lgn.width)
+        .attr("height", g.lgn.height)
       ;
       lgn.append("g")
-        .attr("class","ldwlgnitems");
+        .attr("class", "ldwlgnitems");
     }
     // Create bars
     g.bars = g.svg.selectAll("#" + g.id + " .ldwbar")
-      .data(g.flatData, function(d) { return d.dim1 + '|' + d.dim2; } )
+      .data(g.flatData, function (d) { return d.dim1 + '|' + d.dim2; })
     ;
     // Text on bars
     if (g.showTexts != "N") {
       // Create text box for determining sizing
       g.tref = g.svg.append("text")
-        .attr("x","0")
-        .attr("y","-100")
-        .attr("class","ldwtxtref")
+        .attr("x", "0")
+        .attr("y", "-100")
+        .attr("class", "ldwtxtref")
       ;
 
       if (~"TA".indexOf(g.showTexts) && !g.normalized) {
         // Create bars totals
         g.totals = g.svg.selectAll("#" + g.id + " .ldwtot")
-          .data(g.data, function(d) { return d.dim1; } )
+          .data(g.data, function (d) { return d.dim1; })
         ;
       }
       if (~"BA".indexOf(g.showTexts)) {
         // Create text on bars
         g.texts = g.svg.selectAll("#" + g.id + " .ldwtxt")
-          .data(g.flatData, function(d) { return d.dim1 + '|' + d.dim2; } )
+          .data(g.flatData, function (d) { return d.dim1 + '|' + d.dim2; })
         ;
       }
     }
     // Create deltas
     if (g.showDeltas && g.nDims == 2) {
       g.polys = g.svg.selectAll("#" + g.id + " polygon")
-        .data(g.deltas, function(d) { return d.dim1p + "-" + d.dim1c + "," + d.dim2; } )
+        .data(g.deltas, function (d) { return d.dim1p + "-" + d.dim1c + "," + d.dim2; })
       ;
     }
     // Create legend items
@@ -622,49 +622,49 @@ export default {
  * Objects already have had data bound
  * This procedure is also called from updateBars to add new items
 */
-  createBars: function() {
+  createBars: function () {
     var g = this;
     // Create bars
     g.bars
       .enter()
       .append("rect")
-      .attr("ldwdim1", function(d) { return d.qElemNumber; })
-      .attr(g.orientation == "V" ? "x" : "y", function(d) { return g.dScale(d.dim1); })
-      .attr(g.orientation == "V" ? "y" : "x", function(d) { return g.mScale(0); })		// grow from bottom
-    //		.attr(g.orientation == "V" ? "y" : "x", function(d) { return g.mScale(d.offset); })	// venetian blinds
+      .attr("ldwdim1", function (d) { return d.qElemNumber; })
+      .attr(g.orientation == "V" ? "x" : "y", function (d) { return g.dScale(d.dim1); })
+      .attr(g.orientation == "V" ? "y" : "x", function (d) { return g.mScale(0); })		// grow from bottom
+      //		.attr(g.orientation == "V" ? "y" : "x", function(d) { return g.mScale(d.offset); })	// venetian blinds
       .attr(g.orientation == "V" ? "width" : "height", g.dScale.rangeBand())
-      .attr(g.orientation == "V" ? "height" : "width", function(d) { return 0; })
-      .style("fill", function(d) { return g.cScale(d.dim2); })
-      .style("opacity","0")
-      .attr("class","selectable ldwbar")
-      .on("click",function(d) {
+      .attr(g.orientation == "V" ? "height" : "width", function (d) { return 0; })
+      .style("fill", function (d) { return g.cScale(d.dim2); })
+      .style("opacity", "0")
+      .attr("class", "selectable ldwbar")
+      .on("click", function (d) {
         if (d.qElemNumber >= 0) { // Cannot select a measure
           if (g.selectionMode == "QUICK") {
-            g.self.backendApi.selectValues(0,[d.qElemNumber],true);
+            g.self.backendApi.selectValues(0, [d.qElemNumber], true);
           }
           else if (g.selectionMode == "CONFIRM") {
             var t = d3.select(this).classed("selected");
-            g.self.selectValues(0,[d.qElemNumber],true);
+            g.self.selectValues(0, [d.qElemNumber], true);
             // following to address QS bug where clear button does not clear class names
-            g.self.clearSelectedValues = function() {
-              d3.selectAll("#" + g.id +" .selected").classed("selected",false);
+            g.self.clearSelectedValues = function () {
+              d3.selectAll("#" + g.id + " .selected").classed("selected", false);
             };
             var x = d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
-              .classed("selected",!t);
+              .classed("selected", !t);
             d3.select("#" + g.id + " .ldwtooltip")
-              .style("opacity","0")
+              .style("opacity", "0")
               .transition()
               .remove
             ;
           }
         }
       })
-      .on("mouseenter",function(d) {
+      .on("mouseenter", function (d) {
         if (g.inSelections || g.editMode) return;
         d3.select(this)
-          .style("opacity","0.5")
-          .attr("stroke","white")
-          .attr("stroke-width","2")
+          .style("opacity", "0.5")
+          .attr("stroke", "white")
+          .attr("stroke-width", "2")
         ;
         // Place text in tooltip
         d3.select("#" + g.id + " .ldwttheading")
@@ -675,31 +675,31 @@ export default {
             : d.qText);
 
         var matrix = this.getScreenCTM()
-          .translate(+this.getAttribute("x"),+this.getAttribute("y"));
+          .translate(+this.getAttribute("x"), +this.getAttribute("y"));
 
         var xPosition = (window.pageXOffset + matrix.e)
-				- d3.select("#" + g.id + " .ldwtooltip")[0][0].clientWidth/2
-				+ (g.orientation == "V" ? g.dScale.rangeBand() : d3.select(this).attr("width"))/2
-				;
+          - d3.select("#" + g.id + " .ldwtooltip")[0][0].clientWidth / 2
+          + (g.orientation == "V" ? g.dScale.rangeBand() : d3.select(this).attr("width")) / 2
+          ;
         var yPosition = (window.pageYOffset + matrix.f)
-				- d3.select("#" + g.id + " .ldwtooltip")[0][0].clientHeight
-				-10
-				;
+          - d3.select("#" + g.id + " .ldwtooltip")[0][0].clientHeight
+          - 10
+          ;
         d3.select("#" + g.id + " .ldwtooltip")
           .style("left", xPosition + "px")
           .style("top", yPosition + "px")
           .transition()
           .delay(750)
-          .style("opacity","0.95")
+          .style("opacity", "0.95")
         ;
       })
-      .on("mouseleave",function() {
+      .on("mouseleave", function () {
         d3.select(this)
-          .style("opacity","1.0")
-          .attr("stroke","none")
+          .style("opacity", "1.0")
+          .attr("stroke", "none")
         ;
         d3.select("#" + g.id + " .ldwtooltip")
-          .style("opacity","0")
+          .style("opacity", "0")
           .transition()
           .remove
         ;
@@ -711,9 +711,9 @@ export default {
       g.totals
         .enter()
         .append("text")
-        .attr("class","ldwtot")
-        .style("opacity","0")
-        .each(function(d) {
+        .attr("class", "ldwtot")
+        .style("opacity", "0")
+        .each(function (d) {
           d.qNum = g.mScale.domain()[1] - d.offset;
           d.qText = d3.format([",.0f", ",.0%", ",.3s", g.totalFormatMs]["NPSC".indexOf(g.totalFormatM)])(d.offset);
           var txp = g.barText(d, true);
@@ -721,9 +721,9 @@ export default {
           d3.select(this)
             .style("fill", "black")
             .style("font-size", g.tref.style("font-size"))
-            .attr("x",g.orientation == "V" ? txp.x : 0)
-            .attr("y",g.orientation == "V" ? g.mScale(0) : txp.y)
-            .attr("dy","-.2em")
+            .attr("x", g.orientation == "V" ? txp.x : 0)
+            .attr("y", g.orientation == "V" ? g.mScale(0) : txp.y)
+            .attr("dy", "-.2em")
             .text(txp.text)
           ;
         })
@@ -735,17 +735,17 @@ export default {
       g.texts
         .enter()
         .append("text")
-        .attr("class","ldwtxt")
-        .style("opacity","0")
-        .each(function(d) {
+        .attr("class", "ldwtxt")
+        .style("opacity", "0")
+        .each(function (d) {
           var txp = g.barText(d);
 
           d3.select(this)
-            .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(d.dim2)) : g.textColor )
+            .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(d.dim2)) : g.textColor)
             .style("font-size", g.tref.style("font-size"))
-            .attr("x",g.orientation == "V" ? txp.x : 0)
-            .attr("y",g.orientation == "V" ? g.mScale(0) : txp.y)
-            .attr("dy","-.2em")
+            .attr("x", g.orientation == "V" ? txp.x : 0)
+            .attr("y", g.orientation == "V" ? g.mScale(0) : txp.y)
+            .attr("dy", "-.2em")
             .text(txp.text)
           ;
         })
@@ -757,36 +757,36 @@ export default {
       g.polys
         .enter()
         .append("polygon")
-        .attr("points",function(d) {
+        .attr("points", function (d) {
           var p;
           if (g.orientation == "V") {
-            p =	(g.dScale(d.dim1p)+g.dScale.rangeBand()) + ","
-						+ g.mScale(0) + " "
-						+ (g.dScale(d.dim1p)+g.dScale.rangeBand()) + ","
-						+ g.mScale(0) + " "
-						+ (g.dScale(d.dim1c)) + ","
-						+ g.mScale(0) + " "
-						+ (g.dScale(d.dim1c)) + ","
-						+ g.mScale(0)
+            p = (g.dScale(d.dim1p) + g.dScale.rangeBand()) + ","
+              + g.mScale(0) + " "
+              + (g.dScale(d.dim1p) + g.dScale.rangeBand()) + ","
+              + g.mScale(0) + " "
+              + (g.dScale(d.dim1c)) + ","
+              + g.mScale(0) + " "
+              + (g.dScale(d.dim1c)) + ","
+              + g.mScale(0)
             ;
           }
           else {
-            p =	g.mScale(0) + "," + (g.dScale(d.dim1p) + g.dScale.rangeBand()) + " "
-						+ g.mScale(0) + "," + (g.dScale(d.dim1p) + g.dScale.rangeBand()) + " "
-						+ g.mScale(0) + "," + g.dScale(d.dim1c) + " "
-						+ g.mScale(0) + "," + g.dScale(d.dim1c)
+            p = g.mScale(0) + "," + (g.dScale(d.dim1p) + g.dScale.rangeBand()) + " "
+              + g.mScale(0) + "," + (g.dScale(d.dim1p) + g.dScale.rangeBand()) + " "
+              + g.mScale(0) + "," + g.dScale(d.dim1c) + " "
+              + g.mScale(0) + "," + g.dScale(d.dim1c)
             ;
           }
           return p;
         })
-        .style("fill",function(d) {
+        .style("fill", function (d) {
           return g.cScale(d.dim2);
         })
-        .style("opacity","0")
-        .on("mouseenter",function(d) {
+        .style("opacity", "0")
+        .on("mouseenter", function (d) {
           var pt = this.getAttribute("points").split(" ");
           var sx = 0, sy = 0;
-          pt.forEach(function(e, i) {
+          pt.forEach(function (e, i) {
             var x = e.split(",");
             if (g.orientation == "H") {
               if (i < 2) {
@@ -798,16 +798,16 @@ export default {
               sx += parseFloat(x[0]);
               sy += parseFloat(x[1]);
             }
-          } );
+          });
           sx /= 2;
           sy /= 2;
 
           if (g.inSelections || g.editMode) return;
 
           d3.select(this)
-            .style("opacity","0.5")
-            .attr("stroke","white")
-            .attr("stroke-width","2");
+            .style("opacity", "0.5")
+            .attr("stroke", "white")
+            .attr("stroke-width", "2");
           // Place text in tooltip
           d3.select("#" + g.id + " .ldwttheading")
             .text(d.dim2 + ", " + d.dim1p + "-" + d.dim1c);
@@ -815,30 +815,30 @@ export default {
             .text(d3.format(g.normalized ? "+.1%" : "+.3s")(d.delta));
 
           var matrix = this.getScreenCTM()
-            .translate(sx,sy);
+            .translate(sx, sy);
 
           var xPosition = (window.pageXOffset + matrix.e)
-					- d3.select("#" + g.id + " .ldwtooltip")[0][0].clientWidth/2
-					;
+            - d3.select("#" + g.id + " .ldwtooltip")[0][0].clientWidth / 2
+            ;
           var yPosition = (window.pageYOffset + matrix.f)
-					- d3.select("#" + g.id + " .ldwtooltip")[0][0].clientHeight
-					-10
-					;
+            - d3.select("#" + g.id + " .ldwtooltip")[0][0].clientHeight
+            - 10
+            ;
           d3.select("#" + g.id + " .ldwtooltip")
             .style("left", xPosition + "px")
             .style("top", yPosition + "px")
             .transition()
             .delay(750)
-            .style("opacity","0.95")
+            .style("opacity", "0.95")
           ;
         })
-        .on("mouseleave",function() {
+        .on("mouseleave", function () {
           d3.select(this)
-            .style("opacity",g.barGap == 1 ? "1" : "0.5")
-            .attr("stroke","none")
+            .style("opacity", g.barGap == 1 ? "1" : "0.5")
+            .attr("stroke", "none")
           ;
           d3.select("#" + g.id + " .ldwtooltip")
-            .style("opacity","0")
+            .style("opacity", "0")
             .transition()
             .remove;
         })
@@ -849,63 +849,63 @@ export default {
       g.lgn.items
         .enter()
         .append("g")
-        .attr("class","ldwlgnitem")
- 			.each(function(d, i) {
+        .attr("class", "ldwlgnitem")
+        .each(function (d, i) {
           d3.select(this)
             .append("rect")
-          //					.attr("x","0")		// Initialize to zero to have legend grow from top
-          //					.attr("y","0")
-            .attr("x",function(e) {
+            //					.attr("x","0")		// Initialize to zero to have legend grow from top
+            //					.attr("y","0")
+            .attr("x", function (e) {
               var x;
               if (g.lgn.use == "T" || g.lgn.use == "B") {
-                x = i*(g.lgn.txtOff + g.lgn.txtWidth);
+                x = i * (g.lgn.txtOff + g.lgn.txtWidth);
               }
               else {
                 x = g.lgn.pad;
               }
               return x;
             })
-            .attr("y",function(e) {
+            .attr("y", function (e) {
               var y;
               if (g.lgn.use == "T" || g.lgn.use == "B") {
                 y = g.lgn.pad;
               }
               else {
-                y = g.lgn.pad + g.lgn.itmHeight*i;
+                y = g.lgn.pad + g.lgn.itmHeight * i;
               }
               return y;
             })
-            .style("opacity","0")
-            .attr("width",g.lgn.box[0])
-            .attr("height",g.lgn.box[1])
-            .style("fill",function(e) { return g.cScale(e); })
+            .style("opacity", "0")
+            .attr("width", g.lgn.box[0])
+            .attr("height", g.lgn.box[1])
+            .style("fill", function (e) { return g.cScale(e); })
           ;
           d3.select(this)
             .append("text")
-          //					.attr("x","0")		// Initialize to zero to have legend grow from top
-          //					.attr("y","0")
-            .attr("x",function(e) {
+            //					.attr("x","0")		// Initialize to zero to have legend grow from top
+            //					.attr("y","0")
+            .attr("x", function (e) {
               var x;
               if (g.lgn.use == "T" || g.lgn.use == "B") {
-                x = i*(g.lgn.txtOff + g.lgn.txtWidth) + g.lgn.txtOff;
+                x = i * (g.lgn.txtOff + g.lgn.txtWidth) + g.lgn.txtOff;
               }
               else {
                 x = g.lgn.txtOff;
               }
               return x;
             })
-            .attr("y",function(e) {
+            .attr("y", function (e) {
               var y;
               if (g.lgn.use == "T" || g.lgn.use == "B") {
                 y = g.lgn.pad + 11;
               }
               else {
-                y = g.lgn.pad + g.lgn.itmHeight*i + 11;
+                y = g.lgn.pad + g.lgn.itmHeight * i + 11;
               }
               return y;
             })
-            .style("opacity","0")
-            .text(function(e) {
+            .style("opacity", "0")
+            .text(function (e) {
               return e;
             })
           ;
@@ -919,7 +919,7 @@ export default {
  *--------------------------------------
  * Get bar text information: x, y and text
 */
-  barText: function(d, total) {
+  barText: function (d, total) {
     var tx, txt, origX, bHeight, textX, bb, textY, textLength, ts;
     var g = this;
 
@@ -963,11 +963,11 @@ export default {
     tx = origX + innerBarPadH;
     if (vAlign == "C")
       textY = g.orientation == "V" ? g.mScale(d.offset) - (g.mScale(0) - g.mScale(d.qNum))
-									+ (g.mScale(0) - g.mScale(d.qNum) + bb.height)/2
-        : g.dScale(d.dim1) + (g.dScale.rangeBand() + bb.height)/2;
+        + (g.mScale(0) - g.mScale(d.qNum) + bb.height) / 2
+        : g.dScale(d.dim1) + (g.dScale.rangeBand() + bb.height) / 2;
     else if (vAlign == "T")
       textY = g.orientation == "V" ? g.mScale(d.offset) - (g.mScale(0) - g.mScale(d.qNum))
-									+ bb.height + innerBarPadV
+        + bb.height + innerBarPadV
         : g.dScale(d.dim1) + innerBarPadV + bb.height;
     else
       textY = g.orientation == "V" ? g.mScale(d.offset) - innerBarPadV
@@ -976,7 +976,7 @@ export default {
     if (bb.height + 2 * innerBarPadV <= bHeight || (g.orientation != "V" && !g.textSizeAbs)) {
       if (bb.width + 2 * innerBarPadH <= textX) {
         if (hAlign == "C") {
-          tx = origX + (textX - bb.width)/2;
+          tx = origX + (textX - bb.width) / 2;
         }
         else if (hAlign == "R") {
           tx = origX + textX - bb.width - innerBarPadH;
@@ -1002,13 +1002,13 @@ export default {
  *--------------------------------------
  * Modify properties of bars, deltas, and legend
 */
-  updateBars: function() {
+  updateBars: function () {
     var g = this;
 
-    var dim1 = g.data.map(function(d) { return d.dim1; });
+    var dim1 = g.data.map(function (d) { return d.dim1; });
     if (g.orientation == "H") dim1.reverse();
     g.dScale.domain(dim1);
-    g.mScale.domain( [0, d3.max(g.data, function(d) { return (g.normalized ? 1 : d.offset)*g.gridHeight; })]);
+    g.mScale.domain([0, d3.max(g.data, function (d) { return (g.normalized ? 1 : d.offset) * g.gridHeight; })]);
     var tDelay = g.transitions && !g.editMode ? g.transitionDelay : 0;
     var tDuration = g.transitions && !g.editMode ? g.transitionDuration : 0;
 
@@ -1025,12 +1025,12 @@ export default {
         ;
         var lbl = d3.selectAll("#" + g.id + " ." + axisClass + ".ldwaxis");
         var txt = lbl.selectAll(".tick.major text")
-          .attr("transform",null); // All horizontal initially
-        var maxWidth = isXAxis ? lbl.node().getBBox().width/txt[0].length : g.yAxisWidth - 5;
+          .attr("transform", null); // All horizontal initially
+        var maxWidth = isXAxis ? lbl.node().getBBox().width / txt[0].length : g.yAxisWidth - 5;
 
         // If auto labels and any overlap, set to tilted
         if (labelStyle == "A") {
-          txt.each(function(d, i) {
+          txt.each(function (d, i) {
             if (d3.select(this).node().getComputedTextLength() > maxWidth) {
               labelStyle = "T"; // no break for each
             }
@@ -1039,23 +1039,23 @@ export default {
         }
         // Tilted labels
         if (labelStyle == "T") {
-          txt.style("text-anchor","end")
-            .attr("transform","translate(" + (isXAxis ? "-12,0" : "-2,-8") + ") rotate(-45)")
+          txt.style("text-anchor", "end")
+            .attr("transform", "translate(" + (isXAxis ? "-12,0" : "-2,-8") + ") rotate(-45)")
           ;
           maxWidth = isXAxis ? g.xAxisHeight - 5 : maxWidth * Math.sqrt(2);
         }
         // Staggered labels
         else if (labelStyle == "S" && isXAxis) {
-          txt.each(function(d, i) {
+          txt.each(function (d, i) {
             if (i % 2 == 1) {
-              d3.select(this).attr("transform","translate(0,14)");
+              d3.select(this).attr("transform", "translate(0,14)");
             }
           })
           ;
         }
         // Horizontal or titled labels, use ellipsis if overlap
         if (labelStyle == "H" || labelStyle == "T") {
-          txt.each(function(d, i) {
+          txt.each(function (d, i) {
             var self = d3.select(this),
               textLength = self.node().getComputedTextLength(),
               text = self.text();
@@ -1074,7 +1074,7 @@ export default {
     updateAxis(g.labelTitleM, g.labelStyleM, g.mAxis, "ldw-m", g.orientation != "V");
 
     g.bars = g.svg.selectAll("#" + g.id + " .ldwbar")
-      .data(g.flatData, function(d) { return d.dim1 + '|' + d.dim2; } )
+      .data(g.flatData, function (d) { return d.dim1 + '|' + d.dim2; })
     ;
     // Remove bars with transition
     g.bars
@@ -1090,7 +1090,7 @@ export default {
     // Remove totals with transition
     if (~"TA".indexOf(g.showTexts)) {
       g.totals = g.svg.selectAll("#" + g.id + " .ldwtot")
-        .data(g.data, function(d) { return d.dim1; } )
+        .data(g.data, function (d) { return d.dim1; })
       ;
       g.totals
         .exit()
@@ -1105,7 +1105,7 @@ export default {
     // Remove texts with transition
     if (~"BA".indexOf(g.showTexts)) {
       g.texts = g.svg.selectAll("#" + g.id + " .ldwtxt")
-        .data(g.flatData, function(d) { return d.dim1 + '|' + d.dim2; } )
+        .data(g.flatData, function (d) { return d.dim1 + '|' + d.dim2; })
       ;
       g.texts
         .exit()
@@ -1120,7 +1120,7 @@ export default {
 
     if (g.showDeltas && g.nDims == 2) {
       g.polys = g.svg.selectAll("#" + g.id + " polygon")
-        .data(g.deltas, function(d) { return d.dim1p + "-" + d.dim1c + "," + d.dim2; } )
+        .data(g.deltas, function (d) { return d.dim1p + "-" + d.dim1c + "," + d.dim2; })
       ;
       // Remove deltas with transition
       g.polys
@@ -1137,7 +1137,7 @@ export default {
     if (g.lgn.use) {
       g.lgn.items = d3.selectAll("#" + g.id + " .ldwlgnitems")
         .selectAll("g")
-        .data(g.allDim2, function(d) { return d; })
+        .data(g.allDim2, function (d) { return d; })
       ;
       g.lgn.items
         .exit()
@@ -1159,15 +1159,15 @@ export default {
         .delay(tDelay)
         .duration(tDuration)
         .ease(g.ease)
-        .style("opacity","1")
-        .attr("x", function(d, i) {
+        .style("opacity", "1")
+        .attr("x", function (d, i) {
           return g.dScale(d.dim1) ? g.dScale(d.dim1) : 0; // ignore NaN: causing errors in transitions
         })
-        .attr("y", function(d) {
+        .attr("y", function (d) {
           return g.mScale(d.offset) - (g.mScale(0) - g.mScale(d.qNum));
         })
         .attr("width", g.dScale.rangeBand() && g.dScale.rangeBand() > 0 ? g.dScale.rangeBand() : 0) // ignore NaN: causing errors in transitions
-        .attr("height", function(d) {
+        .attr("height", function (d) {
           return g.mScale(0) > g.mScale(d.qNum) ? g.mScale(0) - g.mScale(d.qNum) : 0; // ignore negatives: causing errors in transitions
         })
       ;
@@ -1177,14 +1177,14 @@ export default {
         .delay(tDelay)
         .duration(tDuration)
         .ease(g.ease)
-        .style("opacity","1")
-        .attr("x", function(d) {
+        .style("opacity", "1")
+        .attr("x", function (d) {
           return g.mScale(d.offset);
         })
-        .attr("y", function(d, i) {
+        .attr("y", function (d, i) {
           return g.dScale(d.dim1);
         })
-        .attr("width", function(d) {
+        .attr("width", function (d) {
           return g.mScale(d.qNum);
         })
         .attr("height", g.dScale.rangeBand())
@@ -1194,7 +1194,7 @@ export default {
     if (~"TA".indexOf(g.showTexts) && !g.normalized) {
       // Update totals
       g.totals
-        .each(function(d) {
+        .each(function (d) {
           d.qNum = g.mScale.domain()[1] - d.offset;
           d.qText = d3.format([",.0f", ",.0%", ",.3s", g.totalFormatMs]["NPSC".indexOf(g.totalFormatM)])(d.offset);
           var txp = g.barText(d, true);
@@ -1203,7 +1203,7 @@ export default {
             .delay(tDelay)
             .duration(tDuration)
             .ease(g.ease)
-            .style("opacity","1")
+            .style("opacity", "1")
             .style("fill", "black")
             .style("font-size", g.tref.style("font-size"))
             .attr({ x: txp.x, y: txp.y, dy: "-.2em" })
@@ -1216,7 +1216,7 @@ export default {
     if (~"BA".indexOf(g.showTexts)) {
       // Update texts
       g.texts
-        .each(function(d) {
+        .each(function (d) {
           var txp = g.barText(d);
 
           d3.select(this)
@@ -1224,8 +1224,8 @@ export default {
             .delay(tDelay)
             .duration(tDuration)
             .ease(g.ease)
-            .style("opacity","1")
-            .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(d.dim2)) : g.textColor )
+            .style("opacity", "1")
+            .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(d.dim2)) : g.textColor)
             .style("font-size", g.tref.style("font-size"))
             .attr({ x: txp.x, y: txp.y, dy: "-.2em" })
             .text(txp.text)
@@ -1240,108 +1240,108 @@ export default {
         .delay(tDelay)
         .duration(tDuration)
         .ease(g.ease)
-        .attr("points",function(d) {
+        .attr("points", function (d) {
           var p;
           if (g.orientation == "V") {
-            p = (g.dScale(d.dim1p)+g.dScale.rangeBand()) + ","
-						+ (g.mScale(d.points[0]) - (g.mScale(0) - g.mScale(d.points[2]))) + " "
+            p = (g.dScale(d.dim1p) + g.dScale.rangeBand()) + ","
+              + (g.mScale(d.points[0]) - (g.mScale(0) - g.mScale(d.points[2]))) + " "
 
-						+ (g.dScale(d.dim1p)+g.dScale.rangeBand()) + ","
-						+ g.mScale(d.points[0]) + " "
+              + (g.dScale(d.dim1p) + g.dScale.rangeBand()) + ","
+              + g.mScale(d.points[0]) + " "
 
-						+ (g.dScale(d.dim1c)) + ","
-						+ g.mScale(d.points[1]) + " "
+              + (g.dScale(d.dim1c)) + ","
+              + g.mScale(d.points[1]) + " "
 
-						+ (g.dScale(d.dim1c)) + ","
-						+ (g.mScale(d.points[1]) - (g.mScale(0) - g.mScale(d.points[3])))
+              + (g.dScale(d.dim1c)) + ","
+              + (g.mScale(d.points[1]) - (g.mScale(0) - g.mScale(d.points[3])))
             ;
           }
           else {
-            p =	(g.mScale(d.points[0]) + g.mScale(d.points[2])) + ","
-						+ (g.dScale(d.dim1p) + g.dScale.rangeBand()) + " "
+            p = (g.mScale(d.points[0]) + g.mScale(d.points[2])) + ","
+              + (g.dScale(d.dim1p) + g.dScale.rangeBand()) + " "
 
-						+ g.mScale(d.points[0]) + ","
-						+ (g.dScale(d.dim1p) + g.dScale.rangeBand()) + " "
+              + g.mScale(d.points[0]) + ","
+              + (g.dScale(d.dim1p) + g.dScale.rangeBand()) + " "
 
-						+ g.mScale(d.points[1]) + ","
-						+ g.dScale(d.dim1c) + " "
+              + g.mScale(d.points[1]) + ","
+              + g.dScale(d.dim1c) + " "
 
-						+ (g.mScale(d.points[1]) + g.mScale(d.points[3])) + ","
-						+ g.dScale(d.dim1c)
+              + (g.mScale(d.points[1]) + g.mScale(d.points[3])) + ","
+              + g.dScale(d.dim1c)
             ;
           }
           return p;
         })
-        .style("fill",function(d) {
+        .style("fill", function (d) {
           return g.cScale(d.dim2);
         })
-        .style("opacity",g.barGap == 1 ? "1" : "0.5")
+        .style("opacity", g.barGap == 1 ? "1" : "0.5")
       ;
     }
     // update legend items
     if (g.lgn.use) {
       if (g.lgn.use == "T" || g.lgn.use == "B") {
-        var maxprow = Math.floor(g.lgn.width/(g.lgn.txtOff + g.lgn.txtWidth));
+        var maxprow = Math.floor(g.lgn.width / (g.lgn.txtOff + g.lgn.txtWidth));
         var nprow = maxprow;
       }
 
       g.lgn.items
- 			.each(function(d, i) {
+        .each(function (d, i) {
           d3.select(this)
             .transition()
             .delay(tDelay)
             .duration(tDuration)
             .select("rect")
-            .attr("x",function(e) {
+            .attr("x", function (e) {
               var x;
               if (g.lgn.use == "T" || g.lgn.use == "B") {
-                x = (i % nprow)*(g.lgn.txtOff + g.lgn.txtWidth);
+                x = (i % nprow) * (g.lgn.txtOff + g.lgn.txtWidth);
               }
               else {
                 x = g.lgn.pad;
               }
               return x;
             })
-            .attr("y",function(e) {
+            .attr("y", function (e) {
               var y;
               if (g.lgn.use == "T" || g.lgn.use == "B") {
-                y = g.lgn.pad + Math.floor(i/nprow) * g.lgn.itmHeight;
+                y = g.lgn.pad + Math.floor(i / nprow) * g.lgn.itmHeight;
               }
               else {
-                y = g.lgn.pad + g.lgn.itmHeight*i;
+                y = g.lgn.pad + g.lgn.itmHeight * i;
               }
               return y;
             })
-            .style("opacity","1")
+            .style("opacity", "1")
           ;
           var txt = d3.select(this)
             .transition()
             .delay(tDelay)
             .duration(tDuration)
             .select("text")
-            .attr("x",function(e) {
+            .attr("x", function (e) {
               var x;
               if (g.lgn.use == "T" || g.lgn.use == "B") {
-                x = (i % nprow)*(g.lgn.txtOff + g.lgn.txtWidth) + g.lgn.txtOff;
+                x = (i % nprow) * (g.lgn.txtOff + g.lgn.txtWidth) + g.lgn.txtOff;
               }
               else {
                 x = g.lgn.txtOff;
               }
               return x;
             })
-            .attr("y",function(e) {
+            .attr("y", function (e) {
               var y;
               if (g.lgn.use == "T" || g.lgn.use == "B") {
-                y = g.lgn.pad + Math.floor(i/nprow) * g.lgn.itmHeight + 11;
+                y = g.lgn.pad + Math.floor(i / nprow) * g.lgn.itmHeight + 11;
               }
               else {
-                y = g.lgn.pad + g.lgn.itmHeight*i + 11;
+                y = g.lgn.pad + g.lgn.itmHeight * i + 11;
               }
               return y;
             })
-            .style("opacity","1")
-					;
-          txt.each(function(d, i) {
+            .style("opacity", "1")
+            ;
+          txt.each(function (d, i) {
             var self = d3.select(this),
               textLength = self.node().getComputedTextLength(),
               text = self.text();
@@ -1362,7 +1362,7 @@ export default {
  *--------------------------------------
  * Refresh chart, no new data
 */
-  refreshChart: function() {
+  refreshChart: function () {
     this.initChart();
     this.createBars();
     this.updateBars();
@@ -1371,21 +1371,21 @@ export default {
   // Topological sort
   //--------------------------------------
   /*- begin https://github.com/marcelklehr/toposort */
-  toposort: function(nodes, edges) {
-	  var cursor = nodes.length
+  toposort: function (nodes, edges) {
+    var cursor = nodes.length
       , sorted = new Array(cursor)
       , visited = {}
       , i = cursor;
 
-	  while (i--) {
+    while (i--) {
       if (!visited[i]) visit(nodes[i], i, []);
-	  }
+    }
 
-	  return sorted;
+    return sorted;
 
-	  function visit(node, i, predecessors) {
-      if(predecessors.indexOf(node) >= 0) {
-		  throw new Error('Cyclic dependency: '+JSON.stringify(node));
+    function visit(node, i, predecessors) {
+      if (predecessors.indexOf(node) >= 0) {
+        throw new Error('Cyclic dependency: ' + JSON.stringify(node));
       }
 
       //		if (!~nodes.indexOf(node)) {
@@ -1396,15 +1396,15 @@ export default {
       visited[i] = true;
 
       // outgoing edges
-      var outgoing = edges.filter(function(edge){
-		  return edge[0] === node;
+      var outgoing = edges.filter(function (edge) {
+        return edge[0] === node;
       });
       if (i = outgoing.length) {
-		  var preds = predecessors.concat(node);
-		  do {
+        var preds = predecessors.concat(node);
+        do {
           var child = outgoing[--i][1];
           visit(child, nodes.indexOf(child), preds);
-		  } while (i);
+        } while (i);
       }
 
       sorted[--cursor] = node;
@@ -1412,11 +1412,11 @@ export default {
   },
   /*- end https://github.com/marcelklehr/toposort */
   /*- begin http://stackoverflow.com/questions/11867545 */
-  txtColor: function(hexcolor){
-    var r = parseInt(hexcolor.substr(1,2),16);
-    var g = parseInt(hexcolor.substr(3,2),16);
-    var b = parseInt(hexcolor.substr(5,2),16);
-    var yiq = ((r*299)+(g*587)+(b*114))/1000;
+  txtColor: function (hexcolor) {
+    var r = parseInt(hexcolor.substr(1, 2), 16);
+    var g = parseInt(hexcolor.substr(3, 2), 16);
+    var b = parseInt(hexcolor.substr(5, 2), 16);
+    var yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
     return (yiq >= 160) ? 'black' : 'white'; // 128 changed to 160 to give white preference
   },
   /*- end http://stackoverflow.com/questions/11867545 */
@@ -1424,27 +1424,27 @@ export default {
   // Color Schemes
   //--------------------------------------
   custom100: [
-    "#99c867","#e43cd0","#e2402a","#66a8db","#3f1a20","#e5aa87","#3c6b59","#aa2a6b","#e9b02e","#7864dd",
-    "#65e93c","#5ce4ba","#d0e0da","#d796dd","#64487b","#e4e72b","#6f7330","#932834","#ae6c7d","#986717",
-    "#e3cb70","#408c1d","#dd325f","#533d1c","#2a3c54","#db7127","#72e3e2","#e2c1da","#d47555","#7d7f81",
-    "#54ae9b","#e9daa6","#3a8855","#5be66e","#ab39a4","#a6e332","#6c469d","#e39e51","#4f1c42","#273c1c",
-    "#aa972e","#8bb32a","#bdeca5","#63ec9b","#9c3519","#aaa484","#72256d","#4d749f","#9884df","#e590b8",
-    "#44b62b","#ad5792","#c65dea","#e670ca","#e38783","#29312d","#6a2c1e","#d7b1aa","#b1e7c3","#cdc134",
-    "#9ee764","#56b8ce","#2c6323","#65464a","#b1cfea","#3c7481","#3a4e96","#6493e1","#db5656","#747259",
-    "#bbabe4","#e33f92","#d0607d","#759f79","#9d6b5e","#8574ae","#7e304c","#ad8fac","#4b77de","#647e17",
-    "#b9c379","#8da8b0","#b972d9","#786279","#7ec07d","#916436","#2d274f","#dce680","#759748","#dae65a",
-    "#459c49","#b7934a","#51c671","#9ead3f","#969a5c","#b9976a","#46531a","#c0f084","#76c146","#bad0ad"
+    "#99c867", "#e43cd0", "#e2402a", "#66a8db", "#3f1a20", "#e5aa87", "#3c6b59", "#aa2a6b", "#e9b02e", "#7864dd",
+    "#65e93c", "#5ce4ba", "#d0e0da", "#d796dd", "#64487b", "#e4e72b", "#6f7330", "#932834", "#ae6c7d", "#986717",
+    "#e3cb70", "#408c1d", "#dd325f", "#533d1c", "#2a3c54", "#db7127", "#72e3e2", "#e2c1da", "#d47555", "#7d7f81",
+    "#54ae9b", "#e9daa6", "#3a8855", "#5be66e", "#ab39a4", "#a6e332", "#6c469d", "#e39e51", "#4f1c42", "#273c1c",
+    "#aa972e", "#8bb32a", "#bdeca5", "#63ec9b", "#9c3519", "#aaa484", "#72256d", "#4d749f", "#9884df", "#e590b8",
+    "#44b62b", "#ad5792", "#c65dea", "#e670ca", "#e38783", "#29312d", "#6a2c1e", "#d7b1aa", "#b1e7c3", "#cdc134",
+    "#9ee764", "#56b8ce", "#2c6323", "#65464a", "#b1cfea", "#3c7481", "#3a4e96", "#6493e1", "#db5656", "#747259",
+    "#bbabe4", "#e33f92", "#d0607d", "#759f79", "#9d6b5e", "#8574ae", "#7e304c", "#ad8fac", "#4b77de", "#647e17",
+    "#b9c379", "#8da8b0", "#b972d9", "#786279", "#7ec07d", "#916436", "#2d274f", "#dce680", "#759748", "#dae65a",
+    "#459c49", "#b7934a", "#51c671", "#9ead3f", "#969a5c", "#b9976a", "#46531a", "#c0f084", "#76c146", "#bad0ad"
   ],
   google20: [
-    "#3366cc","#dc3912","#ff9900","#109618","#990099","#0099c6","#dd4477","#66aa00","#b82e2e","#316395",
-    "#994499","#22aa99","#aaaa11","#6633cc","#e67300","#8b0707","#651067","#329262","#5574a6","#3b3eac"
+    "#3366cc", "#dc3912", "#ff9900", "#109618", "#990099", "#0099c6", "#dd4477", "#66aa00", "#b82e2e", "#316395",
+    "#994499", "#22aa99", "#aaaa11", "#6633cc", "#e67300", "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"
   ],
   qlikView18: [
-    "#8daacb","#fc7362","#bbd854","#ffd92f","#66c296","#e5b694","#e78ad2","#b3b3b3","#a6d8e3","#abe9bc",
-    "#1b7d9c","#ffbfc9","#4da741","#c4b2d6","#b22424","#00acac","#be6c2c","#695496"
+    "#8daacb", "#fc7362", "#bbd854", "#ffd92f", "#66c296", "#e5b694", "#e78ad2", "#b3b3b3", "#a6d8e3", "#abe9bc",
+    "#1b7d9c", "#ffbfc9", "#4da741", "#c4b2d6", "#b22424", "#00acac", "#be6c2c", "#695496"
   ],
   qlikSense12: [
-    "#332288","#6699cc","#88ccee","#44aa99","#117733","#999933","#ddcc77","#661100","#cc6677","#aa4466",
-    "#882255","#aa4499"
+    "#332288", "#6699cc", "#88ccee", "#44aa99", "#117733", "#999933", "#ddcc77", "#661100", "#cc6677", "#aa4466",
+    "#882255", "#aa4499"
   ]
 };

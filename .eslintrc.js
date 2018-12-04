@@ -41,7 +41,7 @@ module.exports = {
     "no-cond-assign": ["warn"],
     "no-fallthrough": ["warn"],
     "no-undef": ["warn"],
-    "no-unused-vars": ["warn"],
+    "no-unused-vars": ["warn", { "args": "none" }],
     "no-use-before-define": ["warn", { "functions": false, "classes": false, "variables": false }],
     "no-useless-escape": ["warn"],
     "no-useless-return": ["warn"],
