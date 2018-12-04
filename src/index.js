@@ -21,57 +21,50 @@
  *
 */
 
-define(
-  [
-    "./barsPlus-props",
-    "./barsPlus-directive"
-  ],
+import './barsPlus-directive';
+import props from './barsPlus-props';
 
-  function (props) {
-    'use strict';
+export default {
+  initialProperties: {
+    qHyperCubeDef: {
+      qDimensions: [],
+      qMeasures: [],
+      qInitialDataFetch: [
+        {
+          qWidth: 10,
+          qHeight: 1000 // max qWidth*qHeight 10000
+        }
+      ]
+    }
+  },
+  definition: props,
+  support: {
+    snapshot: true,
+    export: true,
+    exportData: true
+  },
+  //		resize: function($element, layout) {
+  //			console.log('resize>',$element,layout,$element.scope());
+  //		},
+  template: '<bars-plus qv-extension />',
+  controller: ['$scope', function ($scope) {
+  }],
+  paint: function ($element, layout) {
+    try {
+      var self = this;
+      self.$scope.g.self = self; // Save reference for call to backendApi
 
-    return {
-      initialProperties: {
-        qHyperCubeDef: {
-          qDimensions: [],
-          qMeasures: [],
-          qInitialDataFetch: [
-            {
-              qWidth: 10,
-              qHeight: 1000 // max qWidth*qHeight 10000
-            }
-          ]
-        }
-      },
-      definition: props,
-      support: {
-        snapshot: true,
-        export: true,
-        exportData: true
-      },
-      //		resize: function($element, layout) {
-      //			console.log('resize>',$element,layout,$element.scope());
-      //		},
-      template: '<bars-plus qv-extension />',
-      controller: ['$scope', function ($scope) {
-      }],
-      paint: function ($element, layout) {
-        try {
-          var self = this;
-          self.$scope.g.self = self; // Save reference for call to backendApi
-
-          // Only repaint here when in edit mode
-          self.$scope.g.editMode = (self.options.interactionState == 2);
-          if (self.$scope.g.editMode) {
-            self.$scope.initProps();
-            self.$scope.g.initData();
-            self.$scope.g.refreshChart();
-          }
-        }
-        catch (e) {
-          console.error(e); // eslint-disable-line no-console
-          throw e;
-        }
+      // Only repaint here when in edit mode
+      self.$scope.g.editMode = (self.options.interactionState == 2);
+      if (self.$scope.g.editMode) {
+        self.$scope.initProps();
+        self.$scope.g.initData();
+        self.$scope.g.refreshChart();
       }
-    };
-  });
+    }
+    catch (e) {
+      console.error(e); // eslint-disable-line no-console
+      throw e;
+    }
+  }
+};
