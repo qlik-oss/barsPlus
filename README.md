@@ -6,25 +6,17 @@ Add another "dimension" to your dashboard with *transitions*.  Transitions show 
 
 barsPlus is a single extension that allows creating bar charts (horizontal and vertical), stacked bar charts, 100% stacked bar charts, stacked bars showing changes, and area charts.
 
-![alt text](screenshots/stacked100pctChange.gif "barsPlus 100% bar chart with transitions")
+![alt text](resources/stacked100pctChange.gif "barsPlus 100% bar chart with transitions")
 
-## Updates
 
-| Version | Person        | Date        | Description        |
-| ------- | ------------- | ----------- | ------------------ |
-| V1.1.0  | L. Woodside   | 29-Dec-2016 | Added text on bars |
-| V1.2.0  | L. Woodside   | 07-Jan-2017 | Support for multiple measures |
-| V1.3.0  | L. Woodside   | 16-Jan-2017 | Improved color options |
-| V1.3.1  | L. Woodside   | 27-Jan-2017 | Fixed problem with legend properties |
-
-## Features
+# Features
 
 * regular and stacked bar charts
 
   * Regular bar chart: zero dimensions and multiple measures, or one dimension and one measure.
-  
+
   * Stacked bar chart: one dimension and multiple measures, or two dimensions and one measure.
-  
+
 * stacked bars can be normalized (100% bars for percent contribution)
 * horizontal or vertical bars
 * area charts (standard or 100%)
@@ -38,29 +30,49 @@ barsPlus is a single extension that allows creating bar charts (horizontal and v
 * bar total lables: number, dimension text
 * fully flexible colors, expressions can be used to determine colors and support persistent colors
 
-## Installation
+# Installation
 
-* Download the entire barsPlus github project folder as a zip file
-* Unzip the project folder into the Qlik Sense Extensions folder ([my documents]\Qlik\Sense\Extensions)
+1. Download the extension zip, `qlik-barplus-chart_<version>.zip`, from the latest release(https://github.com/qlik-oss/barsPlus/releases/latest)
+2. Install the extension:
 
-## Chart Examples
+   a. **Qlik Sense Desktop**: unzip to a directory under [My Documents]/Qlik/Sense/Extensions.
 
-![alt text](screenshots/simpleBar.gif "barsPlus simple bar chart")
-![alt text](screenshots/stackedBar.png "barsPlus stacked bar chart")
-![alt text](screenshots/stackedBar2.png "barsPlus stacked bar chart")
-![alt text](screenshots/stackedBarChanges4.gif "barsPlus stacked bar chart with changes")
-![alt text](screenshots/stackedDesc.gif "barsPlus stacked bars descending order")
-![alt text](screenshots/stackedBarChanges.png "barsPlus stacked bar chart with changes")
-![alt text](screenshots/stackedBarChanges2.png "barsPlus stacked bar chart with changes")
-![alt text](screenshots/simpleBar6.gif "barsPlus minimal simple bars")
-![alt text](screenshots/simpleBar7.gif "barsPlus minimal simple bars with text")
-![alt text](screenshots/area100pctChange.gif "barsPlus area chart")
-![alt text](screenshots/areaChart.png "barsPlus area chart")
-![alt text](screenshots/stacked100pctBarChangesTooltip.png "barsPlus 100% with changes")
+   b. **Qlik Sense Server**: import the zip file in the QMC.
 
-## Usage
 
-### Basic chart with defaults
+# Developing the extension
+
+If you want to do code changes to the extension follow these simple steps to get going.
+
+1. Get Qlik Sense Desktop
+1. Create a new app and add the extension to a sheet.
+2. Clone the repository
+3. Run `npm install`
+4. Set the environment variable `BUILD_PATH` to your extensions directory. It will be something like `C:/Users/<user>/Documents/Qlik/Sense/Extensions/<extension_name>`.
+5. You now have two options. Either run the watch task or the build task. They are explained below. Both of them default to development mode but can be run in production by setting `NODE_ENV=production` before running the npm task.
+
+   a. **Watch**: `npm run watch`. This will start a watcher which will rebuild the extension and output all needed files to the `buildFolder` for each code change you make. See your changes directly in your Qlik Sense app.
+
+   b. **Build**: `npm run build`. If you want to build the extension package. The output zip-file can be found in the `buildFolder`.
+
+# Chart Examples
+
+![alt text](resources/simpleBar.gif "barsPlus simple bar chart")
+![alt text](resources/stackedBar.png "barsPlus stacked bar chart")
+![alt text](resources/stackedBar2.png "barsPlus stacked bar chart")
+![alt text](resources/stackedBarChanges4.gif "barsPlus stacked bar chart with changes")
+![alt text](resources/stackedDesc.gif "barsPlus stacked bars descending order")
+![alt text](resources/stackedBarChanges.png "barsPlus stacked bar chart with changes")
+![alt text](resources/stackedBarChanges2.png "barsPlus stacked bar chart with changes")
+![alt text](resources/simpleBar6.gif "barsPlus minimal simple bars")
+![alt text](resources/simpleBar7.gif "barsPlus minimal simple bars with text")
+![alt text](resources/area100pctChange.gif "barsPlus area chart")
+![alt text](resources/areaChart.png "barsPlus area chart")
+![alt text](resources/stacked100pctBarChangesTooltip.png "barsPlus 100% with changes")
+
+# Usage
+
+## Basic chart with defaults
 
 1.  Drag the extension to a Qlik Sense sheet.
 2.  Usually add one dimension and one measure for a simple bar chart or two dimensions and one measure for stacked bar charts. The label for the first dimension becomes the dimension axis title and the label for the measure becomes the measure axis title.
@@ -70,7 +82,7 @@ barsPlus is a single extension that allows creating bar charts (horizontal and v
     * to create a stacked bar chart which is ordered by the measure value, set the sort order for the primary dimension to be an expression, e.g. =SUM(Measure), ascending or descending.
 6.  Generally you should exclude zero values for the measure by clearing the checkbox "Add-ons" -> "Data Handling" -> "show zero values"
 
-### Quick Start for Various Chart Types
+## Quick Start for Various Chart Types
 
 **Simple bar** - one dimension and one measure, or zero dimensions and multiple measures
 
@@ -99,17 +111,17 @@ barsPlus is a single extension that allows creating bar charts (horizontal and v
 * Appearance -> Presentation -> Outer Bar spacing = 0
 * Appearance -> Presentation -> Grid height relative to max bar = 1
 
-### Property Panel
+## Property Panel
 
-#### Add-ons -> Selection mode
+### Add-ons -> Selection mode
 
 * You can set the selection mode in "Add-ons" -> "Selection mode"
 
   * **Standard**: this is the default Qlik Sense selection mode where you can preview multiple selections.
-  
+
   * **Quick**: this is similar to QlikView classic selection mode where the selection is immediately applied.
 
-#### Appearance -> Presentation
+### Appearance -> Presentation
 
 * **Orientation**: change the bar format: horizontal or vertical
 
@@ -125,9 +137,9 @@ barsPlus is a single extension that allows creating bar charts (horizontal and v
 
 * **Background color** you can set the background color for the grid by entering a single color.  This can be a javascript color name: (white, gray, azure), a hex code (e.g. #d0d0d0, #f8f8f8), or rgb specifier: rgb(230,250,250).
 
-#### Appearance -> Colors and Legend
+### Appearance -> Colors and Legend
 
-* **Color source**: can be either *assigned* or *calculated*.  Assigned colors are taken sequentially from a color scheme.  Calculated colors allow a Qlik Sense formula to be used to return either the offset of a color in the color scheme, or a color value.  
+* **Color source**: can be either *assigned* or *calculated*.  Assigned colors are taken sequentially from a color scheme.  Calculated colors allow a Qlik Sense formula to be used to return either the offset of a color in the color scheme, or a color value.
 See the description *Assigning Colors* below.
 
 * **Color attribute**: if the color source is *calculated*, you may specify what the formula returns -- an offset into the color scheme or a color value.
@@ -136,13 +148,13 @@ See the description *Assigning Colors* below.
 * **Color scheme**: select one of the predefined color schemes.  Unless an offset is specified (see below), the colors are assigned sequentially starting at the beginning.
 
   * *category10*, *category20*, *category20b*, *category20c*: standard D3 color schemes
-  
+
   * *google20*: bright color scheme
-  
+
   * *custom100*: lifted from Qlik Sense theme file
-  
+
   * *qlikView18*: QlikView classic colors
-  
+
   * *qlikSense12*: Qlik Sense default colors
 
 * **Start offset in color scheme**.  In order to specify a different starting color in the color scheme, enter a number here from 0 to (number of colors) - 1.  The number of colors in a color scheme is shown in the name of the color scheme, e.g. category10 has 10 colors so the offset can be from 0 to 9.  Note that when necessary the colors are reused in a revolving fashion.
@@ -169,7 +181,7 @@ See the description *Assigning Colors* below.
 
 * **Dimension margin size** refers to the width/height of the labels and axis excluding the axis title.  Select *Narrow*, *Medium* or *Wide*.
 
-#### Appearance -> Y-Axis
+### Appearance -> Y-Axis
 
 *Note that the y-axis may be either the dimension or the measure axis, depending on the chart orientation.  Information here describes the measure axis*
 
@@ -185,19 +197,19 @@ See the description *Assigning Colors* below.
 
 * **Measure tick spacing** controls the number of ticks that appear on the axis.  Wide has few ticks while Narrow has more.  Choose *Wide*, *Medium*, or *Narrow*.
 
-* **Measure axis number format**: since it's not clear how to format numbers using Qlik Sense format strings from an extension, the native D3 number formatting is used on the measure axis. Choose the basic format from the dropdown or specify *Custom* to enter a D3 format string.  Format strings are described here: 
+* **Measure axis number format**: since it's not clear how to format numbers using Qlik Sense format strings from an extension, the native D3 number formatting is used on the measure axis. Choose the basic format from the dropdown or specify *Custom* to enter a D3 format string.  Format strings are described here:
 *[D3 Format Description](https://github.com/d3/d3-3.x-api-reference/blob/master/Formatting.md "D3 format strings")*
 
-#### Appearance -> Text on Bars
+### Appearance -> Text on Bars
 
 * **Text on bars**
 
   * *None* for no text on bars
-  
+
   * *Inside bars* to display text in each segment that makes up a stacked bar,
-  
+
   * *Total* to display text on top of each vertical bar or to the right of each horizontal bar,
-  
+
   * *Both* to display both the text inside the bars and the total text
 
 * **Text to show in bars**: choose whether to show the *Measure* number, the *Dimension* text, or in the case of 100% bars *Percent*
@@ -226,10 +238,10 @@ See the description *Assigning Colors* below.
 
 * **Total format**: here you can specify how numbers are to be formatted for bar totals.  Choose a predefined format or choose *Custom* to specify a format string.
 
-* **Total format string** is the D3.format string when *Total format* is *Custom*.  Format strings are described here: 
+* **Total format string** is the D3.format string when *Total format* is *Custom*.  Format strings are described here:
 *[D3 Format Description](https://github.com/d3/d3-3.x-api-reference/blob/master/Formatting.md "D3 format strings")*
 
-#### Appearance -> Transitions
+### Appearance -> Transitions
 
 * **Transitions enabled** allows you to enable or disable transitions
 
@@ -241,13 +253,13 @@ See the description *Assigning Colors* below.
 
 Need I say that the *bounce* style should not be used in production applications? :smile:
 
-## Assigning Colors
+# Assigning Colors
 
-There are two ways to assign colors to bars or bar segments.  
+There are two ways to assign colors to bars or bar segments.
 You may let the colors be assigned automatically by selecting "Color Source" = *Assigned*, or you can specify "Color Source" = *Calculated* to use a formula to determine the color.
-Please see the sheet "Colors Enhancement" in the Qlik Sense application **BarsPlus.qvf** in the app subfolder.
+Please see the sheet "Colors Enhancement" in the Qlik Sense application **[BarsPlus.qvf](resources/BarsPlus.qvf)** in the resources subfolder.
 
-### Assigned colors
+## Assigned colors
 
 When "Color Source" = *Assigned*, you specify a color scheme and an offset into the color scheme.
 Colors from the color scheme are assigned to bars or bar segments sequentially, wrapping around to the start when all the colors have been used.
@@ -255,7 +267,7 @@ Colors from the color scheme are assigned to bars or bar segments sequentially, 
 For a simple bar chart (0 dimensions and N measures or 1 dimension and 1 measure), you can choose to have a single color or a different color for each bar.
 For single-color bar charts, you may use the offset in the color scheme to use any color within the scheme.
 
-### Calculated colors
+## Calculated colors
 
 The calculated colors feature is somewhat more complicated, but allows full control of color assignment.
 This also provides *persistent colors*, where the color associated with a dimension does not change from chart to chart regardless of whether more or fewer dimension values are shown.
@@ -264,9 +276,9 @@ In order to have the Qlik Sense engine calculate colors, formulas need to be spe
 The engine will make the calculation and return the information together with the data to be rendered in the chart.
 A formula associated with a dimension can be entered in the text field "Dimension Attribute" at the bottom of the dimension information.
 Likewise, a formula associated with a measure can be entered in the text field "Measure Attribute" at the bottom of the measure information.
-The formula should not begin with an "=". 
+The formula should not begin with an "=".
 
-![alt text](screenshots/dimensionAttribute.png "Location of dimension attribute text box")
+![alt text](resources/dimensionAttribute.png "Location of dimension attribute text box")
 
 The result of the formula should be:
 
@@ -280,7 +292,7 @@ The result of the formula should be:
 
   * a text rgb string: 'rgb(128,128,128)'
 
-#### Which attribute do I use?  A measure attribute or a dimension attribute?
+### Which attribute do I use?  A measure attribute or a dimension attribute?
 
 * 0 Dimensions, N Measures (simple bar graph) - specify a measure attribute
 
@@ -290,7 +302,7 @@ The result of the formula should be:
 
 * 2 Dimensions, 1 Measure (stacked bar graph) - specify a dimension attribute for 2nd dimension
 
-#### Persistent Colors
+### Persistent Colors
 
 When colors are assigned in the order that the data was received, you can have two charts where the colors for a particular dimension do not match.
 One chart may assign the colors differently due to the structure of the data.
@@ -306,15 +318,15 @@ https://community.qlik.com/blogs/qlikviewdesignblog/2012/12/04/colors-in-charts
 
 * Matching Qlik Sense charts
 
-Through some experiments, I was not able to determine how Qlik Sense uses persistent colors.  
+Through some experiments, I was not able to determine how Qlik Sense uses persistent colors.
 For a dimension with a large number of values, the mapping to a color scheme appears to be sequential.
 However, if the dimension has only a few members, the mapping does not seem to follow a recognizable pattern.
 You can still make barsPlus colors match Qlik Sense charts on the same sheet, but it may require trial and error in creating a formula.
 If anyone is aware of the algorithm Qlik Sense uses to assign persistent colors, please let me know.
 
-### Examples of color attribute formulas
+## Examples of color attribute formulas
 
-Please also see the sheet "Colors Enhancement" in the Qlik Sense application **BarsPlus.qvf** in the app subfolder.
+Please also see the sheet "Colors Enhancement" in the Qlik Sense application **[BarsPlus.qvf](resources/BarsPlus.qvf)** in the app subfolder.
 
 In a dimension attribute
 
@@ -337,25 +349,37 @@ Following are examples for either dimension or measure attributes, (note string 
     rgb(rand()*255,rand()*255,rand()*255)
     blue()
 
-## Changing Defaults
+# Changing Defaults
 
 If you would like to change any default settings, just make the appropriate change to **barsPlus-props.js**.
 
-## Example Qlik Sense Application
+# Example Qlik Sense Application
 
-See the Qlik Sense application **BarsPlus.qvf** in the **app** folder for the examples shown on this page.
+See the Qlik Sense application **[BarsPlus.qvf](resources/BarsPlus.qvf)** in the **resources** folder for the examples shown on this page.
 
-## Test Program
+# Test Program
 
 A standalone AngularJS application has been created to allow seeing the effect of various parameter changes quickly.  Just double-click on the file **barsPlus-test.html** in the extension folder.  This has test data sets and form elements to change parameters.  The buttons at the top will reduce the data set or resize the control.
 
-![alt text](screenshots/testProgram.png "barsPlus Test Application")
+![alt text](resources/testProgram.png "barsPlus Test Application")
 
-## Any Issues?
+# Known Limitations
 
-Please let me know about any bugs and I will try to fix them.  I will also be continually enhancing this extension so let me know if there are any requests.  If you have modified the code, please share any improvements with me.
+* No lasso in standard selections
 
-## Known Limitations
 
-* no lasso in standard selections
+# Original author
 
+[github.com/LarryWoodside](https://github.com/LarryWoodside)
+
+
+# License
+
+Released under the [MIT License](LICENSE).
+
+The external library D3 is used within this solution:
+
+**D3**
+* License: BSD 3-Clause "New" or "Revised" License
+* Url: http://d3js.org/
+* Author: Michael Bostock
