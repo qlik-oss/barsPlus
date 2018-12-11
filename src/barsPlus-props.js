@@ -585,7 +585,8 @@ const definition ={
               type: "string",
               component: "link",
               label: "D3 format strings",
-              url: "https://github.com/d3/d3-3.x-api-reference/blob/master/Formatting.md"
+              url: "https://github.com/d3/d3-3.x-api-reference/blob/master/Formatting.md",
+              show: data => data.props.axisFormatM == "C"
             }
           }
         },
