@@ -871,14 +871,3 @@ const definition ={
   }
 };
 export default definition;
-// export default {
-//   type: "items",
-//   component: "accordion",
-//   items: {
-//     // dimensions: dimensions,
-//     // measures: measures,
-//     sorting: sorting,
-//     addons: addons,
-//     appearance: appearance
-//   }
-// };
