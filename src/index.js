@@ -58,7 +58,7 @@ export default {
   //		resize: function($element, layout) {
   //			console.log('resize>',$element,layout,$element.scope());
   //		},
-  template: '<bars-plus class="qv-object-barsPlus" qv-extension />',
+  template: '<bars-plus qv-extension />',
   controller: ['$scope', function ($scope) {
   }],
   paint: function ($element, layout) {
