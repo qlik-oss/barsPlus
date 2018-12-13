@@ -450,6 +450,7 @@ export default {
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
     ;
+    g.self && g.self.$scope.options.interactionState === 2 ? g.svg.attr('class' , 'in-edit-mode') : g.svg.attr('class', '');
     var dim1 = g.data.map(function (d) { return d.dim1; });
     if (g.orientation == "H") dim1.reverse();
     g.dScale = d3.scale.ordinal()
