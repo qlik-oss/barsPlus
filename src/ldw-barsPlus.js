@@ -957,7 +957,11 @@ export default {
         if (txt.length != 0) txt = g.tref.text();
       }
     }
-    return { x: tx, y: textY, text: txt };
+    return {
+      x: isNaN(tx) ? 0 : tx,
+      y: isNaN(textY) ? 0 : textY,
+      text: txt
+    };
   },
   /**
  *--------------------------------------
