@@ -22,6 +22,12 @@ const config = {
       commonjs2: 'jquery',
       root: '_'
     },
+    qlik: {
+      amd: 'qlik',
+      commonjs: 'qlik',
+      commonjs2: 'qlik',
+      root: '_'
+    },
     qvangular: {
       amd: 'qvangular',
       commonjs: 'qvangular',
