@@ -37,6 +37,18 @@ export default {
       ]
     }
   },
+  data:{
+    dimensions: {
+      uses: "dimensions",
+      min: 0,
+      max: 2
+    },
+    measures: {
+      uses: "measures",
+      min: 1,
+      max: 10
+    }
+  },
   definition: props,
   support: {
     snapshot: true,
