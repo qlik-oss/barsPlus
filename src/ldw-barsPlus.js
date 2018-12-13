@@ -1128,7 +1128,8 @@ export default {
           return g.dScale(d.dim1) ? g.dScale(d.dim1) : 0; // ignore NaN: causing errors in transitions
         })
         .attr("y", function (d) {
-          return g.mScale(d.offset) - (g.mScale(0) - g.mScale(d.qNum));
+          const num = isNaN(d.qNum) ? 0 : d.qNum;
+          return g.mScale(d.offset) - (g.mScale(0) - g.mScale(num));
         })
         .attr("width", g.dScale.rangeBand() && g.dScale.rangeBand() > 0 ? g.dScale.rangeBand() : 0) // ignore NaN: causing errors in transitions
         .attr("height", function (d) {
@@ -1149,7 +1150,8 @@ export default {
           return g.dScale(d.dim1);
         })
         .attr("width", function (d) {
-          return g.mScale(d.qNum);
+          const num = isNaN(d.qNum) ? 0 : d.qNum;
+          return g.mScale(num);
         })
         .attr("height", g.dScale.rangeBand())
       ;
