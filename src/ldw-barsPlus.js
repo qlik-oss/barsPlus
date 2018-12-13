@@ -284,6 +284,7 @@ export default {
     n.forEach(function (d, idx) {
       var t = 0, v = [], j = 0, num, txt;
       for (var i = 0; i < q.length; i++) {
+        let elm;
         if (d.values.length <= j || d.values[j].key != q[i]) {
           num = 0;
           txt = "-";

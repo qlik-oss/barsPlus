@@ -18,7 +18,7 @@
 import d3 from 'd3';
 import qvangular from 'qvangular';
 import ldwBarsPlus from './ldw-barsPlus';
-import './barsPlus.css';
+import './barsPlus.less';
 
 qvangular.directive("barsPlus", [
   function () {
