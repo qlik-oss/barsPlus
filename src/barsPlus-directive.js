@@ -69,11 +69,9 @@ qvangular.directive("barsPlus", [
           g.backgroundColor = p.backgroundColor;
 
           // Colors and Legend
-          g.colorSource = p.colorSource;
-          g.colorAttr = p.colorAttr;
-          g.colorScheme = p.colorScheme;
-          g.colorOffset = p.colorOffset;
           g.singleColor = p.singleColor;
+          g.color = p.color;
+          g.colorSchema = p.colorSchema;
           g.showLegend = p.showLegend;
           g.legendPosition = p.legendPosition;
           g.legendSize = p.legendSize;
