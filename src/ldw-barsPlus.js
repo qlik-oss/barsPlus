@@ -107,6 +107,7 @@
 */
 
 import d3 from 'd3';
+import qlik from 'qlik';
 
 export default {
 
@@ -1011,8 +1012,9 @@ export default {
     if (g.orientation == "H") dim1.reverse();
     g.dScale.domain(dim1);
     g.mScale.domain([0, d3.max(g.data, function (d) { return (g.normalized ? 1 : d.offset) * g.gridHeight; })]);
-    var tDelay = g.transitions && !g.editMode ? g.transitionDelay : 0;
-    var tDuration = g.transitions && !g.editMode ? g.transitionDuration : 0;
+    const isPrinting = qlik.navigation && !qlik.navigation.inClient;
+    var tDelay = g.transitions && !g.editMode && !isPrinting ? g.transitionDelay : 0;
+    var tDuration = g.transitions && !g.editMode && !isPrinting ? g.transitionDuration : 0;
 
     // Procedure to update dimension and measure axes
     var updateAxis = function (labelTitle, labelStyle, axis, axisClass, isXAxis, axisWidth) {

@@ -827,7 +827,7 @@ const definition ={
               type: "string",
               label: "Transition delay",
               ref: "props.transitionDelay",
-              defaultValue: "500",
+              defaultValue: "0",
               expression: "optional",
               show: function (data) {
                 return data.props.transitions;
@@ -837,7 +837,7 @@ const definition ={
               type: "string",
               label: "Transition duration",
               ref: "props.transitionDuration",
-              defaultValue: "1000",
+              defaultValue: "500",
               expression: "optional",
               show: function (data) {
                 return data.props.transitions;
