@@ -16,6 +16,8 @@
    *
   */
 
+import { getDefaultColorSchema, getColorSchemas } from './colorSchemas';
+
 const definition ={
   type: "items",
   component: "accordion",
@@ -168,62 +170,6 @@ const definition ={
           type: "items",
           label: "Colors and Legend",
           items: {
-            colorSource: {
-              type: "string",
-              component: "dropdown",
-              label: "Color source",
-              ref: "props.colorSource",
-              defaultValue: "A",
-              options: [
-                { value: "A", label: "Assigned" },
-                { value: "C", label: "Calculated" }
-              ]
-            },
-            colorAttr: {
-              type: "string",
-              component: "dropdown",
-              label: "Color attribute",
-              ref: "props.colorAttr",
-              defaultValue: "O",
-              options: [
-                { value: "O", label: "Attribute is offset in scheme" },
-                { value: "C", label: "Attribute is color value" }
-              ],
-              show: function (data) {
-                return data.props.colorSource == "C";
-              }
-            },
-            colorScheme: {
-              type: "string",
-              component: "dropdown",
-              label: "Color scheme",
-              ref: "props.colorScheme",
-              defaultValue: "category20b",
-              options: [
-                { value: "category20b", label: "category20b" },
-                { value: "category20c", label: "category20c" },
-                { value: "category20", label: "catagory20" },
-                { value: "category10", label: "category10" },
-                { value: "google20", label: "google20" },
-                { value: "custom100", label: "custom100" },
-                { value: "qlikView18", label: "qlikView18" },
-                { value: "qlikSense12", label: "qlikSense12" }
-              ],
-              show: function (data) {
-                return (data.props.colorSource != "C"
-                  || (data.props.colorSource == "C" && data.props.colorAttr == "O"));
-              }
-            },
-            colorOffset: {
-              type: "number",
-              label: "Start offset in color scheme",
-              ref: "props.colorOffset",
-              defaultValue: 0,
-              expression: "optional",
-              show: function (data) {
-                return data.props.colorSource != "C";
-              }
-            },
             singleColor: {
               type: "boolean",
               component: "switch",
@@ -240,6 +186,30 @@ const definition ={
                     && data.qHyperCubeDef.qMeasures.length == 1
                   )) && data.props.colorSource != "C");
               }
+            },
+            colorSchema: {
+              label: 'Colorschema',
+              type: 'string',
+              ref: "props.colorSchema",
+              component: 'item-selection-list',
+              defaultValue: () => getDefaultColorSchema(),
+              items: () => getColorSchemas(),
+              show: function (data) {
+                return !data.props.singleColor && (data.props.colorSource != "C"
+                  || (data.props.colorSource == "C" && data.props.colorAttr == "O"));
+              }
+            },
+            color: {
+              ref: 'props.color',
+              label: 'Color',
+              type: 'object',
+              component: 'color-picker',
+              dualoutput: true,
+              defaultValue: {
+                index: 4,
+                color: '#4477aa'
+              },
+              show: ({ props }) => props.singleColor
             },
             showLegend: {
               type: "boolean",
