@@ -194,10 +194,7 @@ const definition ={
               component: 'item-selection-list',
               defaultValue: () => getDefaultColorSchema(),
               items: () => getColorSchemas(),
-              show: function (data) {
-                return !data.props.singleColor && (data.props.colorSource != "C"
-                  || (data.props.colorSource == "C" && data.props.colorAttr == "O"));
-              }
+              show: ({ props }) => !props.singleColor
             },
             color: {
               ref: 'props.color',
