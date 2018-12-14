@@ -18,6 +18,33 @@
 
 import { getDefaultColorSchema, getColorSchemas } from './colorSchemas';
 
+function isDataConfigured ({ qHyperCubeDef: { qDimensions, qMeasures } }) {
+  return (
+    qDimensions.length > 1
+    || (
+      qDimensions.length == 1
+      && qMeasures.length > 1
+    ));
+}
+
+function canHaveLegend ({ props: { singleColor }, qHyperCubeDef: { qDimensions, qMeasures } }) {
+  return (
+    (
+      (
+        (qDimensions.length == 0 && qMeasures.length > 1)
+        || (qDimensions.length == 1 && qMeasures.length == 1)
+      )
+      && !singleColor
+    )
+    || qDimensions.length > 1
+    || (qDimensions.length == 1 && qMeasures.length > 1)
+  );
+}
+
+function isShowingTexts (data) {
+  return data.props.showTexts != "N";
+}
+
 const definition ={
   type: "items",
   component: "accordion",
@@ -55,7 +82,6 @@ const definition ={
         }
       }
     },
-
     appearance : {
       uses: "settings",
       items: {
@@ -84,12 +110,7 @@ const definition ={
                 { value: false, label: "Not 100%" },
                 { value: true, label: "100% bars" }
               ],
-              show: function (data) {
-                return (data.qHyperCubeDef.qDimensions.length > 1
-                  || (data.qHyperCubeDef.qDimensions.length == 1
-                    && data.qHyperCubeDef.qMeasures.length > 1
-                  ));
-              }
+              show: isDataConfigured
             },
             showDeltas: {
               type: "boolean",
@@ -101,12 +122,7 @@ const definition ={
                 { value: false, label: "Standard bars" },
                 { value: true, label: "Bars with connectors" }
               ],
-              show: function (data) {
-                return (data.qHyperCubeDef.qDimensions.length > 1
-                  || (data.qHyperCubeDef.qDimensions.length == 1
-                    && data.qHyperCubeDef.qMeasures.length > 1
-                  ));
-              }
+              show: isDataConfigured
             },
             barSpacing: {
               type: "number",
@@ -180,20 +196,16 @@ const definition ={
                 { value: true, label: "Single Color" },
                 { value: false, label: "Multi-color" }
               ],
-              show: function (data) {
-                return ((data.qHyperCubeDef.qDimensions.length == 0
-                  || (data.qHyperCubeDef.qDimensions.length == 1
-                    && data.qHyperCubeDef.qMeasures.length == 1
-                  )) && data.props.colorSource != "C");
-              }
+              show: ({ qHyperCubeDef: { qDimensions, qMeasures } }) =>
+                qDimensions.length == 0 || (qDimensions.length == 1 && qMeasures.length == 1)
             },
             colorSchema: {
               label: 'Colorschema',
               type: 'string',
               ref: "props.colorSchema",
               component: 'item-selection-list',
-              defaultValue: () => getDefaultColorSchema(),
-              items: () => getColorSchemas(),
+              defaultValue: getDefaultColorSchema,
+              items: getColorSchemas,
               show: ({ props }) => !props.singleColor
             },
             color: {
@@ -218,22 +230,7 @@ const definition ={
                 { value: false, label: "No legend" },
                 { value: true, label: "Show legend" }
               ],
-              show: function (data) {
-                return (
-                  (
-                    (
-                      (data.qHyperCubeDef.qDimensions.length == 0 && data.qHyperCubeDef.qMeasures.length > 1)
-                      || (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length == 1)
-                    )
-                    && (
-                      (data.props.colorSource != "C" && !data.props.singleColor)
-                      || data.props.colorSource == "C"
-                    )
-                  )
-                  || data.qHyperCubeDef.qDimensions.length > 1
-                  || (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length > 1)
-                );
-              }
+              show: canHaveLegend
             },
             legendPosition: {
               type: "string",
@@ -247,22 +244,7 @@ const definition ={
                 { value: "T", label: "Top" },
                 { value: "B", label: "Bottom" }
               ],
-              show: function (data) {
-                return data.props.showLegend && (
-                  (
-                    (
-                      (data.qHyperCubeDef.qDimensions.length == 0 && data.qHyperCubeDef.qMeasures.length > 1)
-                      || (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length == 1)
-                    )
-                    && (
-                      (data.props.colorSource != "C" && !data.props.singleColor)
-                      || data.props.colorSource == "C"
-                    )
-                  )
-                  || data.qHyperCubeDef.qDimensions.length > 1
-                  || (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length > 1)
-                );
-              }
+              show: data => data.props.showLegend && canHaveLegend(data)
             },
             legendSize: {
               type: "string",
@@ -275,22 +257,7 @@ const definition ={
                 { value: "M", label: "Medium" },
                 { value: "W", label: "Wide" }
               ],
-              show: function (data) {
-                return data.props.showLegend && (
-                  (
-                    (
-                      (data.qHyperCubeDef.qDimensions.length == 0 && data.qHyperCubeDef.qMeasures.length > 1)
-                      || (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length == 1)
-                    )
-                    && (
-                      (data.props.colorSource != "C" && !data.props.singleColor)
-                      || data.props.colorSource == "C"
-                    )
-                  )
-                  || data.qHyperCubeDef.qDimensions.length > 1
-                  || (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length > 1)
-                );
-              }
+              show: data => data.props.showLegend && canHaveLegend(data)
             },
             legendSpacing: {
               type: "string",
@@ -303,22 +270,10 @@ const definition ={
                 { value: "M", label: "Medium" },
                 { value: "W", label: "Wide" }
               ],
-              show: function (data) {
-                return data.props.showLegend && (data.props.legendPosition == "T" || data.props.legendPosition == "B") && (
-                  (
-                    (
-                      (data.qHyperCubeDef.qDimensions.length == 0 && data.qHyperCubeDef.qMeasures.length > 1)
-                      || (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length == 1)
-                    )
-                    && (
-                      (data.props.colorSource != "C" && !data.props.singleColor)
-                      || data.props.colorSource == "C"
-                    )
-                  )
-                  || data.qHyperCubeDef.qDimensions.length > 1
-                  || (data.qHyperCubeDef.qDimensions.length == 1 && data.qHyperCubeDef.qMeasures.length > 1)
-                );
-              }
+              show: data =>
+                data.props.showLegend
+                && (data.props.legendPosition == "T" || data.props.legendPosition == "B")
+                && canHaveLegend(data)
             }
           }
         },
@@ -623,9 +578,7 @@ const definition ={
               ref: "props.innerBarPadH",
               defaultValue: 2,
               expression: "optional",
-              show: function (data) {
-                return data.props.showTexts != "N";
-              }
+              show: isShowingTexts
             },
             innerBarPadV: {
               type: "number",
@@ -633,9 +586,7 @@ const definition ={
               ref: "props.innerBarPadV",
               defaultValue: 2,
               expression: "optional",
-              show: function (data) {
-                return data.props.showTexts != "N";
-              }
+              show: isShowingTexts
             },
             textSizeAbs: {
               type: "boolean",
@@ -647,18 +598,14 @@ const definition ={
                 { value: true, label: "Not proportional" },
                 { value: false, label: "Proportional" }
               ],
-              show: function (data) {
-                return data.props.showTexts != "N";
-              }
+              show: isShowingTexts
             },
             textSizeFactor: {
               type: "number",
               label: "Text size proportion factor",
               ref: "props.textSizeFactor",
               defaultValue: 1,
-              show: function (data) {
-                return data.props.showTexts != "N" && !data.props.textSizeAbs;
-              }
+              show: data => !data.props.textSizeAbs && isShowingTexts(data)
             },
             textSize: {
               type: "number",
@@ -666,9 +613,7 @@ const definition ={
               ref: "props.textSize",
               defaultValue: 10,
               expression: "optional",
-              show: function (data) {
-                return data.props.showTexts != "N" && data.props.textSizeAbs;
-              }
+              show: data => !data.props.textSizeAbs && isShowingTexts(data)
             },
             textSizeMax: {
               type: "number",
@@ -676,9 +621,7 @@ const definition ={
               ref: "props.textSize",
               defaultValue: 18,
               expression: "optional",
-              show: function (data) {
-                return data.props.showTexts != "N" && !data.props.textSizeAbs;
-              }
+              show: data => !data.props.textSizeAbs && isShowingTexts(data)
             },
             textDots: {
               type: "boolean",
@@ -690,9 +633,7 @@ const definition ={
                 { value: true, label: "Show" },
                 { value: false, label: "Don't show" }
               ],
-              show: function (data) {
-                return data.props.showTexts != "N";
-              }
+              show: isShowingTexts
             },
             textColor: {
               type: "string",
@@ -705,9 +646,7 @@ const definition ={
                 { value: "Black", label: "Black" },
                 { value: "White", label: "White" }
               ],
-              show: function (data) {
-                return data.props.showTexts != "N";
-              }
+              show: isShowingTexts
             },
             vAlign: {
               type: "string",
@@ -720,9 +659,7 @@ const definition ={
                 { value: "T", label: "Top" },
                 { value: "B", label: "Bottom" }
               ],
-              show: function (data) {
-                return data.props.showTexts != "N";
-              }
+              show: isShowingTexts
             },
             hAlign: {
               type: "string",
@@ -735,9 +672,7 @@ const definition ={
                 { value: "L", label: "Left" },
                 { value: "R", label: "Right" }
               ],
-              show: function (data) {
-                return data.props.showTexts != "N";
-              }
+              show: isShowingTexts
             },
             totalFormatM: {
               type: "string",
@@ -751,9 +686,7 @@ const definition ={
                 { value: "S", label: "SI-notation (K, M, etc.)" },
                 { value: "C", label: "Custom" }
               ],
-              show: function (data) {
-                return data.props.showTexts != "N";
-              }
+              show: isShowingTexts
             },
             totalFormatMs: {
               type: "string",
