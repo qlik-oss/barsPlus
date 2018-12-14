@@ -34,10 +34,7 @@
 
  Colors and Legend
 
- colorSource		A - Assigned, C - Calculated
- colorAttr			Attribute is: O - an offset in scheme, C - a color value
  colorScheme		Named color scheme
- colorOffset		Offset of first color in color scheme (colorSource = Assigned)
  singleColor		Whether to use single color for 1-dimensional bars
  showLegend			Whether to show the legend
  legendPosition		Legend position: T - top, R - right, B - bottom, L - left
@@ -108,6 +105,7 @@
 
 import d3 from 'd3';
 import qlik from 'qlik';
+import { getColorSchemaByName } from './colorSchemas';
 
 export default {
 
@@ -162,32 +160,10 @@ export default {
     else {
       inData = g.rawData; // Process as in previous version
     }
-    // If calculated color specified, must have provided Attribute
-    // otherwise set back to assigned mode
-
-    var cx = g.defDims == 1 ? (g.defMeas == 1 ? 0 : 2) : 1; // index for attribute
-    if (g.colorSource == "C" && !inData[0][cx].qAttrExps) g.colorSource = "A";
 
     // Function to get dimension/measure attribute for color
     var cf = function (e) {
       var cn = 0;
-      if (g.colorSource == "C") {
-        var cv = e[cx].qAttrExps.qValues[0].qNum;
-        if (!isNaN(cv))
-          cn = Math.floor(Math.abs(cv));
-        if (g.colorAttr == "C") {
-          // if text attribute exists, use it
-          if (e[cx].qAttrExps.qValues[0].qText) {
-            cn = e[cx].qAttrExps.qValues[0].qText;
-          }
-          else {
-            // number present, convert to hex
-            cv = cv.toString(16);
-            if (cv.length > 6) cv = cv.substring(cv.length - 6);
-            cn = "#" + "000000".substring(0, 6 - cv.length) + cv;
-          }
-        }
-      }
       return cn;
     };
 
@@ -522,32 +498,16 @@ export default {
         .text(g.axisTitleM)
       ;
     }
-    if (Object.getPrototypeOf(this).hasOwnProperty(g.colorScheme))
-      var ca = this[g.colorScheme];
-    else
-      var ca = d3.scale[g.colorScheme]().range();
-    g.colorOffset %= ca.length;
-    // define various ways to get color
-    if (g.nDims == 1 && g.colorSource != "C" && g.singleColor) {
-      var rc = ca[g.colorOffset];
-      g.cScale = function (d) { return rc; };
+    let colorSchema = getColorSchemaByName(g.colorSchema).colors;
+
+    if (!Array.isArray(colorSchema)) {
+      colorSchema = ['#999999', '#333333'];
     }
-    else if (g.colorSource == "C") {
-      if (g.colorAttr == "O") { // color from calculated offset
-        g.cScale = function (d) {
-          return ca[g.allCol2[g.allDim2.indexOf(d)] % ca.length];
-        };
-      }
-      else { // color is direct value
-        g.cScale = function (d) {
-          return g.allCol2[g.allDim2.indexOf(d)];
-        };
-      }
-    }
-    else {
-      g.cScale = d3.scale.ordinal().range(
-        ca.slice(g.colorOffset, ca.length).concat(ca.slice(0, ca.length))
-      ).domain(g.allDim2);
+
+    if (g.singleColor) {
+      g.cScale = () => g.color.color;
+    } else {
+      g.cScale = d3.scale.ordinal().range(colorSchema).domain(g.allDim2);
     }
 
     // Create Legend
@@ -1392,10 +1352,6 @@ export default {
         throw new Error('Cyclic dependency: ' + JSON.stringify(node));
       }
 
-      //		if (!~nodes.indexOf(node)) {
-      //		  throw new Error('Found unknown node. Make sure to provided all involved nodes. Unknown node: '+JSON.stringify(node))
-      //		}
-
       if (visited[i]) return;
       visited[i] = true;
 
@@ -1424,31 +1380,4 @@ export default {
     return (yiq >= 160) ? 'black' : 'white'; // 128 changed to 160 to give white preference
   },
   /*- end http://stackoverflow.com/questions/11867545 */
-  //--------------------------------------
-  // Color Schemes
-  //--------------------------------------
-  custom100: [
-    "#99c867", "#e43cd0", "#e2402a", "#66a8db", "#3f1a20", "#e5aa87", "#3c6b59", "#aa2a6b", "#e9b02e", "#7864dd",
-    "#65e93c", "#5ce4ba", "#d0e0da", "#d796dd", "#64487b", "#e4e72b", "#6f7330", "#932834", "#ae6c7d", "#986717",
-    "#e3cb70", "#408c1d", "#dd325f", "#533d1c", "#2a3c54", "#db7127", "#72e3e2", "#e2c1da", "#d47555", "#7d7f81",
-    "#54ae9b", "#e9daa6", "#3a8855", "#5be66e", "#ab39a4", "#a6e332", "#6c469d", "#e39e51", "#4f1c42", "#273c1c",
-    "#aa972e", "#8bb32a", "#bdeca5", "#63ec9b", "#9c3519", "#aaa484", "#72256d", "#4d749f", "#9884df", "#e590b8",
-    "#44b62b", "#ad5792", "#c65dea", "#e670ca", "#e38783", "#29312d", "#6a2c1e", "#d7b1aa", "#b1e7c3", "#cdc134",
-    "#9ee764", "#56b8ce", "#2c6323", "#65464a", "#b1cfea", "#3c7481", "#3a4e96", "#6493e1", "#db5656", "#747259",
-    "#bbabe4", "#e33f92", "#d0607d", "#759f79", "#9d6b5e", "#8574ae", "#7e304c", "#ad8fac", "#4b77de", "#647e17",
-    "#b9c379", "#8da8b0", "#b972d9", "#786279", "#7ec07d", "#916436", "#2d274f", "#dce680", "#759748", "#dae65a",
-    "#459c49", "#b7934a", "#51c671", "#9ead3f", "#969a5c", "#b9976a", "#46531a", "#c0f084", "#76c146", "#bad0ad"
-  ],
-  google20: [
-    "#3366cc", "#dc3912", "#ff9900", "#109618", "#990099", "#0099c6", "#dd4477", "#66aa00", "#b82e2e", "#316395",
-    "#994499", "#22aa99", "#aaaa11", "#6633cc", "#e67300", "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"
-  ],
-  qlikView18: [
-    "#8daacb", "#fc7362", "#bbd854", "#ffd92f", "#66c296", "#e5b694", "#e78ad2", "#b3b3b3", "#a6d8e3", "#abe9bc",
-    "#1b7d9c", "#ffbfc9", "#4da741", "#c4b2d6", "#b22424", "#00acac", "#be6c2c", "#695496"
-  ],
-  qlikSense12: [
-    "#332288", "#6699cc", "#88ccee", "#44aa99", "#117733", "#999933", "#ddcc77", "#661100", "#cc6677", "#aa4466",
-    "#882255", "#aa4499"
-  ]
 };
