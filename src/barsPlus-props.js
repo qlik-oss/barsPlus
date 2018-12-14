@@ -453,11 +453,12 @@ const definition ={
                 t = " (" + data.props.axisTitleM + ")";
             }
             else if (data.qHyperCubeDef.qMeasures.length > 0) {
-              if (data.qHyperCubeDef.qMeasures[0].qDef.hasOwnProperty("qLabel")) {
-                t = data.qHyperCubeDef.qMeasures[0].qDef.qLabel;
+              const { qDef } = data.qHyperCubeDef.qMeasures[0];
+              if (qDef.hasOwnProperty("qLabel") && qDef.qLabel) {
+                t = qDef.qLabel;
               }
               else {
-                t = data.qHyperCubeDef.qMeasures[0].qDef.qDef;
+                t = qDef.qDef;
               }
               t = " (" + (t.startsWith("=") ? t.slice(1) : t) + ")";
             }
