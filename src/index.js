@@ -24,6 +24,7 @@
 import './barsPlus-directive';
 import props from './barsPlus-props';
 import { updateColorSchemas } from './colorSchemas';
+import '@babel/polyfill';
 
 export default {
   initialProperties: {

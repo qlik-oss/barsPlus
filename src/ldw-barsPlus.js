@@ -957,7 +957,11 @@ export default {
         if (txt.length != 0) txt = g.tref.text();
       }
     }
-    return { x: tx, y: textY, text: txt };
+    return {
+      x: Number.isFinite(tx) ? tx : 0,
+      y: Number.isFinite(textY) ? textY : 0,
+      text: txt
+    };
   },
   /**
  *--------------------------------------
@@ -1128,7 +1132,8 @@ export default {
           return g.dScale(d.dim1) ? g.dScale(d.dim1) : 0; // ignore NaN: causing errors in transitions
         })
         .attr("y", function (d) {
-          return g.mScale(d.offset) - (g.mScale(0) - g.mScale(d.qNum));
+          const num = Number.isFinite(d.qNum) ? d.qNum : 0;
+          return g.mScale(d.offset) - (g.mScale(0) - g.mScale(num));
         })
         .attr("width", g.dScale.rangeBand() && g.dScale.rangeBand() > 0 ? g.dScale.rangeBand() : 0) // ignore NaN: causing errors in transitions
         .attr("height", function (d) {
@@ -1149,7 +1154,8 @@ export default {
           return g.dScale(d.dim1);
         })
         .attr("width", function (d) {
-          return g.mScale(d.qNum);
+          const num = Number.isFinite(d.qNum) ? d.qNum : 0;
+          return g.mScale(num);
         })
         .attr("height", g.dScale.rangeBand())
       ;
