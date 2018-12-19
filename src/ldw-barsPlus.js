@@ -809,6 +809,36 @@ export default {
         .enter()
         .append("g")
         .attr("class", "ldwlgnitem")
+        .on('click', function(e,i) {
+          d3.selectAll('rect')
+            .filter(function(d){
+              if (d && d.dim1){
+                if (d.dim1 === e){
+                  if (d.qElemNumber >= 0) { // Cannot select a measure
+                    if (g.selectionMode == "QUICK") {
+                      g.self.backendApi.selectValues(0, [d.qElemNumber], true);
+                    }
+                    else if (g.selectionMode == "CONFIRM") {
+                      var t = d3.select(this).classed("selected");
+                      g.self.selectValues(0, [d.qElemNumber], true);
+                      // following to address QS bug where clear button does not clear class names
+                      g.self.clearSelectedValues = function () {
+                        d3.selectAll("#" + g.id + " .selected").classed("selected", false);
+                      };
+                      d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
+                        .classed("selected", !t);
+                      d3.select("#" + g.id + " .ldwtooltip")
+                        .style("opacity", "0")
+                        .transition()
+                        .remove
+                      ;
+                    }
+                  }
+                }
+              }
+            } )
+          ;
+        })
         .each(function (d, i) {
           d3.select(this)
             .append("rect")
@@ -838,6 +868,7 @@ export default {
             .attr("width", g.lgn.box[0])
             .attr("height", g.lgn.box[1])
             .style("fill", function (e) { return g.cScale(e); })
+
           ;
           d3.select(this)
             .append("text")
@@ -867,6 +898,7 @@ export default {
             .text(function (e) {
               return e;
             })
+
           ;
         })
       ;
