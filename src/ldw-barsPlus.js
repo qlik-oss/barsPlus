@@ -808,10 +808,11 @@ export default {
       g.lgn.items
         .enter()
         .append("g")
-        .attr("class", "ldwlgnitem")
-        .on('click', function(e,i) {
+        .attr("class",g.self && g.self.$scope.options.interactionState === 2 ? "ldwlgnitem" : "ldwlgnitem analysis-mode")
+        .on('click', function(e) {
           d3.selectAll('rect')
             .filter(function(d){
+              if (g.self && g.self.$scope.options.interactionState === 2) return;
               if (d && d.dim1){
                 if (d.dim1 === e){
                   if (d.qElemNumber >= 0) { // Cannot select a measure
@@ -838,6 +839,34 @@ export default {
               }
             } )
           ;
+        })
+        .on('mouseenter', function(e){
+          if (g.self && g.self.$scope.options.interactionState === 2) return;
+          d3.select(this)
+            .classed('legendHover');
+          d3.selectAll('rect')
+            .filter(function(d){
+              if (d && d.dim1){
+                if (d.dim1 === e){
+                  d3.select(this)
+                    .style("opacity", "0.5")
+                    .attr("stroke", "white")
+                    .attr("stroke-width", "2");
+                }
+              }
+            });
+        })
+        .on('mouseleave', function(e){
+          d3.selectAll('rect')
+            .filter(function(d){
+              if (d && d.dim1){
+                if (d.dim1 === e){
+                  d3.select(this)
+                    .style("opacity", "1.0")
+                    .attr("stroke", "none");
+                }
+              }
+            });
         })
         .each(function (d, i) {
           d3.select(this)
