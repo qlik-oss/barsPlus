@@ -18,6 +18,7 @@
 import d3 from 'd3';
 import qvangular from 'qvangular';
 import ldwBarsPlus from './ldw-barsPlus';
+import { getColorSchemas } from './colorSchemas';
 import './barsPlus.less';
 
 qvangular.directive("barsPlus", [
@@ -36,7 +37,6 @@ qvangular.directive("barsPlus", [
 
           g.id = l.qInfo.qId;
           g.inSelections = false;
-          g.editMode = false;
           g.selectionMode = l.selectionMode;
 
           // number of defined dimensions and measures
@@ -151,6 +151,13 @@ qvangular.directive("barsPlus", [
             }
           }
         );
+        $scope.$watch(getColorSchemas, (newValue, oldValue) => {
+          const newColorList = newValue && newValue.map(schema => schema.colors.join(',')).join(',');
+          const oldColorList = oldValue && oldValue.map(schema => schema.colors.join(',')).join(',');
+          if (newColorList !== oldColorList) {
+            g.refreshChart();
+          }
+        });
         // watch for selection count going to zero in standard selection mode
         // to partially address QS bug where clear selections button does not reset element classes
         // this does not completely work if there were existing selections on field prior to entering
@@ -175,7 +182,7 @@ qvangular.directive("barsPlus", [
             if (newValue != oldValue) {
               g.inSelections = newValue || false;
               if (!g.inSelections) {
-                d3.selectAll(".selected").classed("selected", false);
+                g.component.selectAll(".selected").classed("selected", false);
               }
             }
           }

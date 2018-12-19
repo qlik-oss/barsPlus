@@ -61,12 +61,12 @@ export default {
   controller: ['$scope', function ($scope) {
   }],
   paint: function ($element, layout) {
-    updateColorSchemas(this)
+    var self = this;
+    self.$scope.g.self = self; // Save reference for call to backendApi
+    self.$scope.g.editMode = (self.options.interactionState == 2);
+
+    return updateColorSchemas(this)
       .then(() => {
-        var self = this;
-        self.$scope.g.self = self; // Save reference for call to backendApi
-        // Only repaint here when in edit mode
-        self.$scope.g.editMode = (self.options.interactionState == 2);
         if (self.$scope.g.editMode) {
           self.$scope.initProps();
           self.$scope.g.initData();
