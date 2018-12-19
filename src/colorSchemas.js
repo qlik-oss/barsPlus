@@ -1,13 +1,26 @@
 import qlik from 'qlik';
 
+const defaultSingleColor = {
+  index: 4,
+  color: '#4477aa'
+};
+const defaultColorSchema = {
+  colors: ['#999999', '#333333']
+};
+
 let colorSchemas = [];
 
+export function getDefaultSingleColor () {
+  return defaultSingleColor;
+}
+
 export function getDefaultColorSchema () {
-  return colorSchemas[0].label;
+  return colorSchemas[0] || defaultColorSchema;
 }
 
 export function getColorSchemaByName (name) {
-  return colorSchemas.find(schema => schema.label === name) || {};
+  const colorSchema = colorSchemas.find(schema => schema.label === name);
+  return colorSchema || getDefaultColorSchema();
 }
 
 export function updateColorSchemas (component) {

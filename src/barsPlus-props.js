@@ -16,7 +16,7 @@
    *
   */
 
-import { getDefaultColorSchema, getColorSchemas } from './colorSchemas';
+import { getDefaultColorSchema, getDefaultSingleColor, getColorSchemas } from './colorSchemas';
 
 function isDataConfigured ({ qHyperCubeDef: { qDimensions, qMeasures } }) {
   return (
@@ -214,10 +214,7 @@ const definition ={
               type: 'object',
               component: 'color-picker',
               dualoutput: true,
-              defaultValue: {
-                index: 4,
-                color: '#4477aa'
-              },
+              defaultValue: getDefaultSingleColor,
               show: ({ props }) => props.singleColor
             },
             showLegend: {

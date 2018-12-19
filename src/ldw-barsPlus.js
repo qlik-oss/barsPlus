@@ -105,7 +105,7 @@
 
 import d3 from 'd3';
 import qlik from 'qlik';
-import { getColorSchemaByName } from './colorSchemas';
+import { getColorSchemaByName, getDefaultSingleColor } from './colorSchemas';
 
 export default {
 
@@ -500,12 +500,8 @@ export default {
     }
     let colorSchema = getColorSchemaByName(g.colorSchema).colors;
 
-    if (!Array.isArray(colorSchema)) {
-      colorSchema = ['#999999', '#333333'];
-    }
-
     if (g.singleColor) {
-      g.cScale = () => g.color.color;
+      g.cScale = () => (g.color && g.color.color) || getDefaultSingleColor().color;
     } else {
       g.cScale = d3.scale.ordinal().range(colorSchema).domain(g.allDim2);
     }
@@ -612,7 +608,7 @@ export default {
             g.self.clearSelectedValues = function () {
               d3.selectAll("#" + g.id + " .selected").classed("selected", false);
             };
-            var x = d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
+            d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
               .classed("selected", !t);
             d3.select("#" + g.id + " .ldwtooltip")
               .style("opacity", "0")
