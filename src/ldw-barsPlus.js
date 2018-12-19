@@ -704,6 +704,7 @@ export default {
             .style("font-size", g.tref.style("font-size"))
             .attr("x", g.orientation == "V" ? txp.x : 0)
             .attr("y", g.orientation == "V" ? g.mScale(0) : txp.y)
+            .attr('transform' , txp.rotation && `rotate(-90 ${txp.x} ${txp.y}) translate(0 40)`) //TO-DO : replace the static values of translate with dynamic ones
             .attr("dy", "-.2em")
             .text(txp.text)
           ;
@@ -881,7 +882,7 @@ export default {
   barText: function (d, total) {
     var tx, txt, origX, bHeight, textX, bb, textY, textLength, ts;
     var g = this;
-
+    var rotation = false;
     // Relative text sizing, relative to bar width
     // For total, make larger by reducing unneeded padding
     var hAlign = g.hAlign, vAlign = g.vAlign,
@@ -943,20 +944,28 @@ export default {
         txt = g.tref.text();
       }
       else if (g.textDots) {
-        textLength = g.tref.node().getComputedTextLength();
-        txt = g.tref.text();
-        while (textLength > textX - 2 * innerBarPadH && txt.length > 0) {
-          txt = txt.slice(0, -1);
-          g.tref.text(txt + '\u2026');
-          textLength = g.tref.node().getComputedTextLength();
+        if(g.rotateLabel) {
+          txt = g.tref.text();
         }
-        if (txt.length != 0) txt = g.tref.text();
+        else {
+          textLength = g.tref.node().getComputedTextLength();
+          txt = g.tref.text();
+          while (textLength > textX - 2 * innerBarPadH && txt.length > 0) {
+            txt = txt.slice(0, -1);
+            g.tref.text(txt + '\u2026');
+            textLength = g.tref.node().getComputedTextLength();
+          }
+          if (txt.length != 0) txt = g.tref.text();}
       }
+    }
+    if (g.rotateLabel && g.orientation === "V"){
+      rotation = true;
     }
     return {
       x: Number.isFinite(tx) ? tx : 0,
       y: Number.isFinite(textY) ? textY : 0,
-      text: txt
+      text: txt,
+      rotation
     };
   },
   /**

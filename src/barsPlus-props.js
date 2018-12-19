@@ -527,6 +527,18 @@ const definition ={
                 { value: "A", label: "Both" }
               ]
             },
+            rotateTexts : {
+              type: "boolean",
+              component :"switch",
+              label: "Rotate Labels",
+              ref:"props.rotateLabel",
+              defaultValue: false,
+              options: [
+                { value: true , label : "Rotate Vertically" },
+                { value: false , label : "Rotate Horizontally" },
+              ],
+              show : isShowingTexts
+            },
             showDim: {
               type: "string",
               component: "dropdown",
