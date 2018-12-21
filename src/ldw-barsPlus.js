@@ -691,23 +691,37 @@ export default {
 
     if (~"BA".indexOf(g.showTexts)) {
       // Create text inside bars
+      // console.log(g);
+      let ticks = d3.selectAll('.tick');
+      // console.log(ticks);
+      // console.log(g.bars);
+      console.log(g,g.innerBarPadV , g.innerBarPadH);
+
       g.texts
         .enter()
         .append("text")
         .attr("class", "ldwtxt")
         .style("opacity", "0")
         .each(function (d) {
+
           var txp = g.barText(d);
+          var bar = g.bars[0].find(e=>{
+            return e.__data__.dim1 == d.dim1;
+          });
 
           d3.select(this)
             .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(d.dim2)) : g.textColor)
             .style("font-size", g.tref.style("font-size"))
             .attr("x", g.orientation == "V" ? txp.x : 0)
             .attr("y", g.orientation == "V" ? g.mScale(0) : txp.y)
-            .attr('transform' , txp.rotation && `rotate(-90 ${txp.x} ${txp.y}) translate(0 40)`) //TO-DO : replace the static values of translate with dynamic ones
+            // .attr(g.orientation == "V" ? "x" : "y", function (d) { return g.dScale(d.dim1) + g.innerBarPadV ; })
+            // .attr(g.orientation == "V" ? "y" : "x", function (d) { return g.mScale(0) + g.innerBarPadV ; })
             .attr("dy", "-.2em")
             .text(txp.text)
           ;
+          if (txp.rotation == true){
+            d3.select(this).attr('transform' ,`rotate(-90 ${txp.x + bar.width.baseVal.value/2} ${txp.y + bar.height.baseVal.value/2})  `); //TO-DO : replace the static values of translate with dynamic ones
+          }
         })
       ;
     }
@@ -880,9 +894,31 @@ export default {
  * Get bar text information: x, y and text
 */
   barText: function (d, total) {
+
     var tx, txt, origX, bHeight, textX, bb, textY, textLength, ts;
     var g = this;
     var rotation = false;
+
+    // var bar = g.bars[0].find(e=>{
+    //   return e.__data__.dim1 == d.dim1;
+    // });
+    var bars = d3.selectAll('.ldwbar')
+      .filter(e => {
+
+        return e.dim1 == d.dim1;
+      })
+    ;
+    // var bar = bars[0].find(e => {
+    //   return e.__data__.dim1 == d.dim1;
+    // });
+    // console.log(bars ,bars[0][0].height.baseVal, bars[0][0].height.baseVal.value);
+    // var test = bars[0]
+
+
+
+
+    // console.log(d3.select(this));
+
     // Relative text sizing, relative to bar width
     // For total, make larger by reducing unneeded padding
     var hAlign = g.hAlign, vAlign = g.vAlign,
@@ -922,9 +958,13 @@ export default {
     bb = g.tref.node().getBBox();
     tx = origX + innerBarPadH;
     if (vAlign == "C")
+    {
+
       textY = g.orientation == "V" ? g.mScale(d.offset) - (g.mScale(0) - g.mScale(d.qNum))
         + (g.mScale(0) - g.mScale(d.qNum) + bb.height) / 2
         : g.dScale(d.dim1) + (g.dScale.rangeBand() + bb.height) / 2;
+    }
+
     else if (vAlign == "T")
       textY = g.orientation == "V" ? g.mScale(d.offset) - (g.mScale(0) - g.mScale(d.qNum))
         + bb.height + innerBarPadV
@@ -933,6 +973,7 @@ export default {
       textY = g.orientation == "V" ? g.mScale(d.offset) - innerBarPadV
         : g.dScale(d.dim1) + g.dScale.rangeBand() - innerBarPadV;
     txt = "";
+
     if (bb.height + 2 * innerBarPadV <= bHeight || (g.orientation != "V" && !g.textSizeAbs)) {
       if (bb.width + 2 * innerBarPadH <= textX) {
         if (hAlign == "C") {
@@ -943,9 +984,17 @@ export default {
         }
         txt = g.tref.text();
       }
+
       else if (g.textDots) {
         if(g.rotateLabel) {
+          textLength = g.tref.node().getComputedTextLength();
           txt = g.tref.text();
+          while (textLength > bHeight ) {
+            txt = txt.slice(0, -1);
+            g.tref.text(txt + '\u2026');
+            textLength = g.tref.node().getComputedTextLength();
+          }
+          if (txt.length != 0) txt = g.tref.text();
         }
         else {
           textLength = g.tref.node().getComputedTextLength();
@@ -955,11 +1004,14 @@ export default {
             g.tref.text(txt + '\u2026');
             textLength = g.tref.node().getComputedTextLength();
           }
-          if (txt.length != 0) txt = g.tref.text();}
+          if (txt.length != 0) txt = g.tref.text();
+        }
       }
     }
     if (g.rotateLabel && g.orientation === "V"){
       rotation = true;
+    }else if (g.orientation !== "V"){
+      rotation = false;
     }
     return {
       x: Number.isFinite(tx) ? tx : 0,
