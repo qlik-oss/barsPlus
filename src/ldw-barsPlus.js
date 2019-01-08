@@ -352,6 +352,8 @@ export default {
     };
     var innerWidth = g.width - margin.left - margin.right;
     var innerHeight = g.height - margin.top - margin.bottom;
+    console.log(g);
+    console.log(innerHeight);
 
     g.lgn = {
       minDim: [200, 100], // min inner dimensions for legend to be displayed
@@ -424,6 +426,7 @@ export default {
       .attr("width", g.width)
       .attr("height", g.height)
       .style("background-color", g.backgroundColor)
+      .style('position' , 'absolute')
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
     ;
@@ -508,29 +511,32 @@ export default {
 
     // Create Legend
     if (g.lgn.use) {
-      var lgn = d3.select("#" + g.id + " svg")
-        .append("g")
-        .attr("class", "ldwlegend")
-        .attr("clip-path", "url(#" + g.id + "_lgnClip)")
-        .attr("transform", "translate(" + g.lgn.x + "," + g.lgn.y + ")")
+      var lgn = g.component
+        .append("div")
+        .attr("id", "ldwlegend")
+        .style("transform", "translate(" + g.lgn.x + 'px' + "," + g.lgn.y + 'px' + ")")
+        .style('position', 'relative')
+        .style('height' , g.height + 'px')
+        .style('overflow' ,'auto')
+        .style('width', 'fit-content')
         ;
-      lgn.append("rect")
-        .attr("x", 0)
-        .attr("y", 0)
-        .attr("width", g.lgn.width)
-        .attr("height", g.lgn.height)
-        .style("fill", g.backgroundColor)
-      ;
-      lgn.append("clipPath")
-        .attr("id", g.id + "_lgnClip")
-        .append("rect")
-        .attr("x", "0")
-        .attr("y", "0")
-        .attr("width", g.lgn.width)
-        .attr("height", g.lgn.height)
-      ;
-      lgn.append("g")
-        .attr("class", "ldwlgnitems");
+      // lgn.append("rect")
+      //   .attr("x", 0)
+      //   .attr("y", 0)
+      //   .attr("width", g.lgn.width)
+      //   .attr("height", g.lgn.height)
+      //   .style("fill", g.backgroundColor)
+      // ;
+      // lgn.append("clipPath")
+      //   .attr("id", g.id + "_lgnClip")
+      //   .attr("x", "0")
+      //   .attr("y", "0")
+      //   .attr("width", g.lgn.width)
+      //   .attr("height", g.lgn.height)
+      // ;
+      lgn.append("svg")
+        .attr("class", "ldwlgnitems")
+        .attr('width', '200px');
     }
     // Create bars
     g.bars = g.svg.selectAll("#" + g.id + " .ldwbar")
@@ -566,7 +572,10 @@ export default {
     }
     // Create legend items
     if (g.lgn.use) {
-      g.lgn.items = d3.select("#" + g.id + " .ldwlgnitems")
+      console.log(g.allDim2);
+
+      g.lgn.items = d3.select("." + "ldwlgnitems")
+        .attr('height', g.allDim2.length * 20)
         .selectAll("g")
         .data(g.allDim2)
       ;
@@ -805,6 +814,8 @@ export default {
     }
     // create legend
     if (g.lgn.use) {
+      console.log(g.lgn);
+
       g.lgn.items
         .enter()
         .append("g")
@@ -834,7 +845,7 @@ export default {
               }
               return y;
             })
-            .style("opacity", "0")
+            // .style("opacity", "0")
             .attr("width", g.lgn.box[0])
             .attr("height", g.lgn.box[1])
             .style("fill", function (e) { return g.cScale(e); })
@@ -863,7 +874,7 @@ export default {
               }
               return y;
             })
-            .style("opacity", "0")
+            // .style("opacity", "0")
             .text(function (e) {
               return e;
             })
