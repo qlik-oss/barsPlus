@@ -876,12 +876,24 @@ export default {
             .classed('legendHover');
           d3.selectAll('rect')
             .filter(function(d){
-              if (d && d.dim1){
-                if (d.dim1 === e){
-                  d3.select(this)
-                    .style("opacity", "0.5")
-                    .attr("stroke", "white")
-                    .attr("stroke-width", "2");
+              if (g.self.$scope.g.defDims == 2){
+                if (d && d.dim2){
+                  if (d.dim2 === e){
+                    d3.select(this)
+                      .style("opacity", "0.5")
+                      .attr("stroke", "white")
+                      .attr("stroke-width", "2");
+                  }
+                }
+              }
+              else{
+                if (d && d.dim1){
+                  if (d.dim1 === e){
+                    d3.select(this)
+                      .style("opacity", "0.5")
+                      .attr("stroke", "white")
+                      .attr("stroke-width", "2");
+                  }
                 }
               }
             });
@@ -889,11 +901,22 @@ export default {
         .on('mouseleave', function(e){
           d3.selectAll('rect')
             .filter(function(d){
-              if (d && d.dim1){
-                if (d.dim1 === e){
-                  d3.select(this)
-                    .style("opacity", "1.0")
-                    .attr("stroke", "none");
+              if (g.self.$scope.g.defDims == 2){
+                if (d && d.dim2){
+                  if (d.dim2 === e){
+                    d3.select(this)
+                      .style("opacity", "1.0")
+                      .attr("stroke", "none");
+                  }
+                }
+              }
+              else{
+                if (d && d.dim1){
+                  if (d.dim1 === e){
+                    d3.select(this)
+                      .style("opacity", "1.0")
+                      .attr("stroke", "none");
+                  }
                 }
               }
             });
