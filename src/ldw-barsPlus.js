@@ -702,7 +702,7 @@ export default {
         .append("text")
         .attr("class", "ldwtxt")
         .style("opacity", "0")
-        .each(function (d) {
+        .each(function (d, i) {
 
           var txp = g.barText(d);
           var bar = g.bars[0].find(e=>{
@@ -713,10 +713,10 @@ export default {
             .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(d.dim2)) : g.textColor)
             .style("font-size", g.tref.style("font-size"))
             .attr("x", g.orientation == "V" ? txp.x : 0)
-            .attr("y", g.orientation == "V" ? g.mScale(0) : txp.y)
+            .attr("y", g.orientation == "V" ? g.mScale(0) + (g.innerBarPadH * i) : txp.y)
             // .attr(g.orientation == "V" ? "x" : "y", function (d) { return g.dScale(d.dim1) + g.innerBarPadV ; })
             // .attr(g.orientation == "V" ? "y" : "x", function (d) { return g.mScale(0) + g.innerBarPadV ; })
-            .attr("dy", "-.2em")
+            // .attr("dy", "-.2em")
             .text(txp.text)
           ;
           if (txp.rotation == true){
@@ -898,7 +898,7 @@ export default {
     var tx, txt, origX, bHeight, textX, bb, textY, textLength, ts;
     var g = this;
     var rotation = false;
-
+    var isElip = false;
     // var bar = g.bars[0].find(e=>{
     //   return e.__data__.dim1 == d.dim1;
     // });
@@ -989,7 +989,8 @@ export default {
         if(g.rotateLabel) {
           textLength = g.tref.node().getComputedTextLength();
           txt = g.tref.text();
-          while (textLength > bHeight ) {
+          while (textLength > bHeight -10 ) {
+            isElip = true;
             txt = txt.slice(0, -1);
             g.tref.text(txt + '\u2026');
             textLength = g.tref.node().getComputedTextLength();
@@ -1017,7 +1018,8 @@ export default {
       x: Number.isFinite(tx) ? tx : 0,
       y: Number.isFinite(textY) ? textY : 0,
       text: txt,
-      rotation
+      rotation,
+      isElip
     };
   },
   /**
@@ -1254,7 +1256,7 @@ export default {
             .style("opacity", "1")
             .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(d.dim2)) : g.textColor)
             .style("font-size", g.tref.style("font-size"))
-            .attr({ x: txp.x, y: txp.y, dy: "-.2em" })
+            .attr({ y: txp.y ,dx : txp.isElip ? '1em' : '0em' })
             .text(txp.text)
           ;
         })
