@@ -691,11 +691,6 @@ export default {
 
     if (~"BA".indexOf(g.showTexts)) {
       // Create text inside bars
-      // console.log(g);
-      let ticks = d3.selectAll('.tick');
-      // console.log(ticks);
-      // console.log(g.bars);
-      console.log(g,g.innerBarPadV , g.innerBarPadH);
 
       g.texts
         .enter()
@@ -902,22 +897,6 @@ export default {
     // var bar = g.bars[0].find(e=>{
     //   return e.__data__.dim1 == d.dim1;
     // });
-    var bars = d3.selectAll('.ldwbar')
-      .filter(e => {
-
-        return e.dim1 == d.dim1;
-      })
-    ;
-    // var bar = bars[0].find(e => {
-    //   return e.__data__.dim1 == d.dim1;
-    // });
-    // console.log(bars ,bars[0][0].height.baseVal, bars[0][0].height.baseVal.value);
-    // var test = bars[0]
-
-
-
-
-    // console.log(d3.select(this));
 
     // Relative text sizing, relative to bar width
     // For total, make larger by reducing unneeded padding
