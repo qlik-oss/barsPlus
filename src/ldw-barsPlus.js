@@ -352,8 +352,6 @@ export default {
     };
     var innerWidth = g.width - margin.left - margin.right;
     var innerHeight = g.height - margin.top - margin.bottom;
-    console.log(g);
-    console.log(innerHeight);
 
     g.lgn = {
       minDim: [200, 100], // min inner dimensions for legend to be displayed
@@ -514,12 +512,32 @@ export default {
       var lgn = g.component
         .append("div")
         .attr("id", "ldwlegend")
-        .style("transform", "translate(" + g.lgn.x + 'px' + "," + g.lgn.y + 'px' + ")")
+        .style("transform", "translate(" + g.lgn.x + 'px' + "," + /*g.lgn.y*/ 0 + 'px' + ")")
         .style('position', 'relative')
         .style('height' , g.height + 'px')
-        .style('overflow' ,'auto')
+        .style('overflow' ,'hidden')
         .style('width', 'fit-content')
         ;
+      var btnContainer = lgn.append('div')
+        .attr('class', 'btnContainer');
+      var btnWrapper = btnContainer.append('div')
+        .attr('class', 'btnWrapper');
+      btnWrapper.append('button')
+        .attr('class', 'ldwLgnBtn')
+        .attr('id','btnDown')
+        .attr('width', '10px')
+        .attr('height', '10px')
+        .on('click', function(e){
+          lgnContainer[0][0].scrollTop += 200;
+        });
+      btnWrapper.append('button')
+        .attr('class', 'ldwLgnBtn')
+        .attr('id','btnUp')
+        .attr('width', '10px')
+        .attr('height', '10px')
+        .on('click', function(e){
+          lgnContainer[0][0].scrollTop -= 200;
+        });
       // lgn.append("rect")
       //   .attr("x", 0)
       //   .attr("y", 0)
@@ -534,9 +552,17 @@ export default {
       //   .attr("width", g.lgn.width)
       //   .attr("height", g.lgn.height)
       // ;
-      lgn.append("svg")
+      var lgnContainer =lgn.append('div')
+        .attr('class', 'lgnContainer')
+        .style('height' , g.height + 'px')
+        .style('overflow', 'hidden')
+        .style('margin-left' , '50px')
+        .style('margin-right' , '50px')
+        ;
+
+      lgnContainer.append("svg")
         .attr("class", "ldwlgnitems")
-        .attr('width', '200px');
+        .attr('width', '100px'); // TODO : replace static value
     }
     // Create bars
     g.bars = g.svg.selectAll("#" + g.id + " .ldwbar")
