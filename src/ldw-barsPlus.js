@@ -508,15 +508,14 @@ export default {
     }
     var getLegendWidth = function (pos){
       switch (pos) {
-        case 'R' || 'L':
+        case 'R' :
           return 'fit-content';
-        // case 'L':
-        //   return 'fit-content';
-        case 'T' || 'B':
+        case 'L':
+          return 'fit-content';
+        case 'T' :
           return 'auto';
-          // case 'B':
-          //   return 'auto';
-
+        case 'B':
+          return 'auto';
         default:
           return 'fit-content';
       }
@@ -541,7 +540,7 @@ export default {
       var lgn = g.component
         .append("div")
         .attr("id", "ldwlegend")
-        .style("transform", "translate(" + g.lgn.x + 'px' + "," + /*g.lgn.y*/ 0 + 'px' + ")")
+        .style("transform", "translate(" + g.lgn.x + 'px' + "," + (g.lgn.y -10) + 'px' + ")")
         .style('position', 'relative')
         .style('height' , g.height + 'px')
         .style('overflow' ,'hidden')
@@ -551,8 +550,6 @@ export default {
       var btnContainer = lgn.append('div')
         .attr('class', 'btnContainer');
       if(g.legendPosition == 'T' || g.legendPosition == 'B'){
-        console.log("HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM");
-
         btnContainer.style('margin-right' , '0');
       }else{
         btnContainer.style('margin-right' , '50px');
@@ -583,20 +580,6 @@ export default {
             lgnContainer[0][0].scrollTop -= 20;
           }
         });
-      // lgn.append("rect")
-      //   .attr("x", 0)
-      //   .attr("y", 0)
-      //   .attr("width", g.lgn.width)
-      //   .attr("height", g.lgn.height)
-      //   .style("fill", g.backgroundColor)
-      // ;
-      // lgn.append("clipPath")
-      //   .attr("id", g.id + "_lgnClip")
-      //   .attr("x", "0")
-      //   .attr("y", "0")
-      //   .attr("width", g.lgn.width)
-      //   .attr("height", g.lgn.height)
-      // ;
       var getContainerWidth = function (pos){
         switch (pos) {
           case 'R':
@@ -609,14 +592,18 @@ export default {
             return g.width + 'px';
 
           default:
-            return 'fit-content';
+            return 'auto';
         }
       };
       var getContainerHeight = function (pos){
         switch (pos) {
-          case 'R' || 'L':
+          case 'R':
             return g.height + 'px';
-          case 'T' || 'B':
+          case 'L':
+            return g.height +'px';
+          case 'T':
+            return '34px';
+          case 'B' :
             return '34px';
           default:
             return g.height + 'px';
@@ -624,9 +611,13 @@ export default {
       };
       var getContainerMargin = function (pos){
         switch (pos) {
-          case 'R' || 'L':
+          case 'R' :
             return '50px';
-          case 'T' || 'B':
+          case 'L':
+            return '50px';
+          case 'T' :
+            return '0';
+          case 'B':
             return '0';
           default:
             return '50px';
@@ -634,7 +625,6 @@ export default {
       };
       var lgnContainer =lgn.append('div')
         .attr('class', 'lgnContainer')
-        // .style('height' , g.height + 'px')
         .style('overflow', 'hidden')
         .style('margin-left' , getContainerMargin(g.legendPosition))
         .style('margin-right' , '50px')
@@ -653,13 +643,12 @@ export default {
             return 'inherit';
 
           default:
-            return 'fit-content';
+            return '100px';
         }
       };
       var legendItems = lgnContainer.append("svg")
         .attr("class", "ldwlgnitems")
         .attr('width', getItemsWidth(g.legendPosition));
-        // .attr('height', 'auto'); // TODO : replace static value
       if (g.legendPosition == 'R' || g.legendPosition == 'L'){
         legendItems.attr('height', g.allDim2.length * 20 +'px');
       }
@@ -698,8 +687,6 @@ export default {
     }
     // Create legend items
     if (g.lgn.use) {
-      console.log(g.allDim2);
-
       g.lgn.items = d3.select("." + "ldwlgnitems")
         // .attr('height', g.allDim2.length * 20)
         .selectAll("g")
@@ -940,8 +927,6 @@ export default {
     }
     // create legend
     if (g.lgn.use) {
-      console.log(g.lgn);
-
       g.lgn.items
         .enter()
         .append("g")
