@@ -523,16 +523,16 @@ export default {
     var getlegendDirection = function (pos){
       switch (pos) {
         case 'R' :
-          return 'column-reverse';
+          return 'column';
         case 'L':
-          return 'column-reverse';
+          return 'column';
         case 'T':
-          return 'row';
+          return 'row-reverse';
         case 'B':
-          return 'row';
+          return 'row-reverse';
 
         default:
-          return 'row';
+          return 'column';
       }
     };
     // Create Legend
@@ -547,39 +547,6 @@ export default {
         .style('width',getLegendWidth(g.legendPosition))
         .style('flex-direction', getlegendDirection(g.legendPosition))
         ;
-      var btnContainer = lgn.append('div')
-        .attr('class', 'btnContainer');
-      if(g.legendPosition == 'T' || g.legendPosition == 'B'){
-        btnContainer.style('margin-right' , '0');
-      }else{
-        btnContainer.style('margin-right' , '50px');
-      }
-      var btnWrapper = btnContainer.append('div')
-        .attr('class', 'btnWrapper');
-      btnWrapper.append('button')
-        .attr('class', 'ldwLgnBtn')
-        .attr('id','btnDown')
-        .attr('width', '10px')
-        .attr('height', '10px')
-        .on('click', function(e){
-          if(g.legendPosition == 'R' || g.legendPosition == 'L'){
-            lgnContainer[0][0].scrollTop += 200;
-          }else{
-            lgnContainer[0][0].scrollTop += 20;
-          }
-        });
-      btnWrapper.append('button')
-        .attr('class', 'ldwLgnBtn')
-        .attr('id','btnUp')
-        .attr('width', '10px')
-        .attr('height', '10px')
-        .on('click', function(e){
-          if(g.legendPosition == 'R' || g.legendPosition == 'L'){
-            lgnContainer[0][0].scrollTop -= 200;
-          }else{
-            lgnContainer[0][0].scrollTop -= 20;
-          }
-        });
       var getContainerWidth = function (pos){
         switch (pos) {
           case 'R':
@@ -634,13 +601,13 @@ export default {
       var getItemsWidth = function (pos){
         switch (pos) {
           case 'R':
-            return '100px';
+            return '100px'; //TO-DO : replace static value
           case 'L':
             return '100px';
           case 'T':
-            return 'inherit';
+            return g.width + 'px';
           case 'B':
-            return 'inherit';
+            return g.width + 'px';
 
           default:
             return '100px';
@@ -652,6 +619,53 @@ export default {
       if (g.legendPosition == 'R' || g.legendPosition == 'L'){
         legendItems.attr('height', g.allDim2.length * 20 +'px');
       }
+      var btnContainer = lgn.append('div')
+        .attr('class', 'btnContainer');
+      if(g.legendPosition == 'T' || g.legendPosition == 'B'){
+        btnContainer.style('margin-right' , '0');
+      }else{
+        btnContainer.style('margin-right' , '50px');
+      }
+      var btnWrapper = btnContainer.append('div')
+        .attr('class', 'btnWrapper');
+      var scrollHeight = legendItems[0][0].clientHeight - lgnContainer[0][0].clientHeight;
+      var btnDown = btnWrapper.append('button')
+        .attr('class', lgnContainer[0][0].scrollTop >= scrollHeight ? 'ldwLgnBtn disabled' : 'ldwLgnBtn')
+        .attr('id','btnDown')
+        .attr('width', '10px')
+        .attr('height', '10px')
+        .on('click', function(e){
+          if(g.legendPosition == 'R' || g.legendPosition == 'L'){
+
+            lgnContainer[0][0].scrollTop += 200;
+
+          }else{
+            lgnContainer[0][0].scrollTop += 20;
+          }
+          btnUp.style('border-bottom-color','black');
+          if(lgnContainer[0][0].scrollTop >= scrollHeight ){
+            btnDown.style('border-top-color','gray');
+          }
+        });
+      var btnUp = btnWrapper.append('button')
+        .attr('class', 'ldwLgnBtn')
+        .attr('id','btnUp')
+        .attr('width', '10px')
+        .attr('height', '10px')
+        .on('click', function(e){
+          if(g.legendPosition == 'R' || g.legendPosition == 'L'){
+            lgnContainer[0][0].scrollTop -= 200;
+
+          }else{
+            lgnContainer[0][0].scrollTop -= 20;
+          }
+          btnDown.style('border-top-color','black');
+
+          if(lgnContainer[0][0].scrollTop == 0){
+            btnUp.style('border-bottom-color','gray');
+          }
+        });
+
     }
     // Create bars
     g.bars = g.svg.selectAll("#" + g.id + " .ldwbar")
