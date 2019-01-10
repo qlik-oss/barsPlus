@@ -968,9 +968,9 @@ export default {
         if(g.rotateLabel) {
           textLength = g.tref.node().getComputedTextLength();
           txt = g.tref.text();
-          while (textLength > bHeight -10 ) {
+          while (textLength >= bHeight ) {
             isElip = true;
-            txt = txt.slice(0, -1);
+            txt = txt.slice(0, -3);
             g.tref.text(txt + '\u2026');
             textLength = g.tref.node().getComputedTextLength();
           }
@@ -1235,7 +1235,7 @@ export default {
             .style("opacity", "1")
             .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(d.dim2)) : g.textColor)
             .style("font-size", g.tref.style("font-size"))
-            .attr({ y: txp.y ,dx : txp.isElip ? '1em' : '0em' })
+            .attr({ y: txp.y ,dx : txp.isElip ? '.7em' : '0em' })
             .text(txp.text)
           ;
         })
