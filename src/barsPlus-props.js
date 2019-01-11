@@ -196,8 +196,7 @@ const definition ={
                 { value: true, label: "Single Color" },
                 { value: false, label: "Multi-color" }
               ],
-              show: ({ qHyperCubeDef: { qDimensions, qMeasures } }) =>
-                qDimensions.length == 0 || (qDimensions.length == 1 && qMeasures.length == 1)
+              show : true
             },
             colorSchema: {
               label: 'Colorschema',
