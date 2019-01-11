@@ -535,6 +535,20 @@ export default {
           return 'column';
       }
     };
+    var getLegendHeight = function (pos){
+      switch (pos) {
+        case 'R' :
+          return g.height + 'px';
+        case 'L':
+          return g.height + 'px';
+        case 'T' :
+          return 'auto';
+        case 'B':
+          return 'auto';
+        default:
+          return g.height + 'px';
+      }
+    };
     // Create Legend
     if (g.lgn.use) {
       var lgn = g.component
@@ -542,7 +556,7 @@ export default {
         .attr("id", "ldwlegend")
         .style("transform", "translate(" + g.lgn.x + 'px' + "," + (g.lgn.y -10) + 'px' + ")")
         .style('position', 'relative')
-        .style('height' , g.height + 'px')
+        .style('height' , getLegendHeight(g.legendPosition))
         .style('overflow' ,'hidden')
         .style('width',getLegendWidth(g.legendPosition))
         .style('flex-direction', getlegendDirection(g.legendPosition))
