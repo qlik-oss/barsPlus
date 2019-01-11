@@ -424,6 +424,7 @@ export default {
       .attr("width", g.width)
       .attr("height", g.height)
       .style("background-color", g.backgroundColor)
+      .style('position' , 'absolute')
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
     ;
@@ -505,32 +506,184 @@ export default {
     } else {
       g.cScale = d3.scale.ordinal().range(colorSchema).domain(g.allDim2);
     }
+    var getLegendWidth = function (pos){
+      switch (pos) {
+        case 'R' :
+          return 'fit-content';
+        case 'L':
+          return 'fit-content';
+        case 'T' :
+          return 'auto';
+        case 'B':
+          return 'auto';
+        default:
+          return 'fit-content';
+      }
+    };
+    var getlegendDirection = function (pos){
+      switch (pos) {
+        case 'R' :
+          return 'column';
+        case 'L':
+          return 'column';
+        case 'T':
+          return 'row-reverse';
+        case 'B':
+          return 'row-reverse';
 
+        default:
+          return 'column';
+      }
+    };
+    var getLegendHeight = function (pos){
+      switch (pos) {
+        case 'R' :
+          return g.height + 'px';
+        case 'L':
+          return g.height + 'px';
+        case 'T' :
+          return 'auto';
+        case 'B':
+          return 'auto';
+        default:
+          return g.height + 'px';
+      }
+    };
     // Create Legend
     if (g.lgn.use) {
-      var lgn = d3.select("#" + g.id + " svg")
-        .append("g")
-        .attr("class", "ldwlegend")
-        .attr("clip-path", "url(#" + g.id + "_lgnClip)")
-        .attr("transform", "translate(" + g.lgn.x + "," + g.lgn.y + ")")
+      var lgn = g.component
+        .append("div")
+        .attr("id", "ldwlegend")
+        .style("transform", "translate(" + g.lgn.x + 'px' + "," + (g.lgn.y -10) + 'px' + ")")
+        .style('position', 'relative')
+        .style('height' , getLegendHeight(g.legendPosition))
+        .style('overflow' ,'hidden')
+        .style('width',getLegendWidth(g.legendPosition))
+        .style('flex-direction', getlegendDirection(g.legendPosition))
         ;
-      lgn.append("rect")
-        .attr("x", 0)
-        .attr("y", 0)
-        .attr("width", g.lgn.width)
-        .attr("height", g.lgn.height)
-        .style("fill", g.backgroundColor)
-      ;
-      lgn.append("clipPath")
-        .attr("id", g.id + "_lgnClip")
-        .append("rect")
-        .attr("x", "0")
-        .attr("y", "0")
-        .attr("width", g.lgn.width)
-        .attr("height", g.lgn.height)
-      ;
-      lgn.append("g")
-        .attr("class", "ldwlgnitems");
+      var getContainerWidth = function (pos){
+        switch (pos) {
+          case 'R':
+            return 'auto';
+          case 'L':
+            return 'auto';
+          case 'T':
+            return g.width + 'px';
+          case 'B':
+            return g.width + 'px';
+
+          default:
+            return 'auto';
+        }
+      };
+      var getContainerHeight = function (pos){
+        switch (pos) {
+          case 'R':
+            return g.height + 'px';
+          case 'L':
+            return g.height +'px';
+          case 'T':
+            return '34px';
+          case 'B' :
+            return '34px';
+          default:
+            return g.height + 'px';
+        }
+      };
+      var getContainerMargin = function (pos){
+        switch (pos) {
+          case 'R' :
+            return '50px';
+          case 'L':
+            return '50px';
+          case 'T' :
+            return '0';
+          case 'B':
+            return '0';
+          default:
+            return '50px';
+        }
+      };
+      var lgnContainer =lgn.append('div')
+        .attr('class', 'lgnContainer')
+        .style('overflow', 'hidden')
+        .style('margin-left' , getContainerMargin(g.legendPosition))
+        .style('margin-right' , '50px')
+        .style('width', getContainerWidth(g.legendPosition))
+        .style('height', getContainerHeight(g.legendPosition))
+        ;
+      var getItemsWidth = function (pos){
+        switch (pos) {
+          case 'R':
+            return '100px'; //TO-DO : replace static value
+          case 'L':
+            return '100px';
+          case 'T':
+            return g.width + 'px';
+          case 'B':
+            return g.width + 'px';
+
+          default:
+            return '100px';
+        }
+      };
+      var legendItems = lgnContainer.append("svg")
+        .attr("class", "ldwlgnitems")
+        .attr('width', getItemsWidth(g.legendPosition));
+      if (g.legendPosition == 'R' || g.legendPosition == 'L'){
+        legendItems.attr('height', g.allDim2.length * 20 +'px');
+      }
+      if(legendItems[0][0].clientHeight > lgnContainer[0][0].clientHeight){
+        var btnContainer = lgn.append('div')
+          .attr('class', 'btnContainer');
+        if(g.legendPosition == 'T' || g.legendPosition == 'B'){
+          btnContainer.style('margin-right' , '0');
+        }else{
+          btnContainer.style('margin-right' , '50px');
+        }
+        var btnWrapper = btnContainer.append('div')
+          .attr('class', 'btnWrapper');
+        var scrollHeight = legendItems[0][0].clientHeight - lgnContainer[0][0].clientHeight;
+        var btnDown = btnWrapper.append('button')
+          .attr('class', lgnContainer[0][0].scrollTop >= scrollHeight ? 'ldwLgnBtn disabled' : 'ldwLgnBtn')
+          .attr('id','btnDown')
+          .attr('width', '10px')
+          .attr('height', '10px')
+          .on('click', function(e){
+            if (g.self && g.self.$scope.options.interactionState === 2) return;
+            if(g.legendPosition == 'R' || g.legendPosition == 'L'){
+
+              lgnContainer[0][0].scrollTop += 200;
+
+            }else{
+              lgnContainer[0][0].scrollTop += 20;
+            }
+            btnUp.style('border-bottom-color','black');
+            if(lgnContainer[0][0].scrollTop >= scrollHeight ){
+              btnDown.style('border-top-color','gray');
+            }
+          });
+        var btnUp = btnWrapper.append('button')
+          .attr('class', 'ldwLgnBtn')
+          .attr('id','btnUp')
+          .attr('width', '10px')
+          .attr('height', '10px')
+          .on('click', function(e){
+            if (g.self && g.self.$scope.options.interactionState === 2) return;
+            if(g.legendPosition == 'R' || g.legendPosition == 'L'){
+              lgnContainer[0][0].scrollTop -= 200;
+
+            }else{
+              lgnContainer[0][0].scrollTop -= 20;
+            }
+            btnDown.style('border-top-color','black');
+
+            if(lgnContainer[0][0].scrollTop == 0){
+              btnUp.style('border-bottom-color','gray');
+            }
+          });
+      }
+
     }
     // Create bars
     g.bars = g.svg.selectAll("#" + g.id + " .ldwbar")
@@ -566,7 +719,8 @@ export default {
     }
     // Create legend items
     if (g.lgn.use) {
-      g.lgn.items = d3.select("#" + g.id + " .ldwlgnitems")
+      g.lgn.items = d3.select("." + "ldwlgnitems")
+        // .attr('height', g.allDim2.length * 20)
         .selectAll("g")
         .data(g.allDim2)
       ;
@@ -834,7 +988,7 @@ export default {
               }
               return y;
             })
-            .style("opacity", "0")
+            // .style("opacity", "0")
             .attr("width", g.lgn.box[0])
             .attr("height", g.lgn.box[1])
             .style("fill", function (e) { return g.cScale(e); })
@@ -863,7 +1017,7 @@ export default {
               }
               return y;
             })
-            .style("opacity", "0")
+            // .style("opacity", "0")
             .text(function (e) {
               return e;
             })
