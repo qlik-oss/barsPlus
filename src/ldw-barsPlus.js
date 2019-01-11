@@ -636,6 +636,7 @@ export default {
           .attr('width', '10px')
           .attr('height', '10px')
           .on('click', function(e){
+            if (g.self && g.self.$scope.options.interactionState === 2) return;
             if(g.legendPosition == 'R' || g.legendPosition == 'L'){
 
               lgnContainer[0][0].scrollTop += 200;
@@ -654,6 +655,7 @@ export default {
           .attr('width', '10px')
           .attr('height', '10px')
           .on('click', function(e){
+            if (g.self && g.self.$scope.options.interactionState === 2) return;
             if(g.legendPosition == 'R' || g.legendPosition == 'L'){
               lgnContainer[0][0].scrollTop -= 200;
 
