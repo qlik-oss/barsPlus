@@ -270,17 +270,21 @@ export default {
         else {
           num = d.values[j].values[0][2].qNum;
           txt = d.values[j].values[0][2].qText;
-          elm = d.values[j].values[0][0].qElemNumber;
+          if(g.defDims == 2){
+            elm = [d.values[j].values[0][0].qElemNumber,d.values[j].values[0][1].qElemNumber];
+          }else{
+            elm = d.values[j].values[0][0].qElemNumber;
+          }
           j++;
+          v.push({
+            dim2: q[i],
+            qNum: num,
+            qText: txt,
+            qElemNumber: elm,
+            offset: t
+          });
+          t += num;
         }
-        v.push({
-          dim2: q[i],
-          qNum: num,
-          qText: txt,
-          qElemNumber: elm,
-          offset: t
-        });
-        t += num;
       }
       v.forEach(function (e) {
         e.dim1 = d.key;
@@ -751,7 +755,32 @@ export default {
       .style("opacity", "0")
       .attr("class", "selectable ldwbar")
       .on("click", function (d) {
-        if (d.qElemNumber >= 0) { // Cannot select a measure
+        if (g.self.$scope.g.defDims == 2){ //if we have two Dims
+          if ( d && d.dim2 ){
+            if (g.selectionMode == "QUICK") {
+              g.self.backendApi.selectValues(1, [d.qElemNumber[1]], true);
+              g.self.backendApi.selectValues(0, [d.qElemNumber[0]], true);
+            }
+            else if (g.selectionMode == "CONFIRM") {
+              var t = d3.select(this).classed("selected");
+              g.self.selectValues(1, [d.qElemNumber[1]], true);
+              g.self.selectValues(0, [d.qElemNumber[0]], true);
+
+              // following to address QS bug where clear button does not clear class names
+              g.self.clearSelectedValues = function () {
+                d3.selectAll("#" + g.id + " .selected").classed("selected", false);
+              };
+              d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
+                .classed("selected", !t);
+              d3.select("#" + g.id + " .ldwtooltip")
+                .style("opacity", "0")
+                .transition()
+                .remove
+              ;
+            }
+          }
+        }
+        if (g.self.$scope.g.defDims == 1){
           if (g.selectionMode == "QUICK") {
             g.self.backendApi.selectValues(0, [d.qElemNumber], true);
           }
@@ -962,7 +991,115 @@ export default {
       g.lgn.items
         .enter()
         .append("g")
-        .attr("class", "ldwlgnitem")
+        .attr("class",g.self && g.self._inEditState ? "ldwlgnitem" : "ldwlgnitem analysis-mode")
+        .on('click', function(e) {
+          d3.selectAll('rect')
+            .filter(function(d){
+              if (g.self && g.self._inEditState) return;
+              if (g.self.$scope.g.defDims == 2){ //if we have two Dims
+                if ( d && d.dim2 ){
+                  if( d.dim2 === e){
+                    if (g.selectionMode == "QUICK") {
+                      g.self.backendApi.selectValues(1, [d.qElemNumber[1]], true);
+                    }
+                    else if (g.selectionMode == "CONFIRM") {
+                      var t = d3.select(this).classed("selected");
+                      g.self.selectValues(1, [d.qElemNumber[1]], true);
+                      // following to address QS bug where clear button does not clear class names
+                      g.self.clearSelectedValues = function () {
+                        d3.selectAll("#" + g.id + " .selected").classed("selected", false);
+                      };
+                      d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
+                        .classed("selected", !t);
+                      d3.select("#" + g.id + " .ldwtooltip")
+                        .style("opacity", "0")
+                        .transition()
+                        .remove
+                      ;
+                    }
+                  }
+                }
+              }
+              if (g.self.$scope.g.defDims == 1){
+                if (d && d.dim1){
+                  if (d.dim1 === e){
+                    if (d.qElemNumber >= 0) { // Cannot select a measure
+                      if (g.selectionMode == "QUICK") {
+                        g.self.backendApi.selectValues(0, [d.qElemNumber], true);
+                      }
+                      else if (g.selectionMode == "CONFIRM") {
+                        var t = d3.select(this).classed("selected");
+                        g.self.selectValues(0, [d.qElemNumber], true);
+                        // following to address QS bug where clear button does not clear class names
+                        g.self.clearSelectedValues = function () {
+                          d3.selectAll("#" + g.id + " .selected").classed("selected", false);
+                        };
+                        d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
+                          .classed("selected", !t);
+                        d3.select("#" + g.id + " .ldwtooltip")
+                          .style("opacity", "0")
+                          .transition()
+                          .remove
+                        ;
+                      }
+                    }
+                  }
+                }
+              }
+            } )
+          ;
+        })
+        .on('mouseenter', function(e){
+          if (g.self && g.self.$scope.options.interactionState === 2) return;
+          d3.select(this)
+            .classed('legendHover');
+          d3.selectAll('rect')
+            .filter(function(d){
+              if (g.self.$scope.g.defDims == 2){
+                if (d && d.dim2){
+                  if (d.dim2 === e){
+                    d3.select(this)
+                      .style("opacity", "0.5")
+                      .attr("stroke", "white")
+                      .attr("stroke-width", "2");
+                  }
+                }
+              }
+              else{
+                if (d && d.dim1){
+                  if (d.dim1 === e){
+                    d3.select(this)
+                      .style("opacity", "0.5")
+                      .attr("stroke", "white")
+                      .attr("stroke-width", "2");
+                  }
+                }
+              }
+            });
+        })
+        .on('mouseleave', function(e){
+          d3.selectAll('rect')
+            .filter(function(d){
+              if (g.self.$scope.g.defDims == 2){
+                if (d && d.dim2){
+                  if (d.dim2 === e){
+                    d3.select(this)
+                      .style("opacity", "1.0")
+                      .attr("stroke", "none");
+                  }
+                }
+              }
+              else{
+                if (d && d.dim1){
+                  if (d.dim1 === e){
+                    d3.select(this)
+                      .style("opacity", "1.0")
+                      .attr("stroke", "none");
+                  }
+                }
+              }
+            });
+        })
         .each(function (d, i) {
           d3.select(this)
             .append("rect")
@@ -992,6 +1129,7 @@ export default {
             .attr("width", g.lgn.box[0])
             .attr("height", g.lgn.box[1])
             .style("fill", function (e) { return g.cScale(e); })
+
           ;
           d3.select(this)
             .append("text")
@@ -1021,6 +1159,7 @@ export default {
             .text(function (e) {
               return e;
             })
+
           ;
         })
       ;
