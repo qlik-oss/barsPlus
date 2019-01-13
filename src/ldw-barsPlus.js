@@ -510,141 +510,40 @@ export default {
     } else {
       g.cScale = d3.scale.ordinal().range(colorSchema).domain(g.allDim2);
     }
-    var getLegendWidth = function (pos){
-      switch (pos) {
-        case 'R' :
-          return 'fit-content';
-        case 'L':
-          return 'fit-content';
-        case 'T' :
-          return 'auto';
-        case 'B':
-          return 'auto';
-        default:
-          return 'fit-content';
-      }
-    };
-    var getlegendDirection = function (pos){
-      switch (pos) {
-        case 'R' :
-          return 'column';
-        case 'L':
-          return 'column';
-        case 'T':
-          return 'row-reverse';
-        case 'B':
-          return 'row-reverse';
 
-        default:
-          return 'column';
-      }
-    };
-    var getLegendHeight = function (pos){
-      switch (pos) {
-        case 'R' :
-          return g.height + 'px';
-        case 'L':
-          return g.height + 'px';
-        case 'T' :
-          return 'auto';
-        case 'B':
-          return 'auto';
-        default:
-          return g.height + 'px';
-      }
-    };
     // Create Legend
     if (g.lgn.use) {
+      var lPos = g.legendPosition;
       var lgn = g.component
         .append("div")
         .attr("id", "ldwlegend")
         .style("transform", "translate(" + g.lgn.x + 'px' + "," + (g.lgn.y -10) + 'px' + ")")
         .style('position', 'relative')
-        .style('height' , getLegendHeight(g.legendPosition))
+        .style('height' , ()=> lPos === 'R' || lPos === 'L' ? g.height + 'px' : lPos === 'T' || lPos === 'B'? 'auto' : g.height + 'px')
         .style('overflow' ,'hidden')
-        .style('width',getLegendWidth(g.legendPosition))
-        .style('flex-direction', getlegendDirection(g.legendPosition))
+        .style('width' , ()=> lPos === 'R' || lPos === 'L' ? 'fit-content' : lPos === 'T' || lPos === 'B'? 'auto' : g.height + 'fit-content')
+        .style('flex-direction' , ()=> lPos === 'R' || lPos === 'L' ? 'column' : lPos === 'T' || lPos === 'B'? 'row-reverse' : g.height + 'column')
         ;
-      var getContainerWidth = function (pos){
-        switch (pos) {
-          case 'R':
-            return 'auto';
-          case 'L':
-            return 'auto';
-          case 'T':
-            return g.width + 'px';
-          case 'B':
-            return g.width + 'px';
 
-          default:
-            return 'auto';
-        }
-      };
-      var getContainerHeight = function (pos){
-        switch (pos) {
-          case 'R':
-            return g.height + 'px';
-          case 'L':
-            return g.height +'px';
-          case 'T':
-            return '34px';
-          case 'B' :
-            return '34px';
-          default:
-            return g.height + 'px';
-        }
-      };
-      var getContainerMargin = function (pos){
-        switch (pos) {
-          case 'R' :
-            return '50px';
-          case 'L':
-            return '50px';
-          case 'T' :
-            return '0';
-          case 'B':
-            return '0';
-          default:
-            return '50px';
-        }
-      };
       var lgnContainer =lgn.append('div')
         .attr('class', 'lgnContainer')
         .style('overflow', 'hidden')
-        .style('margin-left' , getContainerMargin(g.legendPosition))
+        .style('margin-left' , ()=> lPos === 'R' || lPos === 'L' ? '50px' : lPos === 'T' || lPos === 'B' ? '0' : '0' )
         .style('margin-right' , '50px')
-        .style('width', getContainerWidth(g.legendPosition))
-        .style('height', getContainerHeight(g.legendPosition))
+        .style('width' , ()=> lPos === 'R' || lPos === 'L' ? 'auto' : lPos === 'T' || lPos === 'B' ? g.width + 'px' : 'auto' )
+        .style('width' , ()=> lPos === 'R' || lPos === 'L' ? g.height + 'px' : lPos === 'T' || lPos === 'B' ? '34px' : g.height + 'px' )
         ;
-      var getItemsWidth = function (pos){
-        switch (pos) {
-          case 'R':
-            return '100px'; //TO-DO : replace static value
-          case 'L':
-            return '100px';
-          case 'T':
-            return g.width + 'px';
-          case 'B':
-            return g.width + 'px';
 
-          default:
-            return '100px';
-        }
-      };
       var legendItems = lgnContainer.append("svg")
         .attr("class", "ldwlgnitems")
-        .attr('width', getItemsWidth(g.legendPosition));
+        .attr('width' , ()=> lPos === 'R' ? '100px' : lPos === 'L' ? '100px' : lPos === 'T' ? g.width + 'px' : g.width + 'px' );
       if (g.legendPosition == 'R' || g.legendPosition == 'L'){
         legendItems.attr('height', g.allDim2.length * 20 +'px');
       }
       if(legendItems[0][0].clientHeight > lgnContainer[0][0].clientHeight){
         var btnContainer = lgn.append('div')
-          .attr('class', 'btnContainer');
-        if(g.legendPosition == 'T' || g.legendPosition == 'B'){
-          btnContainer.style('margin-right' , '0');
-        }else{
-          btnContainer.style('margin-right' , '50px');
-        }
+          .attr('class', 'btnContainer')
+          .style('margin-right' , ()=> lPos === 'T' || lPos === 'B' ? '0' : '50px');
         var btnWrapper = btnContainer.append('div')
           .attr('class', 'btnWrapper');
         var scrollHeight = legendItems[0][0].clientHeight - lgnContainer[0][0].clientHeight;
