@@ -700,8 +700,20 @@ export default {
           }
         }
       })
-      .on("mouseenter", function (d) {
-        if (g.inSelections || g.editMode) return;
+      .on("touchstart", function(d){ //WIP toching should NOT give the hover effect,, waiting for a proper testing device to continue
+        d3.select(this)
+          .style("opacity", "1.0")
+          .attr("stroke", "none")
+        ;
+      })
+      .on("touchend", function(d){ //WIP toching should NOT give the hover effect,, waiting for a proper testing device to continue
+        d3.select(this)
+          .style("opacity", "1.0")
+          .attr("stroke", "none")
+        ;
+      })
+      .on("mouseenter", function (d,e) {
+        if (g.editMode) return;
         d3.select(this)
           .style("opacity", "0.5")
           .attr("stroke", "white")
