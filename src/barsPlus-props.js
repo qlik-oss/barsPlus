@@ -275,18 +275,19 @@ const definition ={
         },
         dimensionAxis: {
           type: "items",
-          label: function (data) {
+          label: function (data, handler) {
             var t = "";
             if (data.qHyperCubeDef.qDimensions.length == 0) {
               if (data.props.axisTitleD.length > 0)
                 t = " (" + data.props.axisTitleD + ")";
             }
             else {
-              t = data.qHyperCubeDef.qDimensions[0].qDef.qFieldLabels[0];
-              if (t.length == 0) {
-                t = data.qHyperCubeDef.qDimensions[0].qDef.qFieldDefs[0];
+              var cId = data.qHyperCubeDef.qDimensions[0].qDef.cId;
+              var dimLayout = handler.getDimensionLayout(cId);
+              if (dimLayout !== undefined){
+                t = dimLayout.qFallbackTitle;
+                t = " (" + (t.startsWith("=") ? t.slice(1) : t) + ")";
               }
-              t = " (" + (t.startsWith("=") ? t.slice(1) : t) + ")";
             }
             return (data.props.orientation == "V" ? "X" : "Y") + "-Axis" + t;
           },
@@ -364,21 +365,19 @@ const definition ={
         },
         measureAxis: {
           type: "items",
-          label: function (data) {
+          label: function (data, handler) {
             var t = "";
             if (data.qHyperCubeDef.qDimensions.length == 0 || data.qHyperCubeDef.qMeasures.length > 1) {
               if (data.props.axisTitleM.length > 0)
                 t = " (" + data.props.axisTitleM + ")";
             }
             else if (data.qHyperCubeDef.qMeasures.length > 0) {
-              const { qDef } = data.qHyperCubeDef.qMeasures[0];
-              if (qDef.hasOwnProperty("qLabel") && qDef.qLabel) {
-                t = qDef.qLabel;
+              var cId = data.qHyperCubeDef.qMeasures[0].qDef.cId;
+              var mesLayout = handler.getMeasureLayout(cId);
+              if (mesLayout !== undefined){
+                t = mesLayout.qFallbackTitle;
+                t = " (" + (t.startsWith("=") ? t.slice(1) : t) + ")";
               }
-              else {
-                t = qDef.qDef;
-              }
-              t = " (" + (t.startsWith("=") ? t.slice(1) : t) + ")";
             }
             return (data.props.orientation == "V" ? "Y" : "X") + "-Axis" + t;
           },
