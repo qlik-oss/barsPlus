@@ -212,7 +212,7 @@ const definition ={
               label: 'Color',
               type: 'object',
               component: 'color-picker',
-              dualoutput: true,
+              dualOutput: true,
               defaultValue: getDefaultSingleColor,
               show: ({ props }) => props.singleColor
             },
