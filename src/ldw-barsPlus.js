@@ -147,13 +147,25 @@ export default {
       }
     }
     else if (g.defDims == 1 && g.defMeas > 1) {
-      for (var i = 0; i < g.rawData.length; i++) {
-        for (var j = 0; j < g.measures.length; j++) {
-          inData.push([
-            g.rawData[i][0],
-            { qElemNumber: -1, qNum: j + 1, qText: g.measures[j] },
-            g.rawData[i][j + 1]
-          ]);
+      if(g.measures[0] == g.measures[1]){
+        for (var i = 0; i < g.rawData.length; i++) {
+          for (var j = 0; j < g.measures.length; j++) {
+            inData.push([
+              g.rawData[i][0],
+              g.rawData[i][j],
+              g.rawData[i][j + 1]
+            ]);
+          }
+        }
+      }else{
+        for (var i = 0; i < g.rawData.length; i++) {
+          for (var j = 0; j < g.measures.length; j++) {
+            inData.push([
+              g.rawData[i][0],
+              { qElemNumber: -1, qNum: j + 1, qText: g.measures[j] },
+              g.rawData[i][j + 1]
+            ]);
+          }
         }
       }
     }
@@ -320,6 +332,12 @@ export default {
     g.data = struc;
     g.flatData = flatData;
     g.allDim2 = q;
+    if(g.defDims == 1 && g.defMeas >1){
+      g.allDim2 = [];
+      g.measures.forEach(element => {
+        g.allDim2.push(element);
+      });
+    }
     g.allCol2 = r;
     g.deltas = deltas;
   },
@@ -531,7 +549,7 @@ export default {
         .style('margin-left' , ()=> lPos === 'R' || lPos === 'L' ? '50px' : lPos === 'T' || lPos === 'B' ? '0' : '0' )
         .style('margin-right' , '50px')
         .style('width' , ()=> lPos === 'R' || lPos === 'L' ? 'auto' : lPos === 'T' || lPos === 'B' ? g.width + 'px' : 'auto' )
-        .style('width' , ()=> lPos === 'R' || lPos === 'L' ? g.height + 'px' : lPos === 'T' || lPos === 'B' ? '34px' : g.height + 'px' )
+        .style('height' , ()=> lPos === 'R' || lPos === 'L' ? g.height + 'px' : lPos === 'T' || lPos === 'B' ? '34px' : g.height + 'px' )
         ;
 
       var legendItems = lgnContainer.append("svg")
@@ -1293,7 +1311,11 @@ export default {
     if (g.lgn.use) {
       g.lgn.items = d3.selectAll("#" + g.id + " .ldwlgnitems")
         .selectAll("g")
-        .data(g.allDim2, function (d) { return d; })
+        .data(g.allDim2,
+          g.allDim2.forEach( element => {
+            return element;
+          })
+        )
       ;
       g.lgn.items
         .exit()
