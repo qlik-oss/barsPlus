@@ -43,7 +43,12 @@ export default {
     dimensions: {
       uses: "dimensions",
       min: 0,
-      max: 2
+      max: function(nMeasures){
+        if(nMeasures >= 2){
+          return 1;
+        }
+        return 2;
+      }
     },
     measures: {
       uses: "measures",
