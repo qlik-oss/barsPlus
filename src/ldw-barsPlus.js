@@ -701,16 +701,58 @@ export default {
         }
       })
       .on("touchstart", function(d){ //WIP toching should NOT give the hover effect,, waiting for a proper testing device to continue
+        if (g.editMode) return;
         d3.select(this)
           .style("opacity", "1.0")
           .attr("stroke", "none")
         ;
-      })
-      .on("touchend", function(d){ //WIP toching should NOT give the hover effect,, waiting for a proper testing device to continue
-        d3.select(this)
-          .style("opacity", "1.0")
-          .attr("stroke", "none")
-        ;
+        var event = d3.event;
+        if (g.self.$scope.g.defDims == 2){ //if we have two Dims
+          if ( d && d.dim2 ){
+            if (g.selectionMode == "QUICK") {
+              g.self.backendApi.selectValues(1, [d.qElemNumber[1]], true);
+              g.self.backendApi.selectValues(0, [d.qElemNumber[0]], true);
+            }
+            else if (g.selectionMode == "CONFIRM") {
+              var t = d3.select(this).classed("selected");
+              g.self.selectValues(1, [d.qElemNumber[1]], true);
+              g.self.selectValues(0, [d.qElemNumber[0]], true);
+
+              // following to address QS bug where clear button does not clear class names
+              g.self.clearSelectedValues = function () {
+                d3.selectAll("#" + g.id + " .selected").classed("selected", false);
+              };
+              d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
+                .classed("selected", !t);
+              d3.select("#" + g.id + " .ldwtooltip")
+                .style("opacity", "0")
+                .transition()
+                .remove
+              ;
+            }
+          }
+        }
+        if (g.self.$scope.g.defDims == 1){
+          if (g.selectionMode == "QUICK") {
+            g.self.backendApi.selectValues(0, [d.qElemNumber], true);
+          }
+          else if (g.selectionMode == "CONFIRM") {
+            var t = d3.select(this).classed("selected");
+            g.self.selectValues(0, [d.qElemNumber], true);
+            // following to address QS bug where clear button does not clear class names
+            g.self.clearSelectedValues = function () {
+              d3.selectAll("#" + g.id + " .selected").classed("selected", false);
+            };
+            d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
+              .classed("selected", !t);
+            d3.select("#" + g.id + " .ldwtooltip")
+              .style("opacity", "0")
+              .transition()
+              .remove
+            ;
+          }
+        }
+        event.preventDefault();
       })
       .on("mouseenter", function (d,e) {
         if (g.editMode) return;
