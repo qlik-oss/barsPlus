@@ -147,25 +147,13 @@ export default {
       }
     }
     else if (g.defDims == 1 && g.defMeas > 1) {
-      if(g.measures[0] == g.measures[1]){
-        for (var i = 0; i < g.rawData.length; i++) {
-          for (var j = 0; j < g.measures.length; j++) {
-            inData.push([
-              g.rawData[i][0],
-              g.rawData[i][j],
-              g.rawData[i][j + 1]
-            ]);
-          }
-        }
-      }else{
-        for (var i = 0; i < g.rawData.length; i++) {
-          for (var j = 0; j < g.measures.length; j++) {
-            inData.push([
-              g.rawData[i][0],
-              { qElemNumber: -1, qNum: j + 1, qText: g.measures[j] },
-              g.rawData[i][j + 1]
-            ]);
-          }
+      for (var i = 0; i < g.rawData.length; i++) {
+        for (var j = 0; j < g.measures.length; j++) {
+          inData.push([
+            g.rawData[i][0],
+            { qElemNumber: -1, qNum: j + 1, qText: g.measures[j] },
+            g.rawData[i][j + 1]
+          ]);
         }
       }
     }
@@ -209,14 +197,15 @@ export default {
     // Process two dimensional data
     g.nDims = 2;
 
-    var p1 = "", p2, edges = [], b, p = [];
+    var p1 = "", p2, edges = [], b, p = [] , l=[];
     inData.forEach(function (d) {
       var c2 = d[1].qText;
       if (p.indexOf(d[0].qText) == -1) {
         p.push(d[0].qText);
       }
-      if (q.indexOf(d[1].qText) == -1) {
+      if (q.indexOf(d[1].qText) == -1 || l.indexOf(d[1].qNum) ==-1) {
         q.push(d[1].qText);
+        l.push(d[1].qNum);
         r.push(cf(d));
       }
       if (d[0].qText != p1) {
@@ -255,7 +244,7 @@ export default {
 
     var n = d3.nest()
       .key(function (d) { return d[0].qText; })
-      .key(function (d) { return d[1].qText; })
+      .key(function (d) { return `${d[1].qNum}`; })
       .entries(inData)
       ;
     // sort all nodes in order specified by q
@@ -274,7 +263,7 @@ export default {
       var t = 0, v = [], j = 0, num, txt;
       for (var i = 0; i < q.length; i++) {
         let elm;
-        if (d.values.length <= j || d.values[j].key != q[i]) {
+        if (d.values.length <= j || d.values[j].values[0][1].qText != q[i]) {
           num = 0;
           txt = "-";
           elm = [];
@@ -332,12 +321,6 @@ export default {
     g.data = struc;
     g.flatData = flatData;
     g.allDim2 = q;
-    if(g.defDims == 1 && g.defMeas >1){
-      g.allDim2 = [];
-      g.measures.forEach(element => {
-        g.allDim2.push(element);
-      });
-    }
     g.allCol2 = r;
     g.deltas = deltas;
   },
