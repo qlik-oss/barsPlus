@@ -260,7 +260,7 @@ export default {
         : (p.indexOf(a.key) > p.indexOf(b.key) ? 1 : 0));
     });
     n.forEach(function (d, idx) {
-      var t = 0, v = [], j = 0, num, txt;
+      var t = 0, v = [], j = 0, num, txt, mNum;
       for (var i = 0; i < q.length; i++) {
         let elm;
         if (d.values.length <= j || d.values[j].values[0][1].qText != q[i]) {
@@ -271,6 +271,7 @@ export default {
         else {
           num = d.values[j].values[0][2].qNum;
           txt = d.values[j].values[0][2].qText;
+          mNum = d.values[j].values[0][1].qNum;
           if(g.defDims == 2){
             elm = [d.values[j].values[0][0].qElemNumber,d.values[j].values[0][1].qElemNumber];
           }else{
@@ -282,7 +283,8 @@ export default {
             qNum: num,
             qText: txt,
             qElemNumber: elm,
-            offset: t
+            offset: t,
+            mNum: mNum
           });
           t += num;
         }
@@ -591,7 +593,7 @@ export default {
     }
     // Create bars
     g.bars = g.svg.selectAll("#" + g.id + " .ldwbar")
-      .data(g.flatData, function (d) { return d.dim1 + '|' + d.dim2; })
+      .data(g.flatData)
     ;
     // Text on bars
     if (g.showTexts != "N") {
@@ -611,7 +613,7 @@ export default {
       if (~"BA".indexOf(g.showTexts)) {
         // Create text on bars
         g.texts = g.svg.selectAll("#" + g.id + " .ldwtxt")
-          .data(g.flatData, function (d) { return d.dim1 + '|' + d.dim2; })
+          .data(g.flatData)
         ;
       }
     }
@@ -645,13 +647,13 @@ export default {
     g.bars
       .enter()
       .append("rect")
-      .attr("ldwdim1", function (d) { return d.qElemNumber; })
+      .attr("ldwdim1", function (d,i) { return d.qElemNumber; })
       .attr(g.orientation == "V" ? "x" : "y", function (d) { return g.dScale(d.dim1); })
       .attr(g.orientation == "V" ? "y" : "x", function (d) { return g.mScale(0); })		// grow from bottom
       //		.attr(g.orientation == "V" ? "y" : "x", function(d) { return g.mScale(d.offset); })	// venetian blinds
       .attr(g.orientation == "V" ? "width" : "height", g.dScale.rangeBand())
       .attr(g.orientation == "V" ? "height" : "width", function (d) { return 0; })
-      .style("fill", function (d) { return g.cScale(d.dim2); })
+      .style("fill", function (d) { return g.cScale(d.dim2 + d.mNum); })
       .style("opacity", "0")
       .attr("class", "selectable ldwbar")
       .on("click", function (d) {
@@ -1028,7 +1030,7 @@ export default {
             // .style("opacity", "0")
             .attr("width", g.lgn.box[0])
             .attr("height", g.lgn.box[1])
-            .style("fill", function (e) { return g.cScale(e); })
+            .style("fill", function (e) { return g.cScale(e + i); })
 
           ;
           d3.select(this)
@@ -1231,7 +1233,7 @@ export default {
     updateAxis(g.labelTitleM, g.labelStyleM, g.mAxis, "ldw-m", g.orientation != "V");
 
     g.bars = g.svg.selectAll("#" + g.id + " .ldwbar")
-      .data(g.flatData, function (d) { return d.dim1 + '|' + d.dim2; })
+      .data(g.flatData)
     ;
     // Remove bars with transition
     g.bars
@@ -1262,7 +1264,7 @@ export default {
     // Remove texts with transition
     if (~"BA".indexOf(g.showTexts)) {
       g.texts = g.svg.selectAll("#" + g.id + " .ldwtxt")
-        .data(g.flatData, function (d) { return d.dim1 + '|' + d.dim2; })
+        .data(g.flatData)
       ;
       g.texts
         .exit()
