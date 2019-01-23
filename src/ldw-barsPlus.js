@@ -197,15 +197,15 @@ export default {
     // Process two dimensional data
     g.nDims = 2;
 
-    var p1 = "", p2, edges = [], b, p = [] , l=[];
+    var p1 = "", p2, edges = [], b, p = [] , measures=[];
     inData.forEach(function (d) {
       var c2 = d[1].qText;
       if (p.indexOf(d[0].qText) == -1) {
         p.push(d[0].qText);
       }
-      if (q.indexOf(d[1].qText) == -1 || l.indexOf(d[1].qNum) ==-1) {
+      if (q.indexOf(d[1].qText) == -1 || measures.indexOf(d[1].qNum) ==-1) {
         q.push(d[1].qText);
-        l.push(d[1].qNum);
+        measures.push(d[1].qNum);
         r.push(cf(d));
       }
       if (d[0].qText != p1) {
@@ -647,7 +647,7 @@ export default {
     g.bars
       .enter()
       .append("rect")
-      .attr("ldwdim1", function (d,i) { return d.qElemNumber; })
+      .attr("ldwdim1", function (d) { return d.qElemNumber; })
       .attr(g.orientation == "V" ? "x" : "y", function (d) { return g.dScale(d.dim1); })
       .attr(g.orientation == "V" ? "y" : "x", function (d) { return g.mScale(0); })		// grow from bottom
       //		.attr(g.orientation == "V" ? "y" : "x", function(d) { return g.mScale(d.offset); })	// venetian blinds
@@ -1296,11 +1296,7 @@ export default {
     if (g.lgn.use) {
       g.lgn.items = d3.selectAll("#" + g.id + " .ldwlgnitems")
         .selectAll("g")
-        .data(g.allDim2,
-          g.allDim2.forEach( element => {
-            return element;
-          })
-        )
+        .data(g.allDim2,g.allDim2.forEach(element => element))
       ;
       g.lgn.items
         .exit()
