@@ -260,7 +260,7 @@ export default {
         : (p.indexOf(a.key) > p.indexOf(b.key) ? 1 : 0));
     });
     n.forEach(function (d, idx) {
-      var t = 0, v = [], j = 0, num, txt, mNum;
+      var t = 0, v = [], j = 0, num, txt, measureNumber;
       for (var i = 0; i < q.length; i++) {
         let elm;
         if (d.values.length <= j || d.values[j].values[0][1].qText != q[i]) {
@@ -271,7 +271,7 @@ export default {
         else {
           num = d.values[j].values[0][2].qNum;
           txt = d.values[j].values[0][2].qText;
-          mNum = d.values[j].values[0][1].qNum;
+          measureNumber = d.values[j].values[0][1].qNum;
           if(g.defDims == 2){
             elm = [d.values[j].values[0][0].qElemNumber,d.values[j].values[0][1].qElemNumber];
           }else{
@@ -284,7 +284,7 @@ export default {
             qText: txt,
             qElemNumber: elm,
             offset: t,
-            mNum: mNum
+            measureNumber
           });
           t += num;
         }
@@ -653,7 +653,7 @@ export default {
       //		.attr(g.orientation == "V" ? "y" : "x", function(d) { return g.mScale(d.offset); })	// venetian blinds
       .attr(g.orientation == "V" ? "width" : "height", g.dScale.rangeBand())
       .attr(g.orientation == "V" ? "height" : "width", function (d) { return 0; })
-      .style("fill", function (d) { return g.cScale(d.dim2 + d.mNum); })
+      .style("fill", function (d) { return g.cScale(d.dim2 + d.measureNumber); })
       .style("opacity", "0")
       .attr("class", "selectable ldwbar")
       .on("click", function (d) {
