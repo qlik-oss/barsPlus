@@ -27,13 +27,18 @@ export function updateColorSchemas (component) {
   const app = qlik.currApp(component);
   return app.theme.getApplied()
     .then(qTheme => {
-      const { scales } = qTheme.properties;
-      const schemas = scales
-        .filter(scale => scale.type === 'class-pyramid')
+      const { data } = qTheme.properties.palettes;
+      const schemas = data
+        .filter(scale => {
+          return scale.type === 'pyramid' || scale.type === 'row';})
         .map(scale => {
+          let colors =[];
           const label = scale.name;
-          const colors = scale.scale[scale.scale.length - 1];
-
+          if(scale.type === 'pyramid'){
+            colors = scale.scale[scale.scale.length - 1];
+          }else{
+            colors = scale.scale;
+          }
           return {
             label,
             component: 'color-scale',
