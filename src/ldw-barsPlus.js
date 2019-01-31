@@ -952,7 +952,7 @@ export default {
       textY = g.orientation == "V" ? g.mScale(d.offset) - innerBarPadV
         : g.dScale(d.dim1) + g.dScale.rangeBand() - innerBarPadV;
     txt = "";
-
+    var barWidth = g.bars[0][0].width.baseVal.value;
     if (bb.height + 2 * innerBarPadV <= bHeight || (g.orientation != "V" && !g.textSizeAbs)) {
       if (bb.width + 2 * innerBarPadH <= textX) {
         if (hAlign == "C") {
@@ -965,7 +965,7 @@ export default {
       }
 
       else if (g.textDots) {
-        if(g.rotateLabel) {
+        if(g.rotateLabel && barWidth > 25) {
           textLength = g.tref.node().getComputedTextLength();
           txt = g.tref.text();
           while (textLength >= bHeight ) {
