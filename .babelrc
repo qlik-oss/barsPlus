@@ -4,8 +4,7 @@
       "targets": {
         "ie": "11"
       },
-      "useBuiltIns": "entry",
-      "debug": true
+      "useBuiltIns": "entry"
     }]
   ]
 }
