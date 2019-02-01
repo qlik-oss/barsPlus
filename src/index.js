@@ -24,7 +24,10 @@
 import './barsPlus-directive';
 import props from './barsPlus-props';
 import { updateColorSchemas } from './colorSchemas';
-import '@babel/polyfill';
+
+if (!window._babelPolyfill) { //eslint-disable-line no-underscore-dangle
+  require('@babel/polyfill');
+}
 
 export default {
   initialProperties: {
