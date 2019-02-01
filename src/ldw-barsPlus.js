@@ -709,14 +709,10 @@ export default {
             .style("font-size", g.tref.style("font-size"))
             .attr("x", g.orientation == "V" ? txp.x : 0)
             .attr("y", txp.y)
-            // .attr(g.orientation == "V" ? "x" : "y", function (d) { return g.dScale(d.dim1) + g.innerBarPadV ; })
-            // .attr(g.orientation == "V" ? "y" : "x", function (d) { return g.mScale(0) + g.innerBarPadV ; })
-            // .attr("dy", "-.2em")
             .text(txp.text)
           ;
           if (txp.rotation == true){
             d3.select(this).attr('transform' ,`rotate(-90 ${txp.x + bar.width.baseVal.value/2} ${txp.y + bar.height.baseVal.value/2})  `)
-              .attr({ dx : '1em' })
             ;
           }
         })
@@ -892,10 +888,11 @@ export default {
 */
   barText: function (d, total) {
 
-    var tx, txt, origX, bHeight, textX, bb, textY, textLength, ts;
+    var tx, txt, origX, textX, bb, textY, textLength, ts;
     var g = this;
     var rotation = false;
     var isElip = false;
+    let bHeight;
     // var bar = g.bars[0].find(e=>{
     //   return e.__data__.dim1 == d.dim1;
     // });
@@ -970,25 +967,40 @@ export default {
         if (g.textDots) {
           textLength = g.tref.node().getComputedTextLength();
           txt = g.tref.text();
-          bHeight -=20;
-          while (textLength >= bHeight ) {
+          const ellipsisLength = 25;
+          const extraPadding= 15;
+          let remainingSpaceForText = bHeight - ellipsisLength -extraPadding ;
+          let numberOfTextCharacters = txt.length;
+          let textOnCharecterPixleRatio = textLength / numberOfTextCharacters;
+
+          if ( remainingSpaceForText < 0) {
+            remainingSpaceForText = 0;
+          }
+          if (bHeight - extraPadding > textLength){
+            txt = g.tref.text();
+          }
+          else{
+            let textThatShouldbeEliip = textLength - remainingSpaceForText ;
+            let numberOfChartoBeEllip = Math.ceil(textThatShouldbeEliip / textOnCharecterPixleRatio) +20;
+
             isElip = true;
-            txt = txt.slice(0, -5);
-            g.tref.text(txt + '\u2026');
-            textLength = g.tref.node().getComputedTextLength();
+            txt = txt.slice(0, -numberOfChartoBeEllip);
+            txt +='\u2026';
+            if (txt == '\u2026'){
+              txt = '';
+            }
           }
-          if (txt.length != 0) txt = g.tref.text();
         }
-        else {
+      }
+      if (!g.rotateLabel && g.textDots){
+        textLength = g.tref.node().getComputedTextLength();
+        txt = g.tref.text();
+        while (textLength > textX - 2 * innerBarPadH && txt.length > 0) {// bHeight -=60;
+          txt = txt.slice(0, -1);
+          g.tref.text(txt + '\u2026');
           textLength = g.tref.node().getComputedTextLength();
-          txt = g.tref.text();
-          while (textLength > textX - 2 * innerBarPadH && txt.length > 0) {
-            txt = txt.slice(0, -1);
-            g.tref.text(txt + '\u2026');
-            textLength = g.tref.node().getComputedTextLength();
-          }
-          if (txt.length != 0) txt = g.tref.text();
         }
+        if (txt.length != 0) txt = g.tref.text();
       }
     }
     if (g.rotateLabel && g.orientation === "V"){
