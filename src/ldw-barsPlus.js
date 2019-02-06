@@ -533,7 +533,7 @@ export default {
         .style('margin-left' , ()=> lPos === 'R' || lPos === 'L' ? '50px' : lPos === 'T' || lPos === 'B' ? '0' : '0' )
         .style('margin-right' , '50px')
         .style('width' , ()=> lPos === 'R' || lPos === 'L' ? 'auto' : lPos === 'T' || lPos === 'B' ? g.width + 'px' : 'auto' )
-        .style('width' , ()=> lPos === 'R' || lPos === 'L' ? g.height + 'px' : lPos === 'T' || lPos === 'B' ? '34px' : g.height + 'px' )
+        .style('height' , ()=> lPos === 'R' || lPos === 'L' ? g.height + 'px' : lPos === 'T' || lPos === 'B' ? '34px' : g.height + 'px' )
         ;
 
       var legendItems = lgnContainer.append("svg")
@@ -544,10 +544,13 @@ export default {
       }
       if(legendItems[0][0].clientHeight > lgnContainer[0][0].clientHeight){
         var btnContainer = lgn.append('div')
-          .attr('class', 'btnContainer')
-          .style('margin-right' , ()=> lPos === 'T' || lPos === 'B' ? '0' : '50px');
+          .attr('class', 'btnContainer');
+        if( lPos === 'R' || lPos === 'L'){
+          btnContainer.style('margin-left' , '40px');
+        }
         var btnWrapper = btnContainer.append('div')
-          .attr('class', 'btnWrapper');
+          .attr('class', 'btnWrapper')
+          ;
         var scrollHeight = legendItems[0][0].clientHeight - lgnContainer[0][0].clientHeight;
         var btnDown = btnWrapper.append('button')
           .attr('class', lgnContainer[0][0].scrollTop >= scrollHeight ? 'ldwLgnBtn disabled' : 'ldwLgnBtn')
