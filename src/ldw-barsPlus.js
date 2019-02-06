@@ -304,19 +304,21 @@ export default {
         var p = struc[idx - 1].values;
         var c = struc[idx].values;
         for (var k = 0; k < p.length; k++) {
-          deltas.push({
-            dim1p: p[k].dim1,
-            dim1c: c[k].dim1,
-            dim2: p[k].dim2,
-            delta: c[k].qNum - p[k].qNum,
-            deltaPct: 0,
-            points: [
-              p[k].offset,
-              c[k].offset,
-              p[k].qNum,
-              c[k].qNum
-            ]
-          });
+          if(p[k] && c[k]){
+            deltas.push({
+              dim1p: p[k].dim1 || '',
+              dim1c: c[k].dim1 || '',
+              dim2: p[k].dim2 || '',
+              delta: c[k].qNum - p[k].qNum,
+              deltaPct: 0,
+              points: [
+                p[k].offset,
+                c[k].offset,
+                p[k].qNum,
+                c[k].qNum
+              ]
+            });
+          }
         }
       }
     });
