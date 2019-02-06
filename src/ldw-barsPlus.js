@@ -442,7 +442,11 @@ export default {
       .rangeRoundBands(g.orientation == "V" ? [0, innerWidth] : [innerHeight, 0], g.barGap, g.outerGap)
     ;
     g.mScale = d3.scale.linear()
-      .domain([0, d3.max(g.data, function (d) { return (g.normalized ? 1 : d.offset) * g.gridHeight; })])
+      .domain([0, d3.max(g.data, function (d) {
+        const unscaledBarHeight = g.normalized ? 1 : d.offset;
+        const unscaledBarHeightNumber = !isNaNOrStringNaN(unscaledBarHeight) ? unscaledBarHeight : 1;
+        return unscaledBarHeightNumber * g.gridHeight;
+      })])
       .range(g.orientation == "V" ? [innerHeight, 0] : [0, innerWidth])
       .nice()
     ;
@@ -649,7 +653,6 @@ export default {
       .attr("ldwdim1", function (d) { return d.qElemNumber; })
       .attr(g.orientation == "V" ? "x" : "y", function (d) { return g.dScale(d.dim1); })
       .attr(g.orientation == "V" ? "y" : "x", function (d) { return g.mScale(0); })		// grow from bottom
-      //		.attr(g.orientation == "V" ? "y" : "x", function(d) { return g.mScale(d.offset); })	// venetian blinds
       .attr(g.orientation == "V" ? "width" : "height", g.dScale.rangeBand())
       .attr(g.orientation == "V" ? "height" : "width", function (d) { return 0; })
       .style("fill", function (d) { return g.cScale(d.dim2); })
@@ -1216,6 +1219,11 @@ export default {
   updateBars: function () {
     var g = this;
 
+    const containsInvalidBarHeight = !!g.data.find(data => isNaNOrStringNaN(data.offset));
+    if (containsInvalidBarHeight) {
+      return;
+    }
+    
     var dim1 = g.data.map(function (d) { return d.dim1; });
     if (g.orientation == "H") dim1.reverse();
     g.dScale.domain(dim1);
@@ -1631,3 +1639,11 @@ export default {
   },
   /*- end http://stackoverflow.com/questions/11867545 */
 };
+
+
+function isNaNOrStringNaN (input) {
+  if (!input) {
+    return false;
+  }
+  return isNaN(input) || input === 'NaN';
+}
