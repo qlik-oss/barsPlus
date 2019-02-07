@@ -968,7 +968,7 @@ export default {
           const extraPadding= 15;
           let remainingSpaceForText = bHeight - ellipsisLength -extraPadding ;
           let numberOfTextCharacters = txt.length;
-          let textOnCharacterPixleRatio = textLength / numberOfTextCharacters;
+          let textOnCharacterPixelRatio = textLength / numberOfTextCharacters;
 
           if ( remainingSpaceForText < 0) {
             remainingSpaceForText = 0;
@@ -978,12 +978,12 @@ export default {
           }
           else{
             let textThatShouldbeEllip = textLength - remainingSpaceForText ;
-            let numberOfChartoBeEllip = Math.ceil(textThatShouldbeEllip / textOnCharacterPixleRatio) +20;
+            let numberOfChartoBeEllip = Math.ceil(textThatShouldbeEllip / textOnCharacterPixelRatio) +20;
 
             isEllip = true;
             txt = txt.slice(0, -numberOfChartoBeEllip);
             txt +=ellipsis;
-            if (txt == ellipsis){
+            if (txt === ellipsis){
               txt = '';
             }
           }
