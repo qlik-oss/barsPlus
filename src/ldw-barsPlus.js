@@ -697,15 +697,15 @@ export default {
         .append("text")
         .attr("class", "ldwtxt")
         .style("opacity", "0")
-        .each(function (d, i) {
+        .each(function (dataObject) {
 
-          var txp = g.barText(d);
-          var bar = g.bars[0].find(e=>{
-            return e.__data__.dim1 == d.dim1;
+          var txp = g.barText(dataObject);
+          var bar = g.bars[0].find(element=>{
+            return element.__data__.dim1 === dataObject.dim1;
           });
 
           d3.select(this)
-            .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(d.dim2)) : g.textColor)
+            .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(dataObject.dim2)) : g.textColor)
             .style("font-size", g.tref.style("font-size"))
             .attr("x", g.orientation == "V" ? txp.x : 0)
             .attr("y", txp.y)
@@ -891,12 +891,9 @@ export default {
     var tx, txt, origX, textX, bb, textY, textLength, ts;
     var g = this;
     var rotation = false;
-    var isElip = false;
+    var isEllip = false;
     let bHeight;
-    // var bar = g.bars[0].find(e=>{
-    //   return e.__data__.dim1 == d.dim1;
-    // });
-
+    const ellipsis = '\u2026';
     // Relative text sizing, relative to bar width
     // For total, make larger by reducing unneeded padding
     var hAlign = g.hAlign, vAlign = g.vAlign,
@@ -971,7 +968,7 @@ export default {
           const extraPadding= 15;
           let remainingSpaceForText = bHeight - ellipsisLength -extraPadding ;
           let numberOfTextCharacters = txt.length;
-          let textOnCharecterPixleRatio = textLength / numberOfTextCharacters;
+          let textOnCharacterPixleRatio = textLength / numberOfTextCharacters;
 
           if ( remainingSpaceForText < 0) {
             remainingSpaceForText = 0;
@@ -980,13 +977,13 @@ export default {
             txt = g.tref.text();
           }
           else{
-            let textThatShouldbeEliip = textLength - remainingSpaceForText ;
-            let numberOfChartoBeEllip = Math.ceil(textThatShouldbeEliip / textOnCharecterPixleRatio) +20;
+            let textThatShouldbeEllip = textLength - remainingSpaceForText ;
+            let numberOfChartoBeEllip = Math.ceil(textThatShouldbeEllip / textOnCharacterPixleRatio) +20;
 
-            isElip = true;
+            isEllip = true;
             txt = txt.slice(0, -numberOfChartoBeEllip);
-            txt +='\u2026';
-            if (txt == '\u2026'){
+            txt +=ellipsis;
+            if (txt == ellipsis){
               txt = '';
             }
           }
@@ -995,9 +992,9 @@ export default {
       if (!g.rotateLabel && g.textDots){
         textLength = g.tref.node().getComputedTextLength();
         txt = g.tref.text();
-        while (textLength > textX - 2 * innerBarPadH && txt.length > 0) {// bHeight -=60;
+        while (textLength > textX - 2 * innerBarPadH && txt.length > 0) {
           txt = txt.slice(0, -1);
-          g.tref.text(txt + '\u2026');
+          g.tref.text(txt + ellipsis);
           textLength = g.tref.node().getComputedTextLength();
         }
         if (txt.length != 0) txt = g.tref.text();
@@ -1013,7 +1010,7 @@ export default {
       y: Number.isFinite(textY) ? textY : 0,
       text: txt,
       rotation,
-      isElip
+      isEllip
     };
   },
   /**
