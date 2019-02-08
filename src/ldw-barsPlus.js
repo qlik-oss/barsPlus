@@ -454,7 +454,7 @@ export default {
       return Math.abs(d.offset);
     });
     // console.log({ maxVAlue });
-    console.log({ maxVAlueWithAbs });
+    // console.log({ maxVAlueWithAbs });
     // console.log({ minValue });
     // console.log({ minValueWithAbs });
 
@@ -469,8 +469,7 @@ export default {
     // ;
     g.mScale = d3.scale.linear()
       .domain(d3.extent(g.data, function(d) {
-        // console.log(d);
-
+        if(d.dim1 === '-') return 0;
         return d.offset * g.gridHeight; }))
       .range(g.orientation == "V" ? [innerHeight, 0] : [0, innerWidth])
       // .range([0,g.height])
@@ -678,8 +677,14 @@ export default {
       .attr("ldwdim1", function (d) { return d.qElemNumber; })
       .attr(g.orientation == "V" ? "x" : "y", function (d) { return g.dScale(d.dim1); })
       .attr(g.orientation == "V" ? "y" : "x", function (d) {
+        // console.log(d);
+        if(d.qElemNumber < 0){
+          // console.log(d);
+          return;
+          // return g.mScale(0);
+        }
         if(d.offset > 0){
-          console.log(d);
+          // console.log(d);
           return g.mScale(0) - g.mScale(d.offset);
 
         }
@@ -1421,8 +1426,8 @@ export default {
           return g.dScale(d.dim1) ? g.dScale(d.dim1) : 0; // ignore NaN: causing errors in transitions
         })
         .attr("y", function (d) {
-          console.log(d);
-          if(d.qElemNumber < 0) return;
+          // console.log(d);
+          if(d.qElemNumber < 0) return g.mScale(0);
           // const num = Number.isFinite(d.qNum) ? d.qNum : 0;
           // const num = d.qNum ;
           // return g.mScale(d.offset) - (g.mScale(0) - g.mScale(num));
