@@ -444,8 +444,9 @@ export default {
       .domain(dim1)
       .rangeRoundBands(g.orientation == "V" ? [0, innerWidth] : [innerHeight, 0], g.barGap, g.outerGap)
     ;
+    var max = d3.max(g.data, function (d) { return (g.normalized ? 1 : d.offset) * g.gridHeight; });
     g.mScale = d3.scale.linear()
-      .domain([0, d3.max(g.data, function (d) { return (g.normalized ? 1 : d.offset) * g.gridHeight; })])
+      .domain([0, max > 0 ? max : 1])
       .range(g.orientation == "V" ? [innerHeight, 0] : [0, innerWidth])
       .nice()
     ;
@@ -1222,7 +1223,8 @@ export default {
     var dim1 = g.data.map(function (d) { return d.dim1; });
     if (g.orientation == "H") dim1.reverse();
     g.dScale.domain(dim1);
-    g.mScale.domain([0, d3.max(g.data, function (d) { return (g.normalized ? 1 : d.offset) * g.gridHeight; })]);
+    var max = d3.max(g.data, function (d) { return (g.normalized ? 1 : d.offset) * g.gridHeight; });
+    g.mScale.domain([0, max > 0 ? max : 1]);
     const isPrinting = qlik.navigation && !qlik.navigation.inClient;
     var tDelay = g.transitions && !g.editMode && !isPrinting ? g.transitionDelay : 0;
     var tDuration = g.transitions && !g.editMode && !isPrinting ? g.transitionDuration : 0;
