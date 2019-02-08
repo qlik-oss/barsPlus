@@ -441,20 +441,49 @@ export default {
       .domain(dim1)
       .rangeRoundBands(g.orientation == "V" ? [0, innerWidth] : [innerHeight, 0], g.barGap, g.outerGap)
     ;
+    let maxVAlue= d3.max(g.data, function(d){
+      return d.offset;
+    });
+    let maxVAlueWithAbs= d3.max(g.data, function(d){
+      return Math.abs(d.offset);
+    });
+    let minValue = d3.min(g.data , function(d){
+      return d.offset;
+    });
+    let minValueWithAbs = d3.min(g.data , function(d){
+      return Math.abs(d.offset);
+    });
+    // console.log({ maxVAlue });
+    console.log({ maxVAlueWithAbs });
+    // console.log({ minValue });
+    // console.log({ minValueWithAbs });
+
+    // g.mScale = d3.scale.linear()
+    // // .domain([0, d3.max(g.data, function (d) {
+    // //   console.log(d);
+
+    //   //   return (g.normalized ? 1 : Math.abs(d.offset)) * g.gridHeight; })])
+    //   .domain([0, maxVAlueWithAbs])
+
+    //   .nice()
+    // ;
     g.mScale = d3.scale.linear()
-      .domain([0, d3.max(g.data, function (d) { return (g.normalized ? 1 : d.offset) * g.gridHeight; })])
+      .domain(d3.extent(g.data, function(d) {
+        // console.log(d);
+
+        return d.offset * g.gridHeight; }))
       .range(g.orientation == "V" ? [innerHeight, 0] : [0, innerWidth])
-      .nice()
-    ;
+      // .range([0,g.height])
+      .nice();
     var dGrp = g.svg.append("g")
       .attr("class", "ldw-d ldwaxis");
     if (g.orientation == "V") {
-      dGrp.attr("transform", "translate(0," + innerHeight + ")");
+      dGrp.attr("transform", `translate(${g.dScale(0)}, ${innerHeight})`);
     }
     if (g.labelTitleD == 'B' || g.labelTitleD == 'L') {
       g.dAxis = d3.svg.axis()
         .scale(g.dScale)
-        .orient(g.orientation == "V" ? "bottom" : "left")
+        .orient("bottom")
         .tickSize(g.gridlinesD ? (g.orientation == "V" ? -innerHeight : -innerWidth) : 6)
         .tickPadding(5)
       ;
@@ -483,13 +512,13 @@ export default {
     if (g.labelTitleM == 'B' || g.labelTitleM == 'L') {
       g.mAxis = d3.svg.axis()
         .scale(g.mScale)
-        .orient(g.orientation == "V" ? "left" : "bottom")
+        .orient("left")
         .tickSize(g.gridlinesM ? (g.orientation == "V" ? -innerWidth : -innerHeight) : 6)
         .ticks(g.ticks)
         .tickFormat(d3.format([",.3s", ",.0f", ",.0%", ",.3s", g.axisFormatMs]["ANPSC".indexOf(g.axisFormatM)]))
         .tickPadding(5)
       ;
-      mGrp.call(g.mAxis);
+      mGrp.call(g.mScale);
     }
     if (g.labelTitleM == 'B' || g.labelTitleM == 'T') {
       if (g.orientation == "V") {
@@ -648,11 +677,19 @@ export default {
       .append("rect")
       .attr("ldwdim1", function (d) { return d.qElemNumber; })
       .attr(g.orientation == "V" ? "x" : "y", function (d) { return g.dScale(d.dim1); })
-      .attr(g.orientation == "V" ? "y" : "x", function (d) { return g.mScale(0); })		// grow from bottom
-      //		.attr(g.orientation == "V" ? "y" : "x", function(d) { return g.mScale(d.offset); })	// venetian blinds
+      .attr(g.orientation == "V" ? "y" : "x", function (d) {
+        if(d.offset > 0){
+          console.log(d);
+          return g.mScale(0) - g.mScale(d.offset);
+
+        }
+        return g.mScale(d.offset);
+
+      })		// grow from bottom
+      		// .attr(g.orientation == "V" ? "y" : "x", function(d) { return g.mScale(Math.abs(d.offset)); })	// venetian blinds
       .attr(g.orientation == "V" ? "width" : "height", g.dScale.rangeBand())
       .attr(g.orientation == "V" ? "height" : "width", function (d) { return 0; })
-      .style("fill", function (d) { return g.cScale(d.dim2); })
+      .style("fill", function(d) { return Math.abs(g.mScale(d.value) - g.mScale(0)); })
       .style("opacity", "0")
       .attr("class", "selectable ldwbar")
       .on("click", function (d) {
@@ -1219,7 +1256,14 @@ export default {
     var dim1 = g.data.map(function (d) { return d.dim1; });
     if (g.orientation == "H") dim1.reverse();
     g.dScale.domain(dim1);
-    g.mScale.domain([0, d3.max(g.data, function (d) { return (g.normalized ? 1 : d.offset) * g.gridHeight; })]);
+    let maxVAlueWithAbs= d3.max(g.data, function(d){
+      return d.offset;
+    });
+    let minValue =d3.min(g.data, function(d){
+      return d.offset;
+    });
+    // g.mScale.domain([0, d3.max(g.data, function (d) { return (g.normalized ? 1 : d.offset) * g.gridHeight; })]);
+    // g.mScale.domain([minValue, maxVAlueWithAbs]);
     const isPrinting = qlik.navigation && !qlik.navigation.inClient;
     var tDelay = g.transitions && !g.editMode && !isPrinting ? g.transitionDelay : 0;
     var tDuration = g.transitions && !g.editMode && !isPrinting ? g.transitionDuration : 0;
@@ -1229,10 +1273,10 @@ export default {
       if (labelTitle == 'B' || labelTitle == 'L') {
         // Update axis with transition
         g.svg.select("#" + g.id + " ." + axisClass + ".ldwaxis")
-          .transition()
-          .delay(tDelay)
-          .duration(tDuration)
-          .ease(g.ease)
+          // .transition()
+          // .delay(tDelay)
+          // .duration(tDuration)
+          // .ease(g.ease)
           .call(axis)
         ;
         var lbl = d3.selectAll("#" + g.id + " ." + axisClass + ".ldwaxis");
@@ -1367,29 +1411,49 @@ export default {
 
     // Update bars
     if (g.orientation == "V") {
-      g.bars.transition()
-        .delay(tDelay)
-        .duration(tDuration)
-        .ease(g.ease)
+      g.bars
+        // .transition()
+        // .delay(tDelay)
+        // .duration(tDuration)
+        // .ease(g.ease)
         .style("opacity", "1")
         .attr("x", function (d, i) {
           return g.dScale(d.dim1) ? g.dScale(d.dim1) : 0; // ignore NaN: causing errors in transitions
         })
         .attr("y", function (d) {
-          const num = Number.isFinite(d.qNum) ? d.qNum : 0;
-          return g.mScale(d.offset) - (g.mScale(0) - g.mScale(num));
+          console.log(d);
+          if(d.qElemNumber < 0) return;
+          // const num = Number.isFinite(d.qNum) ? d.qNum : 0;
+          // const num = d.qNum ;
+          // return g.mScale(d.offset) - (g.mScale(0) - g.mScale(num));
+          // console.log(d);
+
+          // if(d.qNum > 0){
+          //   console.log(d);
+
+          //   return g.mScale(d.qNum) -g.mScale(0);
+          // }
+          // // return g.mScale(Math.min(0, d.offset));
+          // return g.mScale(d.qNum) - g.mScale(0);
+          if (d.qNum < 0){
+            return g.mScale(0);
+          }
+          return g.mScale(d.qNum);
         })
         .attr("width", g.dScale.rangeBand() && g.dScale.rangeBand() > 0 ? g.dScale.rangeBand() : 0) // ignore NaN: causing errors in transitions
         .attr("height", function (d) {
-          return g.mScale(0) > g.mScale(d.qNum) ? g.mScale(0) - g.mScale(d.qNum) : 0; // ignore negatives: causing errors in transitions
+          if(isNaN(d.qNum)) return;
+          // return Math.abs(g.mScale(d.offset));
+          return g.mScale(0) > g.mScale(d.qNum) ? g.mScale(0) - g.mScale(d.qNum) : g.mScale(d.qNum) - g.mScale(0); // ignore negatives: causing errors in transitions
         })
       ;
     }
     else {
-      g.bars.transition()
-        .delay(tDelay)
-        .duration(tDuration)
-        .ease(g.ease)
+      g.bars
+        // .transition()
+        // .delay(tDelay)
+        // .duration(tDuration)
+        // .ease(g.ease)
         .style("opacity", "1")
         .attr("x", function (d) {
           return g.mScale(d.offset);
