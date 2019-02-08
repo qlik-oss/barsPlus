@@ -478,7 +478,7 @@ export default {
     var dGrp = g.svg.append("g")
       .attr("class", "ldw-d ldwaxis");
     if (g.orientation == "V") {
-      dGrp.attr("transform", `translate(${g.dScale(0)}, ${innerHeight})`);
+      dGrp.attr("transform", `translate(0, ${innerHeight})`);
     }
     if (g.labelTitleD == 'B' || g.labelTitleD == 'L') {
       g.dAxis = d3.svg.axis()
