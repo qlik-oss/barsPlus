@@ -197,14 +197,15 @@ export default {
     // Process two dimensional data
     g.nDims = 2;
 
-    var p1 = "", p2, edges = [], b, p = [];
+    var p1 = "", p2, edges = [], b, p = [] , measures=[];
     inData.forEach(function (d) {
       var c2 = d[1].qText;
       if (p.indexOf(d[0].qText) == -1) {
         p.push(d[0].qText);
       }
-      if (q.indexOf(d[1].qText) == -1) {
+      if (q.indexOf(d[1].qText) == -1 || measures.indexOf(d[1].qNum) ==-1) {
         q.push(d[1].qText);
+        measures.push(d[1].qNum);
         r.push(cf(d));
       }
       if (d[0].qText != p1) {
@@ -243,7 +244,7 @@ export default {
 
     var n = d3.nest()
       .key(function (d) { return d[0].qText; })
-      .key(function (d) { return d[1].qText; })
+      .key(function (d) { return `${d[1].qNum}`; })
       .entries(inData)
       ;
     // sort all nodes in order specified by q
@@ -259,10 +260,10 @@ export default {
         : (p.indexOf(a.key) > p.indexOf(b.key) ? 1 : 0));
     });
     n.forEach(function (d, idx) {
-      var t = 0, v = [], j = 0, num, txt;
+      var t = 0, v = [], j = 0, num, txt, measureNumber;
       for (var i = 0; i < q.length; i++) {
         let elm;
-        if (d.values.length <= j || d.values[j].key != q[i]) {
+        if (d.values.length <= j || d.values[j].values[0][1].qText != q[i]) {
           num = 0;
           txt = "-";
           elm = [];
@@ -270,6 +271,7 @@ export default {
         else {
           num = d.values[j].values[0][2].qNum;
           txt = d.values[j].values[0][2].qText;
+          measureNumber = d.values[j].values[0][1].qNum;
           if(g.defDims == 2){
             elm = [d.values[j].values[0][0].qElemNumber,d.values[j].values[0][1].qElemNumber];
           }else{
@@ -281,7 +283,8 @@ export default {
             qNum: num,
             qText: txt,
             qElemNumber: elm,
-            offset: t
+            offset: t,
+            measureNumber
           });
           t += num;
         }
@@ -533,7 +536,7 @@ export default {
         .style('margin-left' , ()=> lPos === 'R' || lPos === 'L' ? '50px' : lPos === 'T' || lPos === 'B' ? '0' : '0' )
         .style('margin-right' , '50px')
         .style('width' , ()=> lPos === 'R' || lPos === 'L' ? 'auto' : lPos === 'T' || lPos === 'B' ? g.width + 'px' : 'auto' )
-        .style('width' , ()=> lPos === 'R' || lPos === 'L' ? g.height + 'px' : lPos === 'T' || lPos === 'B' ? '34px' : g.height + 'px' )
+        .style('height' , ()=> lPos === 'R' || lPos === 'L' ? g.height + 'px' : lPos === 'T' || lPos === 'B' ? '34px' : g.height + 'px' )
         ;
 
       var legendItems = lgnContainer.append("svg")
@@ -592,7 +595,7 @@ export default {
     }
     // Create bars
     g.bars = g.svg.selectAll("#" + g.id + " .ldwbar")
-      .data(g.flatData, function (d) { return d.dim1 + '|' + d.dim2; })
+      .data(g.flatData)
     ;
     // Text on bars
     if (g.showTexts != "N") {
@@ -612,7 +615,7 @@ export default {
       if (~"BA".indexOf(g.showTexts)) {
         // Create text on bars
         g.texts = g.svg.selectAll("#" + g.id + " .ldwtxt")
-          .data(g.flatData, function (d) { return d.dim1 + '|' + d.dim2; })
+          .data(g.flatData)
         ;
       }
     }
@@ -652,7 +655,7 @@ export default {
       //		.attr(g.orientation == "V" ? "y" : "x", function(d) { return g.mScale(d.offset); })	// venetian blinds
       .attr(g.orientation == "V" ? "width" : "height", g.dScale.rangeBand())
       .attr(g.orientation == "V" ? "height" : "width", function (d) { return 0; })
-      .style("fill", function (d) { return g.cScale(d.dim2); })
+      .style("fill", function (d) { return g.cScale(d.dim2 + d.measureNumber); })
       .style("opacity", "0")
       .attr("class", "selectable ldwbar")
       .on("click", function (d) {
@@ -1083,7 +1086,7 @@ export default {
             // .style("opacity", "0")
             .attr("width", g.lgn.box[0])
             .attr("height", g.lgn.box[1])
-            .style("fill", function (e) { return g.cScale(e); })
+            .style("fill", function (e) { return g.cScale(e + i); })
 
           ;
           d3.select(this)
@@ -1286,7 +1289,7 @@ export default {
     updateAxis(g.labelTitleM, g.labelStyleM, g.mAxis, "ldw-m", g.orientation != "V");
 
     g.bars = g.svg.selectAll("#" + g.id + " .ldwbar")
-      .data(g.flatData, function (d) { return d.dim1 + '|' + d.dim2; })
+      .data(g.flatData)
     ;
     // Remove bars with transition
     g.bars
@@ -1317,7 +1320,7 @@ export default {
     // Remove texts with transition
     if (~"BA".indexOf(g.showTexts)) {
       g.texts = g.svg.selectAll("#" + g.id + " .ldwtxt")
-        .data(g.flatData, function (d) { return d.dim1 + '|' + d.dim2; })
+        .data(g.flatData)
       ;
       g.texts
         .exit()
@@ -1349,7 +1352,7 @@ export default {
     if (g.lgn.use) {
       g.lgn.items = d3.selectAll("#" + g.id + " .ldwlgnitems")
         .selectAll("g")
-        .data(g.allDim2, function (d) { return d; })
+        .data(g.allDim2,g.allDim2.forEach(element => element))
       ;
       g.lgn.items
         .exit()
