@@ -538,7 +538,7 @@ const definition ={
                 { value: false , label : "Rotate Horizontally" },
               ],
               show : function(data){
-                return isShowingTexts && data.props.orientation === 'V';
+                return (isShowingTexts && data.props.orientation === 'V' && (data.props.showTexts === 'B' || data.props.showTexts === 'A'));
               }
             },
             showDim: {
