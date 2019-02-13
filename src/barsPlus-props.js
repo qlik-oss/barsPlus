@@ -525,6 +525,20 @@ const definition ={
                 { value: "A", label: "Both" }
               ]
             },
+            rotateTexts : {
+              type: "boolean",
+              component :"switch",
+              label: "Rotate Labels",
+              ref:"props.rotateLabel",
+              defaultValue: false,
+              options: [
+                { value: true , label : "Rotate Vertically" },
+                { value: false , label : "Rotate Horizontally" },
+              ],
+              show : function(data){
+                return (isShowingTexts && data.props.orientation === 'V' && (data.props.showTexts === 'B' || data.props.showTexts === 'A'));
+              }
+            },
             showDim: {
               type: "string",
               component: "dropdown",
@@ -642,7 +656,7 @@ const definition ={
                 { value: "Black", label: "Black" },
                 { value: "White", label: "White" }
               ],
-              show: isShowingTexts
+              show: data => data.props.showTexts === 'B' || data.props.showTexts === 'A'
             },
             vAlign: {
               type: "string",

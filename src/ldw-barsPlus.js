@@ -835,22 +835,30 @@ export default {
 
     if (~"BA".indexOf(g.showTexts)) {
       // Create text inside bars
+
       g.texts
         .enter()
         .append("text")
         .attr("class", "ldwtxt")
         .style("opacity", "0")
-        .each(function (d) {
-          var txp = g.barText(d);
+        .each(function (dataObject) {
+
+          var txp = g.barText(dataObject);
+          var bar = g.bars[0].find(element=>{
+            return element.__data__.dim1 === dataObject.dim1;
+          });
 
           d3.select(this)
-            .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(d.dim2)) : g.textColor)
+            .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(dataObject.dim2)) : g.textColor)
             .style("font-size", g.tref.style("font-size"))
             .attr("x", g.orientation == "V" ? txp.x : 0)
-            .attr("y", g.orientation == "V" ? g.mScale(0) : txp.y)
-            .attr("dy", "-.2em")
+            .attr("y", txp.y)
             .text(txp.text)
           ;
+          if (txp.rotation == true){
+            d3.select(this).attr('transform' ,`rotate(-90 ${txp.x + bar.width.baseVal.value/2} ${txp.y + bar.height.baseVal.value/2})  `)
+            ;
+          }
         })
       ;
     }
@@ -1074,9 +1082,13 @@ export default {
  * Get bar text information: x, y and text
 */
   barText: function (d, total) {
-    var tx, txt, origX, bHeight, textX, bb, textY, textLength, ts;
-    var g = this;
 
+    var tx, txt, origX, textX, bb, textY, textLength, ts;
+    var g = this;
+    var rotation = false;
+    var isEllip = false;
+    let bHeight;
+    const ellipsis = '\u2026';
     // Relative text sizing, relative to bar width
     // For total, make larger by reducing unneeded padding
     var hAlign = g.hAlign, vAlign = g.vAlign,
@@ -1109,16 +1121,20 @@ export default {
     g.tref.text(d.qNum == 0 ? ""
       : (total
         ? (g.showTot == "D" ? d.dim1 : d.qText)
-        : (g.showDim == "D" ? d.dim2 : (g.showDim == "P" && g.normalized ? d.qTextPct : d.qText))
+        : (g.showDim == "D" ? d.dim1 : (g.showDim == "P" && g.normalized ? d.qTextPct : d.qText))
       )
     );
 
     bb = g.tref.node().getBBox();
     tx = origX + innerBarPadH;
     if (vAlign == "C")
+    {
+
       textY = g.orientation == "V" ? g.mScale(d.offset) - (g.mScale(0) - g.mScale(d.qNum))
         + (g.mScale(0) - g.mScale(d.qNum) + bb.height) / 2
         : g.dScale(d.dim1) + (g.dScale.rangeBand() + bb.height) / 2;
+    }
+
     else if (vAlign == "T")
       textY = g.orientation == "V" ? g.mScale(d.offset) - (g.mScale(0) - g.mScale(d.qNum))
         + bb.height + innerBarPadV
@@ -1127,6 +1143,7 @@ export default {
       textY = g.orientation == "V" ? g.mScale(d.offset) - innerBarPadV
         : g.dScale(d.dim1) + g.dScale.rangeBand() - innerBarPadV;
     txt = "";
+    var barWidth = g.bars[0][0].width.baseVal.value;
     if (bb.height + 2 * innerBarPadV <= bHeight || (g.orientation != "V" && !g.textSizeAbs)) {
       if (bb.width + 2 * innerBarPadH <= textX) {
         if (hAlign == "C") {
@@ -1137,21 +1154,81 @@ export default {
         }
         txt = g.tref.text();
       }
-      else if (g.textDots) {
+
+      if(g.rotateLabel && barWidth > 25) {
+        if (g.textDots) {
+          textLength = g.tref.node().getComputedTextLength();
+          txt = g.tref.text();
+          const ellipsisLength = 25;
+          const extraPadding= 15;
+          let remainingSpaceForText = bHeight - ellipsisLength -extraPadding ;
+          let numberOfTextCharacters = txt.length;
+          let textOnCharacterPixelRatio = textLength / numberOfTextCharacters;
+
+          if ( remainingSpaceForText < 0) {
+            remainingSpaceForText = 0;
+          }
+          if (bHeight - extraPadding > textLength){
+            txt = g.tref.text();
+          }
+          else{
+            let textThatShouldbeEllip = textLength - remainingSpaceForText ;
+            let numberOfChartoBeEllip = Math.ceil(textThatShouldbeEllip / textOnCharacterPixelRatio) +20;
+            if(g.showTexts !== 'A')
+            {
+              isEllip = true;
+              txt = txt.slice(0, -numberOfChartoBeEllip);
+              txt +=ellipsis;
+              if (txt === ellipsis){
+                txt = '';
+              }}
+          }
+        }
+      }
+      if (!g.rotateLabel && g.textDots){
         textLength = g.tref.node().getComputedTextLength();
         txt = g.tref.text();
         while (textLength > textX - 2 * innerBarPadH && txt.length > 0) {
           txt = txt.slice(0, -1);
-          g.tref.text(txt + '\u2026');
+          g.tref.text(txt + ellipsis);
           textLength = g.tref.node().getComputedTextLength();
         }
         if (txt.length != 0) txt = g.tref.text();
       }
+      if(!g.textDots && g.rotateLabel){
+        textLength = g.tref.node().getComputedTextLength();
+        txt = g.tref.text();
+        if(textLength > bHeight){
+          txt ='';
+          isEllip = false;
+        }
+      }
+    }
+    if (g.rotateLabel && g.orientation === "V"){
+      rotation = true;
+    }else if (g.orientation !== "V"){
+      rotation = false;
+    }
+    if(total){
+      textLength = g.tref.node().getComputedTextLength();
+      txt = g.tref.text();
+      while (textLength > barWidth){
+        txt = txt.slice(0, -1);
+        g.tref.text(txt + ellipsis);
+        textLength = g.tref.node().getComputedTextLength();
+        if(!g.textDots){
+          txt = '';
+        }
+      }
+      if (txt.length != 0) txt = g.tref.text();
+
     }
     return {
       x: Number.isFinite(tx) ? tx : 0,
       y: Number.isFinite(textY) ? textY : 0,
-      text: txt
+      text: txt,
+      rotation,
+      isEllip
     };
   },
   /**
@@ -1393,7 +1470,6 @@ export default {
             .style("opacity", "1")
             .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(d.dim2)) : g.textColor)
             .style("font-size", g.tref.style("font-size"))
-            .attr({ x: txp.x, y: txp.y, dy: "-.2em" })
             .text(txp.text)
           ;
         })

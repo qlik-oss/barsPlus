@@ -108,7 +108,7 @@ qvangular.directive("barsPlus", [
           g.hAlign = p.hAlign;
           g.totalFormatM = p.totalFormatM;
           g.totalFormatMs = p.totalFormatMs;
-
+          g.rotateLabel = p.rotateLabel;
           // Transitions
           g.transitions = p.transitions;
           g.transitionDelay = p.transitionDelay;
