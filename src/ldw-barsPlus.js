@@ -979,13 +979,14 @@ export default {
           else{
             let textThatShouldbeEllip = textLength - remainingSpaceForText ;
             let numberOfChartoBeEllip = Math.ceil(textThatShouldbeEllip / textOnCharacterPixelRatio) +20;
-
-            isEllip = true;
-            txt = txt.slice(0, -numberOfChartoBeEllip);
-            txt +=ellipsis;
-            if (txt === ellipsis){
-              txt = '';
-            }
+            if(g.showTexts !== 'A')
+            {
+              isEllip = true;
+              txt = txt.slice(0, -numberOfChartoBeEllip);
+              txt +=ellipsis;
+              if (txt === ellipsis){
+                txt = '';
+              }}
           }
         }
       }
@@ -998,6 +999,14 @@ export default {
           textLength = g.tref.node().getComputedTextLength();
         }
         if (txt.length != 0) txt = g.tref.text();
+      }
+      if(!g.textDots && g.rotateLabel){
+        textLength = g.tref.node().getComputedTextLength();
+        txt = g.tref.text();
+        if(textLength > bHeight){
+          txt ='';
+          isEllip = false;
+        }
       }
     }
     if (g.rotateLabel && g.orientation === "V"){
