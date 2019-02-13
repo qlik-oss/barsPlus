@@ -658,7 +658,7 @@ const definition ={
                 { value: "Black", label: "Black" },
                 { value: "White", label: "White" }
               ],
-              show: isShowingTexts
+              show: data => data.props.showTexts === 'B' || data.props.showTexts === 'A'
             },
             vAlign: {
               type: "string",
