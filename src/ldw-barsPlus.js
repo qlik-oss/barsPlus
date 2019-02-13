@@ -1014,6 +1014,17 @@ export default {
     }else if (g.orientation !== "V"){
       rotation = false;
     }
+    if(total){
+      textLength = g.tref.node().getComputedTextLength();
+      txt = g.tref.text();
+      while (textLength > barWidth){
+        txt = txt.slice(0, -1);
+        g.tref.text(txt + ellipsis);
+        textLength = g.tref.node().getComputedTextLength();
+      }
+      if (txt.length != 0) txt = g.tref.text();
+
+    }
     return {
       x: Number.isFinite(tx) ? tx : 0,
       y: Number.isFinite(textY) ? textY : 0,
