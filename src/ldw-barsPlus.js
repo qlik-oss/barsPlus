@@ -1021,6 +1021,9 @@ export default {
         txt = txt.slice(0, -1);
         g.tref.text(txt + ellipsis);
         textLength = g.tref.node().getComputedTextLength();
+        if(!g.textDots){
+          txt = '';
+        }
       }
       if (txt.length != 0) txt = g.tref.text();
 
