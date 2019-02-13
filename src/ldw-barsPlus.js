@@ -653,7 +653,6 @@ export default {
       .attr("ldwdim1", function (d) { return d.qElemNumber; })
       .attr(g.orientation == "V" ? "x" : "y", function (d) { return g.dScale(d.dim1); })
       .attr(g.orientation == "V" ? "y" : "x", function (d) { return g.mScale(0); })		// grow from bottom
-      //		.attr(g.orientation == "V" ? "y" : "x", function(d) { return g.mScale(d.offset); })	// venetian blinds
       .attr(g.orientation == "V" ? "width" : "height", g.dScale.rangeBand())
       .attr(g.orientation == "V" ? "height" : "width", function (d) { return 0; })
       .style("fill", function (d) { return g.cScale(d.dim2 + d.measureNumber); })
@@ -663,13 +662,13 @@ export default {
         if (g.self.$scope.g.defDims == 2){ //if we have two Dims
           if ( d && d.dim2 ){
             if (g.selectionMode == "QUICK") {
-              g.self.backendApi.selectValues(1, [d.qElemNumber[1]], true);
-              g.self.backendApi.selectValues(0, [d.qElemNumber[0]], true);
+              g.self.backendApi.selectValues(1, [d.qElemNumber[1]], false);
+              g.self.backendApi.selectValues(0, [d.qElemNumber[0]], false);
             }
             else if (g.selectionMode == "CONFIRM") {
               var t = d3.select(this).classed("selected");
-              g.self.selectValues(1, [d.qElemNumber[1]], true);
-              g.self.selectValues(0, [d.qElemNumber[0]], true);
+              g.self.selectValues(1, [d.qElemNumber[1]], false);
+              g.self.selectValues(0, [d.qElemNumber[0]], false);
 
               // following to address QS bug where clear button does not clear class names
               g.self.clearSelectedValues = function () {
@@ -691,7 +690,7 @@ export default {
           }
           else if (g.selectionMode == "CONFIRM") {
             var t = d3.select(this).classed("selected");
-            g.self.selectValues(0, [d.qElemNumber], true);
+            g.self.selectValues(0, [d.qElemNumber], false);
             // following to address QS bug where clear button does not clear class names
             g.self.clearSelectedValues = function () {
               d3.selectAll("#" + g.id + " .selected").classed("selected", false);
@@ -833,22 +832,30 @@ export default {
 
     if (~"BA".indexOf(g.showTexts)) {
       // Create text inside bars
+
       g.texts
         .enter()
         .append("text")
         .attr("class", "ldwtxt")
         .style("opacity", "0")
-        .each(function (d) {
-          var txp = g.barText(d);
+        .each(function (dataObject) {
+
+          var txp = g.barText(dataObject);
+          var bar = g.bars[0].find(element=>{
+            return element.__data__.dim1 === dataObject.dim1;
+          });
 
           d3.select(this)
-            .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(d.dim2)) : g.textColor)
+            .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(dataObject.dim2)) : g.textColor)
             .style("font-size", g.tref.style("font-size"))
             .attr("x", g.orientation == "V" ? txp.x : 0)
-            .attr("y", g.orientation == "V" ? g.mScale(0) : txp.y)
-            .attr("dy", "-.2em")
+            .attr("y", txp.y)
             .text(txp.text)
           ;
+          if (txp.rotation == true){
+            d3.select(this).attr('transform' ,`rotate(-90 ${txp.x + bar.width.baseVal.value/2} ${txp.y + bar.height.baseVal.value/2})  `)
+            ;
+          }
         })
       ;
     }
@@ -884,65 +891,6 @@ export default {
           return g.cScale(d.dim2);
         })
         .style("opacity", "0")
-        .on("mouseenter", function (d) {
-          var pt = this.getAttribute("points").split(" ");
-          var sx = 0, sy = 0;
-          pt.forEach(function (e, i) {
-            var x = e.split(",");
-            if (g.orientation == "H") {
-              if (i < 2) {
-                sx += parseFloat(x[0]);
-                sy += parseFloat(x[1]);
-              }
-            }
-            else if (i == 0 || i == 3) {
-              sx += parseFloat(x[0]);
-              sy += parseFloat(x[1]);
-            }
-          });
-          sx /= 2;
-          sy /= 2;
-
-          if (g.inSelections || g.editMode) return;
-
-          d3.select(this)
-            .style("opacity", "0.5")
-            .attr("stroke", "white")
-            .attr("stroke-width", "2");
-          // Place text in tooltip
-          d3.select("#" + g.id + " .ldwttheading")
-            .text(d.dim2 + ", " + d.dim1p + "-" + d.dim1c);
-          d3.select("#" + g.id + " .ldwttvalue")
-            .text(d3.format(g.normalized ? "+.1%" : "+.3s")(d.delta));
-
-          var matrix = this.getScreenCTM()
-            .translate(sx, sy);
-
-          var xPosition = (window.pageXOffset + matrix.e)
-            - d3.select("#" + g.id + " .ldwtooltip")[0][0].clientWidth / 2
-            ;
-          var yPosition = (window.pageYOffset + matrix.f)
-            - d3.select("#" + g.id + " .ldwtooltip")[0][0].clientHeight
-            - 10
-            ;
-          d3.select("#" + g.id + " .ldwtooltip")
-            .style("left", xPosition + "px")
-            .style("top", yPosition + "px")
-            .transition()
-            .delay(750)
-            .style("opacity", "0.95")
-          ;
-        })
-        .on("mouseleave", function () {
-          d3.select(this)
-            .style("opacity", g.barGap == 1 ? "1" : "0.5")
-            .attr("stroke", "none")
-          ;
-          d3.select("#" + g.id + " .ldwtooltip")
-            .style("opacity", "0")
-            .transition()
-            .remove;
-        })
       ;
     }
     // create legend
@@ -1131,9 +1079,13 @@ export default {
  * Get bar text information: x, y and text
 */
   barText: function (d, total) {
-    var tx, txt, origX, bHeight, textX, bb, textY, textLength, ts;
-    var g = this;
 
+    var tx, txt, origX, textX, bb, textY, textLength, ts;
+    var g = this;
+    var rotation = false;
+    var isEllip = false;
+    let bHeight;
+    const ellipsis = '\u2026';
     // Relative text sizing, relative to bar width
     // For total, make larger by reducing unneeded padding
     var hAlign = g.hAlign, vAlign = g.vAlign,
@@ -1166,16 +1118,20 @@ export default {
     g.tref.text(d.qNum == 0 ? ""
       : (total
         ? (g.showTot == "D" ? d.dim1 : d.qText)
-        : (g.showDim == "D" ? d.dim2 : (g.showDim == "P" && g.normalized ? d.qTextPct : d.qText))
+        : (g.showDim == "D" ? d.dim1 : (g.showDim == "P" && g.normalized ? d.qTextPct : d.qText))
       )
     );
 
     bb = g.tref.node().getBBox();
     tx = origX + innerBarPadH;
     if (vAlign == "C")
+    {
+
       textY = g.orientation == "V" ? g.mScale(d.offset) - (g.mScale(0) - g.mScale(d.qNum))
         + (g.mScale(0) - g.mScale(d.qNum) + bb.height) / 2
         : g.dScale(d.dim1) + (g.dScale.rangeBand() + bb.height) / 2;
+    }
+
     else if (vAlign == "T")
       textY = g.orientation == "V" ? g.mScale(d.offset) - (g.mScale(0) - g.mScale(d.qNum))
         + bb.height + innerBarPadV
@@ -1184,6 +1140,7 @@ export default {
       textY = g.orientation == "V" ? g.mScale(d.offset) - innerBarPadV
         : g.dScale(d.dim1) + g.dScale.rangeBand() - innerBarPadV;
     txt = "";
+    var barWidth = g.bars[0][0].width.baseVal.value;
     if (bb.height + 2 * innerBarPadV <= bHeight || (g.orientation != "V" && !g.textSizeAbs)) {
       if (bb.width + 2 * innerBarPadH <= textX) {
         if (hAlign == "C") {
@@ -1194,21 +1151,81 @@ export default {
         }
         txt = g.tref.text();
       }
-      else if (g.textDots) {
+
+      if(g.rotateLabel && barWidth > 25) {
+        if (g.textDots) {
+          textLength = g.tref.node().getComputedTextLength();
+          txt = g.tref.text();
+          const ellipsisLength = 25;
+          const extraPadding= 15;
+          let remainingSpaceForText = bHeight - ellipsisLength -extraPadding ;
+          let numberOfTextCharacters = txt.length;
+          let textOnCharacterPixelRatio = textLength / numberOfTextCharacters;
+
+          if ( remainingSpaceForText < 0) {
+            remainingSpaceForText = 0;
+          }
+          if (bHeight - extraPadding > textLength){
+            txt = g.tref.text();
+          }
+          else{
+            let textThatShouldbeEllip = textLength - remainingSpaceForText ;
+            let numberOfChartoBeEllip = Math.ceil(textThatShouldbeEllip / textOnCharacterPixelRatio) +20;
+            if(g.showTexts !== 'A')
+            {
+              isEllip = true;
+              txt = txt.slice(0, -numberOfChartoBeEllip);
+              txt +=ellipsis;
+              if (txt === ellipsis){
+                txt = '';
+              }}
+          }
+        }
+      }
+      if (!g.rotateLabel && g.textDots){
         textLength = g.tref.node().getComputedTextLength();
         txt = g.tref.text();
         while (textLength > textX - 2 * innerBarPadH && txt.length > 0) {
           txt = txt.slice(0, -1);
-          g.tref.text(txt + '\u2026');
+          g.tref.text(txt + ellipsis);
           textLength = g.tref.node().getComputedTextLength();
         }
         if (txt.length != 0) txt = g.tref.text();
       }
+      if(!g.textDots && g.rotateLabel){
+        textLength = g.tref.node().getComputedTextLength();
+        txt = g.tref.text();
+        if(textLength > bHeight){
+          txt ='';
+          isEllip = false;
+        }
+      }
+    }
+    if (g.rotateLabel && g.orientation === "V"){
+      rotation = true;
+    }else if (g.orientation !== "V"){
+      rotation = false;
+    }
+    if(total){
+      textLength = g.tref.node().getComputedTextLength();
+      txt = g.tref.text();
+      while (textLength > barWidth){
+        txt = txt.slice(0, -1);
+        g.tref.text(txt + ellipsis);
+        textLength = g.tref.node().getComputedTextLength();
+        if(!g.textDots){
+          txt = '';
+        }
+      }
+      if (txt.length != 0) txt = g.tref.text();
+
     }
     return {
       x: Number.isFinite(tx) ? tx : 0,
       y: Number.isFinite(textY) ? textY : 0,
-      text: txt
+      text: txt,
+      rotation,
+      isEllip
     };
   },
   /**
@@ -1219,6 +1236,11 @@ export default {
 */
   updateBars: function () {
     var g = this;
+
+    const containsInvalidBarHeight = !!g.data.find(data => isNaNOrStringNaN(data.offset));
+    if (containsInvalidBarHeight) {
+      return;
+    }
 
     var dim1 = g.data.map(function (d) { return d.dim1; });
     if (g.orientation == "H") dim1.reverse();
@@ -1446,7 +1468,6 @@ export default {
             .style("opacity", "1")
             .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(d.dim2)) : g.textColor)
             .style("font-size", g.tref.style("font-size"))
-            .attr({ x: txp.x, y: txp.y, dy: "-.2em" })
             .text(txp.text)
           ;
         })
@@ -1636,3 +1657,11 @@ export default {
   },
   /*- end http://stackoverflow.com/questions/11867545 */
 };
+
+
+function isNaNOrStringNaN (input) {
+  if (!input) {
+    return false;
+  }
+  return isNaN(input) || input === 'NaN';
+}
