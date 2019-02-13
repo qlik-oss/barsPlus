@@ -658,7 +658,8 @@ export default {
       .attr(g.orientation == "V" ? "y" : "x", function (d) { return g.mScale(0); })		// grow from bottom
       .attr(g.orientation == "V" ? "width" : "height", g.dScale.rangeBand())
       .attr(g.orientation == "V" ? "height" : "width", function (d) { return 0; })
-      .style("fill", function (d) {
+      .style("fill", function (d,i) {
+
         if(g.defMeas === 2 && g.measures[0] === g.measures[1]){
           return g.cScale(d.dim2 + d.measureNumber);
         }
@@ -673,16 +674,29 @@ export default {
               g.self.backendApi.selectValues(0, [d.qElemNumber[0]], false);
             }
             else if (g.selectionMode == "CONFIRM") {
+              var selectedArray=[];
+              if(g.self.selectedArrays){
+                selectedArray = g.self.selectedArrays[0];
+              }
+
               var t = d3.select(this).classed("selected");
-              g.self.selectValues(1, [d.qElemNumber[1]], false);
-              g.self.selectValues(0, [d.qElemNumber[0]], false);
+              var selecatableClass = d3.select(this).classed("selectable");
+              g.self.selectValues(1, [d.qElemNumber[1]], true);
+              if(selectedArray && selectedArray.indexOf(d.qElemNumber[0]) === -1){
+                g.self.selectValues(0, [d.qElemNumber[0]], true);
+              }else if (!selectedArray){
+                g.self.selectValues(0, [d.qElemNumber[0]], true);
+              }
 
               // following to address QS bug where clear button does not clear class names
               g.self.clearSelectedValues = function () {
                 d3.selectAll("#" + g.id + " .selected").classed("selected", false);
+                d3.selectAll("#" + g.id + " .selected").classed("selectable", false);
               };
               d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
                 .classed("selected", !t);
+              d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
+                .classed("selectable", !selecatableClass);
               d3.select("#" + g.id + " .ldwtooltip")
                 .style("opacity", "0")
                 .transition()
@@ -1044,9 +1058,9 @@ export default {
             .attr("height", g.lgn.box[1])
             .style("fill", function (e) {
               if(g.defMeas === 2 && g.measures[0] === g.measures[1]){
-                return g.cScale(e + i);
+                return g.cScale(d + i);
               }
-              return g.cScale(e); })
+              return g.cScale(d); })
 
           ;
           d3.select(this)
