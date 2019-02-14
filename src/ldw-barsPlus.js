@@ -674,59 +674,31 @@ export default {
               g.self.backendApi.selectValues(0, [d.qElemNumber[0]], false);
             }
             else if (g.selectionMode == "CONFIRM") {
-              console.log(d);
 
-              g.self.selectValues(1, [d.qElemNumber[1]], true);
-              g.self.selectValues(0, [d.qElemNumber[0]], true);
+              let selectedArrayDim1=[];
+              if(g.self.selectedArrays){
+                selectedArrayDim1 = g.self.selectedArrays[0];
+              }
+              let selectedArrayDim2=[];
+              if(g.self.selectedArrays){
+                selectedArrayDim2 = g.self.selectedArrays[1];
+              }
+              if(
+                selectedArrayDim1.indexOf(d.qElemNumber[0]) !== -1
+              && selectedArrayDim2.indexOf(d.qElemNumber[1]) !== -1 )
 
-              // var selectedArrayDim1=[];
-              // if(g.self.selectedArrays){
-              //   selectedArrayDim1 = g.self.selectedArrays[0];
-              // }
-              // var selectedArrayDim2=[];
-              // if(g.self.selectedArrays){
-              //   selectedArrayDim2 = g.self.selectedArrays[1];
-              // }
+              {
+                g.self.selectValues(1, [d.qElemNumber[1]], true);
+                g.self.selectValues(0, [d.qElemNumber[0]], true);
+              }
+              else{
+                g.self.selectValues(1, [d.qElemNumber[1]], false);
+                g.self.selectValues(0, [d.qElemNumber[0]], false);
+              }
 
-              var t = d3.select(this).classed("selected");
-              var selecatableClass = d3.select(this).classed("selectable");
+              let t = d3.select(this).classed("selected");
+              let selecatableClass = d3.select(this).classed("selectable");
 
-              // if(selectedArrayDim2 && selectedArrayDim2.indexOf(d.qElemNumber[1]) === -1){
-              //   console.log("new to arr");
-
-              //   g.self.selectValues(1, [d.qElemNumber[1]], true);
-              // }
-              // else if (selectedArrayDim2 && selectedArrayDim2.indexOf(d.qElemNumber[1]) !== -1){
-              //   console.log("duplicate");
-
-              //   console.log(g.self.selectedArrays);
-              //   var elmDim2Indx = selectedArrayDim2.indexOf(d.qElemNumber[1]);
-              //   // selectedArrayDim2=selectedArrayDim2.splice(elmDim2Indx,1);
-              //   g.self.selectedArrays[1].splice(elmDim2Indx,1);
-              //   console.log(g.self.selectedArrays);
-
-              //   // g.self.selectValues(1, [d.qElemNumber[1]], false);
-              // }
-              // else if(!selectedArrayDim2){
-              //   console.log("no arr");
-
-              //   g.self.selectValues(1, [d.qElemNumber[1]], true);
-              // }
-
-
-
-              // if(selectedArrayDim1 && selectedArrayDim1.indexOf(d.qElemNumber[0]) === -1){
-              //   g.self.selectValues(0, [d.qElemNumber[0]], true);
-              // }
-              // else if (selectedArrayDim1 && selectedArrayDim1.indexOf(d.qElemNumber[0]) !== -1){
-
-              //   var elmDim1Indx = selectedArrayDim1.indexOf(d.qElemNumber[0]);
-              //   selectedArrayDim1.splice(elmDim1Indx,1);
-              //   // g.self.selectValues(0, [d.qElemNumber[0]], false);
-              // }
-              // else if(!selectedArrayDim1){
-              //   g.self.selectValues(0, [d.qElemNumber[0]], true);
-              // }
               // // following to address QS bug where clear button does not clear class names
               g.self.clearSelectedValues = function () {
                 d3.selectAll("#" + g.id + " .selected").classed("selected", false);
@@ -750,7 +722,15 @@ export default {
           }
           else if (g.selectionMode == "CONFIRM") {
             var t = d3.select(this).classed("selected");
-            g.self.selectValues(0, [d.qElemNumber], false);
+            let selectedArrayDim1=[];
+            if(g.self.selectedArrays){
+              selectedArrayDim1 = g.self.selectedArrays[0];
+            }
+            if(selectedArrayDim1.indexOf(d.qElemNumber) !== -1){
+              g.self.selectValues(0, [d.qElemNumber], true);
+            }else{
+              g.self.selectValues(0, [d.qElemNumber], false);
+            }
             // following to address QS bug where clear button does not clear class names
             g.self.clearSelectedValues = function () {
               d3.selectAll("#" + g.id + " .selected").classed("selected", false);
