@@ -759,7 +759,6 @@ export default {
               g.self.backendApi.selectValues(0, [d.qElemNumber[0]], true);
             }
             else if (g.selectionMode == "CONFIRM") {
-              console.log("hmmm");
 
               var t = d3.select(this).classed("selected");
               g.self.selectValues(1, [d.qElemNumber[1]], true);
@@ -1635,6 +1634,9 @@ export default {
               return y;
             })
             .style("opacity", "1")
+            .text(function(e){
+              return e;
+            })
             ;
           txt.each(function (d, i) {
             var self = d3.select(this),
