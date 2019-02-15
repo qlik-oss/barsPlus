@@ -311,6 +311,7 @@ export default {
               dim2: p[k].dim2 || '',
               delta: c[k].qNum - p[k].qNum,
               deltaPct: 0,
+              measureNumber: p[k].measureNumber,
               points: [
                 p[k].offset,
                 c[k].offset,
@@ -660,12 +661,11 @@ export default {
       .attr(g.orientation == "V" ? "height" : "width", function (d) { return 0; })
       .style("fill", function (d) {
         if(g.measures && g.measures[0] === g.measures[1]){
-          console.log(d);
-
           return g.cScale(d.dim2 + d.measureNumber);
         } else{
           return g.cScale(d.dim2);
-        }})
+        }
+      })
       .style("opacity", "0")
       .attr("class", "selectable ldwbar")
       .on("click", function (d) {
@@ -898,7 +898,13 @@ export default {
           return p;
         })
         .style("fill", function (d) {
-          return g.cScale(d.dim2);
+          if(g.measures && g.measures[0] === g.measures[1]){
+            console.log("!hi");
+
+            return g.cScale(d.dim2 + 0);
+          }else{
+            return g.cScale(d.dim2);
+          }
         })
         .style("opacity", "0")
       ;
@@ -1219,7 +1225,7 @@ export default {
     if(total){
       textLength = g.tref.node().getComputedTextLength();
       txt = g.tref.text();
-      while (textLength > barWidth){
+      while (textLength > barWidth && textLength > 0 && g.orientation !=='H'){
         txt = txt.slice(0, -1);
         g.tref.text(txt + ellipsis);
         textLength = g.tref.node().getComputedTextLength();
@@ -1228,7 +1234,6 @@ export default {
         }
       }
       if (txt.length != 0) txt = g.tref.text();
-
     }
     return {
       x: Number.isFinite(tx) ? tx : 0,
