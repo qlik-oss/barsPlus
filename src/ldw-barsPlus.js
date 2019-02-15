@@ -659,10 +659,13 @@ export default {
       .attr(g.orientation == "V" ? "width" : "height", g.dScale.rangeBand())
       .attr(g.orientation == "V" ? "height" : "width", function (d) { return 0; })
       .style("fill", function (d) {
-        console.log(g);
-        console.log(g.measures);
+        if(g.measures && g.measures[0] === g.measures[1]){
+          console.log(d);
 
-        return g.cScale(d.dim2 + d.measureNumber); })
+          return g.cScale(d.dim2 + d.measureNumber);
+        } else{
+          return g.cScale(d.dim2);
+        }})
       .style("opacity", "0")
       .attr("class", "selectable ldwbar")
       .on("click", function (d) {
