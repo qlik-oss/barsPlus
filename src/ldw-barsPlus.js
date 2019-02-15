@@ -658,7 +658,11 @@ export default {
       .attr(g.orientation == "V" ? "y" : "x", function (d) { return g.mScale(0); })		// grow from bottom
       .attr(g.orientation == "V" ? "width" : "height", g.dScale.rangeBand())
       .attr(g.orientation == "V" ? "height" : "width", function (d) { return 0; })
-      .style("fill", function (d) { return g.cScale(d.dim2 + d.measureNumber); })
+      .style("fill", function (d) {
+        console.log(g);
+        console.log(g.measures);
+
+        return g.cScale(d.dim2 + d.measureNumber); })
       .style("opacity", "0")
       .attr("class", "selectable ldwbar")
       .on("click", function (d) {
@@ -1470,6 +1474,7 @@ export default {
             .style("opacity", "1")
             .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(d.dim2)) : g.textColor)
             .style("font-size", g.tref.style("font-size"))
+            .attr({ x: txp.x, y: txp.y })
             .text(txp.text)
           ;
         })
