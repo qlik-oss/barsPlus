@@ -1,13 +1,10 @@
 {
-	"name": "Bar plus chart",
-	"description": "Allows creating bar charts (horizontal and vertical), stacked bar charts, 100% stacked bar charts, stacked bars showing changes, and area charts.",
+	"name": "Bar & area chart",
+	"description": "Bar and area chart with stacking and connected bars.",
 	"type": "visualization",
 	"version": "X.Y.Z",
-	"icon": "bar-chart-vertical",
+	"icon": "bar-chart",
 	"preview": "qlik-barplus-chart.png",
-	"author": "Larry Woodside <larry.woodside@gmail.com>",
-	"homepage": "http://branch.qlik.com/#!/project/5858f900c0568806cf368930",
-	"keywords": "qlik-sense, visualization, D3, AngularJS, Bar Chart, Stacked Bar Chart, Area Chart, Transitions, Legend, Tooltips",
 	"license": "MIT",
 	"repository": "",
 	"dependencies": {
