@@ -444,7 +444,20 @@ export default {
       .domain(dim1)
       .rangeRoundBands(g.orientation == "V" ? [0, innerWidth] : [innerHeight, 0], g.barGap, g.outerGap)
     ;
-    var max = d3.max(g.data, function (d) { return (g.normalized ? 1 : d.offset) * g.gridHeight; });
+    var max = d3.max(g.data, function (d) {
+      if(d.values){
+        if(d.values[0].offset > d.values[1].offset){
+          return (g.normalized ? 1 : d.values[0].offset) * g.gridHeight;
+        }else{
+          return (g.normalized ? 1 : d.values[1].offset) * g.gridHeight;
+        }
+      }else{
+        if(d.offset < 0) return 0;
+        return (g.normalized ? 1 : d.offset) * g.gridHeight;
+      }
+    });
+
+
     g.mScale = d3.scale.linear()
       .domain([0, max > 0 ? max : 1])
       .range(g.orientation == "V" ? [innerHeight, 0] : [0, innerWidth])
@@ -1245,7 +1258,19 @@ export default {
     var dim1 = g.data.map(function (d) { return d.dim1; });
     if (g.orientation == "H") dim1.reverse();
     g.dScale.domain(dim1);
-    var max = d3.max(g.data, function (d) { return (g.normalized ? 1 : d.offset) * g.gridHeight; });
+    var max = d3.max(g.data, function (d) {
+      if(d.values){
+        if(d.values[0].offset > d.values[1].offset){
+          return (g.normalized ? 1 : d.values[0].offset) * g.gridHeight;
+        }else{
+          return (g.normalized ? 1 : d.values[1].offset) * g.gridHeight;
+        }
+      }else{
+        if(d.offset < 0) return 0;
+        return (g.normalized ? 1 : d.offset) * g.gridHeight;
+      }
+    });
+
     g.mScale.domain([0, max > 0 ? max : 1]);
     const isPrinting = qlik.navigation && !qlik.navigation.inClient;
     var tDelay = g.transitions && !g.editMode && !isPrinting ? g.transitionDelay : 0;
