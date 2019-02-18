@@ -445,18 +445,23 @@ export default {
       .rangeRoundBands(g.orientation == "V" ? [0, innerWidth] : [innerHeight, 0], g.barGap, g.outerGap)
     ;
     var max = d3.max(g.data, function (d) {
-      if(d.values){
-        if(d.values[0].offset > d.values[1].offset){
-          return (g.normalized ? 1 : d.values[0].offset) * g.gridHeight;
-        }else{
-          return (g.normalized ? 1 : d.values[1].offset) * g.gridHeight;
+
+      if(d.offset < 0) {
+        if(d.values){
+          if(d.values[0].qNum > d.values[1].qNum){
+            return (g.normalized ? 1 : d.values[0].qNum) * g.gridHeight;
+          }else{
+            return (g.normalized ? 1 : d.values[1].qNum) * g.gridHeight;
+          }
         }
-      }else{
-        if(d.offset < 0) return 0;
+        else{
+          return 0;
+        }
+      }
+      else{
         return (g.normalized ? 1 : d.offset) * g.gridHeight;
       }
     });
-
 
     g.mScale = d3.scale.linear()
       .domain([0, max > 0 ? max : 1])
@@ -1259,14 +1264,19 @@ export default {
     if (g.orientation == "H") dim1.reverse();
     g.dScale.domain(dim1);
     var max = d3.max(g.data, function (d) {
-      if(d.values){
-        if(d.values[0].offset > d.values[1].offset){
-          return (g.normalized ? 1 : d.values[0].offset) * g.gridHeight;
-        }else{
-          return (g.normalized ? 1 : d.values[1].offset) * g.gridHeight;
+      if(d.offset < 0) {
+        if(d.values){
+          if(d.values[0].qNum > d.values[1].qNum){
+            return (g.normalized ? 1 : d.values[0].qNum) * g.gridHeight;
+          }else{
+            return (g.normalized ? 1 : d.values[1].qNum) * g.gridHeight;
+          }
         }
-      }else{
-        if(d.offset < 0) return 0;
+        else{
+          return 0;
+        }
+      }
+      else{
         return (g.normalized ? 1 : d.offset) * g.gridHeight;
       }
     });
@@ -1428,8 +1438,13 @@ export default {
           return g.dScale(d.dim1) ? g.dScale(d.dim1) : 0; // ignore NaN: causing errors in transitions
         })
         .attr("y", function (d) {
-          const num = Number.isFinite(d.qNum) ? d.qNum : 0;
-          return g.mScale(d.offset) - (g.mScale(0) - g.mScale(num));
+          const num = Number.isFinite(d.qNum) && d.qNum > 0 ? d.qNum : 0;
+          if(d.offset < 0){
+            return g.mScale(d.qNum) - (g.mScale(0) - g.mScale(num)) + g.mScale(0) -g.mScale(d.qNum);
+          }
+          else{
+            return g.mScale(d.offset) - (g.mScale(0) - g.mScale(num));
+          }
         })
         .attr("width", g.dScale.rangeBand() && g.dScale.rangeBand() > 0 ? g.dScale.rangeBand() : 0) // ignore NaN: causing errors in transitions
         .attr("height", function (d) {
