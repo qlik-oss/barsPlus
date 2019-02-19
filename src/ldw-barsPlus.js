@@ -660,11 +660,7 @@ export default {
       .attr(g.orientation == "V" ? "width" : "height", g.dScale.rangeBand())
       .attr(g.orientation == "V" ? "height" : "width", function (d) { return 0; })
       .style("fill", function (d) {
-        if(g.measures && g.measures[0] === g.measures[1]){
-          return g.cScale(d.dim2 + d.measureNumber);
-        } else{
-          return g.cScale(d.dim2);
-        }
+        return g.cScale(d.dim2);
       })
       .style("opacity", "0")
       .attr("class", "selectable ldwbar")
@@ -1050,11 +1046,7 @@ export default {
             .attr("width", g.lgn.box[0])
             .attr("height", g.lgn.box[1])
             .style("fill", function (e) {
-              if(g.measures && g.measures[0] === g.measures[1]){
-                return g.cScale(e + i);
-              } else{
-                return g.cScale(e);
-              }
+              return g.cScale(e);
             })
 
           ;
@@ -1418,11 +1410,7 @@ export default {
         .ease(g.ease)
         .style("opacity", "1")
         .style("fill", function (d) {
-          if(g.measures && g.measures[0] === g.measures[1]){
-            return g.cScale(d.dim2 + d.measureNumber );
-          } else{
-            return g.cScale(d.dim2);
-          }
+          return g.cScale(d.dim2);
         })
         .attr("x", function (d, i) {
           return g.dScale(d.dim1) ? g.dScale(d.dim1) : 0; // ignore NaN: causing errors in transitions
@@ -1584,11 +1572,7 @@ export default {
             })
             .style("opacity", "1")
             .style("fill", function (e) {
-              if(g.measures && g.measures[0] === g.measures[1]){
-                return g.cScale(e + i);
-              } else{
-                return g.cScale(e);
-              }
+              return g.cScale(e);
             })
           ;
           var txt = d3.select(this)
