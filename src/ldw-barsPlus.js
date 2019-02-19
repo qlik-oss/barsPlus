@@ -893,7 +893,7 @@ export default {
           }
           return p;
         })
-        .style("fill", function (d , i) {
+        .style("fill", function (d) {
           return g.cScale(d.dim2);
         })
         .style("opacity", "0")
@@ -1522,7 +1522,7 @@ export default {
           }
           return p;
         })
-        .style("fill", function (d , i) {
+        .style("fill", function (d) {
           return g.cScale(d.dim2);
         })
         .style("opacity", g.barGap == 1 ? "1" : "0.5")
