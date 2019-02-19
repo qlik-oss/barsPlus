@@ -1440,7 +1440,7 @@ export default {
         .attr("y", function (d) {
           const num = Number.isFinite(d.qNum) && d.qNum > 0 ? d.qNum : 0;
           if(d.offset < 0){
-            return g.mScale(d.qNum) - (g.mScale(0) - g.mScale(num)) + g.mScale(0) -g.mScale(d.qNum);
+            return g.mScale(0) - (g.mScale(0) - g.mScale(num));
           }
           else{
             return g.mScale(d.offset) - (g.mScale(0) - g.mScale(num));
