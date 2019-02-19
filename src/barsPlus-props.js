@@ -598,40 +598,13 @@ const definition ={
               expression: "optional",
               show: isShowingTexts
             },
-            textSizeAbs: {
-              type: "boolean",
-              component: "switch",
-              label: "Text size proportional",
-              ref: "props.textSizeAbs",
-              defaultValue: true,
-              options: [
-                { value: true, label: "Not proportional" },
-                { value: false, label: "Proportional" }
-              ],
-              show: isShowingTexts
-            },
-            textSizeFactor: {
-              type: "number",
-              label: "Text size proportion factor",
-              ref: "props.textSizeFactor",
-              defaultValue: 1,
-              show: data => !data.props.textSizeAbs && isShowingTexts(data)
-            },
             textSize: {
               type: "number",
               label: "Text size (px)",
               ref: "props.textSize",
               defaultValue: 10,
               expression: "optional",
-              show: data => !data.props.textSizeAbs && isShowingTexts(data)
-            },
-            textSizeMax: {
-              type: "number",
-              label: "Max text size (px)",
-              ref: "props.textSize",
-              defaultValue: 18,
-              expression: "optional",
-              show: data => !data.props.textSizeAbs && isShowingTexts(data)
+              show: isShowingTexts
             },
             textDots: {
               type: "boolean",

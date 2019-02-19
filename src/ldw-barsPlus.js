@@ -67,9 +67,7 @@
  showTot			What to show for total: M - measure, D - dimension
  innerBarPadH		Horizontal inner bar padding (px)
  innerBarPadV		Vertical inner bar padding (px)
- textSizeAbs		Whether to use textSize instead of textSizeFactor (horizontal bars only)
- textSizeFactor		Text size as proportion of bar height (horizontal bars only)
- textSize			Text size (px), when vertical bars or textSizeAbs = false
+ textSize			Text size (px), when vertical bars
  textDots			Whether to show text at all if ellipsis would be shown
  textColor			"Auto" - Choose white or black depending on bar color, else text color string
  vAlign				Vertical alignment: C - center, T - top, B - bottom
@@ -1116,18 +1114,7 @@ export default {
     var hAlign = g.hAlign, vAlign = g.vAlign,
       innerBarPadV = +g.innerBarPadV,
       innerBarPadH = +g.innerBarPadH;
-    if (g.textSizeAbs)
-      ts = g.textSize;
-    else {
-      if (total)
-        if (g.orientation == "H")
-          innerBarPadV = 1;
-        else
-          innerBarPadH = 1;
-      ts = g.textSizeFactor * (g.dScale.rangeBand() - 2 * (g.orientation == "H" ? innerBarPadV : innerBarPadH));
-      // limit size to maximum, also stored in textSize
-      if (ts > g.textSize) ts = g.textSize;
-    }
+    ts = g.textSize;
     g.tref.style("font-size", ts);
 
     if (total) { // Override some alignment for total
@@ -1166,7 +1153,7 @@ export default {
         : g.dScale(d.dim1) + g.dScale.rangeBand() - innerBarPadV;
     txt = "";
     var barWidth = g.bars[0][0].width.baseVal.value;
-    if (bb.height + 2 * innerBarPadV <= bHeight || (g.orientation != "V" && !g.textSizeAbs)) {
+    if (bb.height + 2 * innerBarPadV <= bHeight || (g.orientation != "V")) {
       if (bb.width + 2 * innerBarPadH <= textX) {
         if (hAlign == "C") {
           tx = origX + (textX - bb.width) / 2;
