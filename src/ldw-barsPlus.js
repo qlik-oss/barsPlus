@@ -897,11 +897,9 @@ export default {
           }
           return p;
         })
-        .style("fill", function (d) {
+        .style("fill", function (d , i) {
           if(g.measures && g.measures[0] === g.measures[1]){
-            console.log("!hi");
-
-            return g.cScale(d.dim2 + 0);
+            return g.cScale(d.dim2 + d.measureNumber );
           }else{
             return g.cScale(d.dim2);
           }
@@ -1051,7 +1049,13 @@ export default {
             // .style("opacity", "0")
             .attr("width", g.lgn.box[0])
             .attr("height", g.lgn.box[1])
-            .style("fill", function (e) { return g.cScale(e + i); })
+            .style("fill", function (e) {
+              if(g.measures && g.measures[0] === g.measures[1]){
+                return g.cScale(e + i);
+              } else{
+                return g.cScale(e);
+              }
+            })
 
           ;
           d3.select(this)
@@ -1413,6 +1417,13 @@ export default {
         .duration(tDuration)
         .ease(g.ease)
         .style("opacity", "1")
+        .style("fill", function (d) {
+          if(g.measures && g.measures[0] === g.measures[1]){
+            return g.cScale(d.dim2 + d.measureNumber );
+          } else{
+            return g.cScale(d.dim2);
+          }
+        })
         .attr("x", function (d, i) {
           return g.dScale(d.dim1) ? g.dScale(d.dim1) : 0; // ignore NaN: causing errors in transitions
         })
@@ -1527,8 +1538,12 @@ export default {
           }
           return p;
         })
-        .style("fill", function (d) {
-          return g.cScale(d.dim2);
+        .style("fill", function (d , i) {
+          if(g.measures && g.measures[0] === g.measures[1]){
+            return g.cScale(d.dim2 + d.measureNumber);
+          }else{
+            return g.cScale(d.dim2);
+          }
         })
         .style("opacity", g.barGap == 1 ? "1" : "0.5")
       ;
@@ -1568,6 +1583,13 @@ export default {
               return y;
             })
             .style("opacity", "1")
+            .style("fill", function (e) {
+              if(g.measures && g.measures[0] === g.measures[1]){
+                return g.cScale(e + i);
+              } else{
+                return g.cScale(e);
+              }
+            })
           ;
           var txt = d3.select(this)
             .transition()
