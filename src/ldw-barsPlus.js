@@ -1082,7 +1082,7 @@ export default {
           }
           if(g.orientation === 'H'){
             d3.select(this)
-              .select('text').attr('transform', 'translate(-5,-30) rotate(-45)');
+              .select('text').attr('transform', 'translate(-5,-20) rotate(-45)');
           }
         }
         if(g.labelStyleD === 'S'){
