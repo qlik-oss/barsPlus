@@ -1074,6 +1074,28 @@ export default {
         })
       ;
     }
+    d3.select('.ldwaxis') //Dimension labels styling
+      .selectAll('.tick')
+      .each(function(tick , i){
+        if(g.labelStyleD === 'T'){
+          if(g.orientation === 'V'){
+            d3.select(this)
+              .select('text').attr('transform', 'translate(-5,15) rotate(-45)');
+          }
+          if(g.orientation === 'H'){
+            d3.select(this)
+              .select('text').attr('transform', 'translate(-5,-30) rotate(-45)');
+          }
+        }
+        if(g.labelStyleD === 'S'){
+          if ( i % 2 === 0){
+            if(g.orientation === 'V'){
+              d3.select(this)
+                .select('text').attr('transform', 'translate(0,20)');
+            }
+          }
+        }
+      });
   },
   /**
  *--------------------------------------
@@ -1221,7 +1243,9 @@ export default {
         }
       }
       if (txt.length != 0) txt = g.tref.text();
-
+    }
+    if(g.barGap === 1){
+      txt = '';
     }
     return {
       x: Number.isFinite(tx) ? tx : 0,
