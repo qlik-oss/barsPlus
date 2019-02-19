@@ -894,11 +894,7 @@ export default {
           return p;
         })
         .style("fill", function (d , i) {
-          if(g.measures && g.measures[0] === g.measures[1]){
-            return g.cScale(d.dim2 + d.measureNumber );
-          }else{
-            return g.cScale(d.dim2);
-          }
+          return g.cScale(d.dim2);
         })
         .style("opacity", "0")
       ;
@@ -1527,11 +1523,7 @@ export default {
           return p;
         })
         .style("fill", function (d , i) {
-          if(g.measures && g.measures[0] === g.measures[1]){
-            return g.cScale(d.dim2 + d.measureNumber);
-          }else{
-            return g.cScale(d.dim2);
-          }
+          return g.cScale(d.dim2);
         })
         .style("opacity", g.barGap == 1 ? "1" : "0.5")
       ;
