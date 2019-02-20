@@ -134,6 +134,7 @@ qvangular.directive("barsPlus", [
               g.rawData = newValue;
               g.initData();
               g.updateBars();
+              g.refreshChart();
             }
           });
         // watch for when chart is resized
