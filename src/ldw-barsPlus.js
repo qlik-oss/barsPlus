@@ -197,15 +197,14 @@ export default {
     // Process two dimensional data
     g.nDims = 2;
 
-    var p1 = "", p2, edges = [], b, p = [] , measures=[];
+    var p1 = "", p2, edges = [], b, p = [];
     inData.forEach(function (d) {
       var c2 = d[1].qText;
       if (p.indexOf(d[0].qText) == -1) {
         p.push(d[0].qText);
       }
-      if (q.indexOf(d[1].qText) == -1 || measures.indexOf(d[1].qNum) ==-1) {
+      if (q.indexOf(d[1].qText) == -1) {
         q.push(d[1].qText);
-        measures.push(d[1].qNum);
         r.push(cf(d));
       }
       if (d[0].qText != p1) {
@@ -244,7 +243,7 @@ export default {
 
     var n = d3.nest()
       .key(function (d) { return d[0].qText; })
-      .key(function (d) { return `${d[1].qNum}`; })
+      .key(function (d) { return d[1].qText; })
       .entries(inData)
       ;
     // sort all nodes in order specified by q
@@ -260,10 +259,10 @@ export default {
         : (p.indexOf(a.key) > p.indexOf(b.key) ? 1 : 0));
     });
     n.forEach(function (d, idx) {
-      var t = 0, v = [], j = 0, num, txt, measureNumber;
+      var t = 0, v = [], j = 0, num, txt;
       for (var i = 0; i < q.length; i++) {
         let elm;
-        if (d.values.length <= j || d.values[j].values[0][1].qText != q[i]) {
+        if (d.values.length <= j || d.values[j].key != q[i]) {
           num = 0;
           txt = "-";
           elm = [];
@@ -271,7 +270,6 @@ export default {
         else {
           num = d.values[j].values[0][2].qNum;
           txt = d.values[j].values[0][2].qText;
-          measureNumber = d.values[j].values[0][1].qNum;
           if(g.defDims == 2){
             elm = [d.values[j].values[0][0].qElemNumber,d.values[j].values[0][1].qElemNumber];
           }else{
@@ -283,8 +281,7 @@ export default {
             qNum: num,
             qText: txt,
             qElemNumber: elm,
-            offset: t,
-            measureNumber
+            offset: t
           });
           t += num;
         }
