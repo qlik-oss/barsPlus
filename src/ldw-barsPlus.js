@@ -195,15 +195,14 @@ export default {
     // Process two dimensional data
     g.nDims = 2;
 
-    var p1 = "", p2, edges = [], b, p = [] , measures=[];
+    var p1 = "", p2, edges = [], b, p = [];
     inData.forEach(function (d) {
       var c2 = d[1].qText;
       if (p.indexOf(d[0].qText) == -1) {
         p.push(d[0].qText);
       }
-      if (q.indexOf(d[1].qText) == -1 || measures.indexOf(d[1].qNum) ==-1) {
+      if (q.indexOf(d[1].qText) == -1) {
         q.push(d[1].qText);
-        measures.push(d[1].qNum);
         r.push(cf(d));
       }
       if (d[0].qText != p1) {
@@ -242,7 +241,7 @@ export default {
 
     var n = d3.nest()
       .key(function (d) { return d[0].qText; })
-      .key(function (d) { return `${d[1].qNum}`; })
+      .key(function (d) { return d[1].qText; })
       .entries(inData)
       ;
     // sort all nodes in order specified by q
@@ -258,10 +257,10 @@ export default {
         : (p.indexOf(a.key) > p.indexOf(b.key) ? 1 : 0));
     });
     n.forEach(function (d, idx) {
-      var t = 0, v = [], j = 0, num, txt, measureNumber;
+      var t = 0, v = [], j = 0, num, txt;
       for (var i = 0; i < q.length; i++) {
         let elm;
-        if (d.values.length <= j || d.values[j].values[0][1].qText != q[i]) {
+        if (d.values.length <= j || d.values[j].key != q[i]) {
           num = 0;
           txt = "-";
           elm = [];
@@ -269,7 +268,6 @@ export default {
         else {
           num = d.values[j].values[0][2].qNum;
           txt = d.values[j].values[0][2].qText;
-          measureNumber = d.values[j].values[0][1].qNum;
           if(g.defDims == 2){
             elm = [d.values[j].values[0][0].qElemNumber,d.values[j].values[0][1].qElemNumber];
           }else{
@@ -281,8 +279,7 @@ export default {
             qNum: num,
             qText: txt,
             qElemNumber: elm,
-            offset: t,
-            measureNumber
+            offset: t
           });
           t += num;
         }
@@ -309,6 +306,7 @@ export default {
               dim2: p[k].dim2 || '',
               delta: c[k].qNum - p[k].qNum,
               deltaPct: 0,
+              measureNumber: p[k].measureNumber,
               points: [
                 p[k].offset,
                 c[k].offset,
@@ -656,7 +654,9 @@ export default {
       .attr(g.orientation == "V" ? "y" : "x", function (d) { return g.mScale(0); })		// grow from bottom
       .attr(g.orientation == "V" ? "width" : "height", g.dScale.rangeBand())
       .attr(g.orientation == "V" ? "height" : "width", function (d) { return 0; })
-      .style("fill", function (d) { return g.cScale(d.dim2 + d.measureNumber); })
+      .style("fill", function (d) {
+        return g.cScale(d.dim2);
+      })
       .style("opacity", "0")
       .attr("class", "selectable ldwbar")
       .on("click", function (d) {
@@ -667,16 +667,40 @@ export default {
               g.self.backendApi.selectValues(0, [d.qElemNumber[0]], false);
             }
             else if (g.selectionMode == "CONFIRM") {
-              var t = d3.select(this).classed("selected");
-              g.self.selectValues(1, [d.qElemNumber[1]], false);
-              g.self.selectValues(0, [d.qElemNumber[0]], false);
 
-              // following to address QS bug where clear button does not clear class names
+              let selectedArrayDim1=[];
+              if(g.self.selectedArrays){
+                selectedArrayDim1 = g.self.selectedArrays[0];
+              }
+              let selectedArrayDim2=[];
+              if(g.self.selectedArrays){
+                selectedArrayDim2 = g.self.selectedArrays[1];
+              }
+              if(
+                selectedArrayDim1.indexOf(d.qElemNumber[0]) !== -1
+              && selectedArrayDim2.indexOf(d.qElemNumber[1]) !== -1 )
+
+              {
+                g.self.selectValues(1, [d.qElemNumber[1]], true);
+                g.self.selectValues(0, [d.qElemNumber[0]], true);
+              }
+              else{
+                g.self.selectValues(1, [d.qElemNumber[1]], false);
+                g.self.selectValues(0, [d.qElemNumber[0]], false);
+              }
+
+              let t = d3.select(this).classed("selected");
+              let selecatableClass = d3.select(this).classed("selectable");
+
+              // // following to address QS bug where clear button does not clear class names
               g.self.clearSelectedValues = function () {
                 d3.selectAll("#" + g.id + " .selected").classed("selected", false);
+                d3.selectAll("#" + g.id + " .selected").classed("selectable", false);
               };
               d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
                 .classed("selected", !t);
+              d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
+                .classed("selectable", !selecatableClass);
               d3.select("#" + g.id + " .ldwtooltip")
                 .style("opacity", "0")
                 .transition()
@@ -691,7 +715,15 @@ export default {
           }
           else if (g.selectionMode == "CONFIRM") {
             var t = d3.select(this).classed("selected");
-            g.self.selectValues(0, [d.qElemNumber], false);
+            let selectedArrayDim1=[];
+            if(g.self.selectedArrays){
+              selectedArrayDim1 = g.self.selectedArrays[0];
+            }
+            if(selectedArrayDim1.indexOf(d.qElemNumber) !== -1){
+              g.self.selectValues(0, [d.qElemNumber], true);
+            }else{
+              g.self.selectValues(0, [d.qElemNumber], false);
+            }
             // following to address QS bug where clear button does not clear class names
             g.self.clearSelectedValues = function () {
               d3.selectAll("#" + g.id + " .selected").classed("selected", false);
@@ -720,6 +752,7 @@ export default {
               g.self.backendApi.selectValues(0, [d.qElemNumber[0]], true);
             }
             else if (g.selectionMode == "CONFIRM") {
+
               var t = d3.select(this).classed("selected");
               g.self.selectValues(1, [d.qElemNumber[1]], true);
               g.self.selectValues(0, [d.qElemNumber[0]], true);
@@ -908,22 +941,7 @@ export default {
                 if ( d && d.dim2 ){
                   if( d.dim2 === e){
                     if (g.selectionMode == "QUICK") {
-                      g.self.backendApi.selectValues(1, [d.qElemNumber[1]], true);
-                    }
-                    else if (g.selectionMode == "CONFIRM") {
-                      var t = d3.select(this).classed("selected");
-                      g.self.selectValues(1, [d.qElemNumber[1]], true);
-                      // following to address QS bug where clear button does not clear class names
-                      g.self.clearSelectedValues = function () {
-                        d3.selectAll("#" + g.id + " .selected").classed("selected", false);
-                      };
-                      d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
-                        .classed("selected", !t);
-                      d3.select("#" + g.id + " .ldwtooltip")
-                        .style("opacity", "0")
-                        .transition()
-                        .remove
-                      ;
+                      g.self.backendApi.selectValues(1, [d.qElemNumber[1]], false);
                     }
                   }
                 }
@@ -933,22 +951,7 @@ export default {
                   if (d.dim1 === e){
                     if (d.qElemNumber >= 0) { // Cannot select a measure
                       if (g.selectionMode == "QUICK") {
-                        g.self.backendApi.selectValues(0, [d.qElemNumber], true);
-                      }
-                      else if (g.selectionMode == "CONFIRM") {
-                        var t = d3.select(this).classed("selected");
-                        g.self.selectValues(0, [d.qElemNumber], true);
-                        // following to address QS bug where clear button does not clear class names
-                        g.self.clearSelectedValues = function () {
-                          d3.selectAll("#" + g.id + " .selected").classed("selected", false);
-                        };
-                        d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
-                          .classed("selected", !t);
-                        d3.select("#" + g.id + " .ldwtooltip")
-                          .style("opacity", "0")
-                          .transition()
-                          .remove
-                        ;
+                        g.self.backendApi.selectValues(0, [d.qElemNumber], false);
                       }
                     }
                   }
@@ -1036,7 +1039,9 @@ export default {
             // .style("opacity", "0")
             .attr("width", g.lgn.box[0])
             .attr("height", g.lgn.box[1])
-            .style("fill", function (e) { return g.cScale(e + i); })
+            .style("fill", function (e) {
+              return g.cScale(e);
+            })
 
           ;
           d3.select(this)
@@ -1245,7 +1250,7 @@ export default {
     if(total){
       textLength = g.tref.node().getComputedTextLength();
       txt = g.tref.text();
-      while (textLength > barWidth){
+      while (textLength > barWidth && textLength > 0 && g.orientation !=='H'){
         txt = txt.slice(0, -1);
         g.tref.text(txt + ellipsis);
         textLength = g.tref.node().getComputedTextLength();
@@ -1435,7 +1440,15 @@ export default {
         .delay(tDelay)
         .duration(tDuration)
         .ease(g.ease)
+        .style("fill", function (d) {
+          if(g.defMeas === 2 && g.measures[0] === g.measures[1]){
+            return g.cScale(d.dim2 + d.measureNumber);
+          }
+          return g.cScale(d.dim2); })
         .style("opacity", "1")
+        .style("fill", function (d) {
+          return g.cScale(d.dim2);
+        })
         .attr("x", function (d, i) {
           return g.dScale(d.dim1) ? g.dScale(d.dim1) : 0; // ignore NaN: causing errors in transitions
         })
@@ -1505,6 +1518,7 @@ export default {
             .style("opacity", "1")
             .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(d.dim2)) : g.textColor)
             .style("font-size", g.tref.style("font-size"))
+            .attr({ x: txp.x, y: txp.y })
             .text(txp.text)
           ;
         })
@@ -1590,6 +1604,9 @@ export default {
               return y;
             })
             .style("opacity", "1")
+            .style("fill", function (e) {
+              return g.cScale(e);
+            })
           ;
           var txt = d3.select(this)
             .transition()
@@ -1617,6 +1634,9 @@ export default {
               return y;
             })
             .style("opacity", "1")
+            .text(function(e){
+              return e;
+            })
             ;
           txt.each(function (d, i) {
             var self = d3.select(this),
