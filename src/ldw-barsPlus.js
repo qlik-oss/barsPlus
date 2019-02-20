@@ -458,7 +458,17 @@ export default {
         }
       }
       else{
-        return (g.normalized ? 1 : d.offset) * g.gridHeight;
+        var valuesOffset=[];
+        d.values.forEach(dataObject => {
+          if(dataObject.offset > d.offset && dataObject.offset >= valuesOffset){
+            valuesOffset = dataObject.offset;
+          }
+        });
+        if(valuesOffset > d.offset){
+          return (g.normalized ? 1 : valuesOffset) * g.gridHeight;
+        }else{
+          return (g.normalized ? 1 : d.offset) * g.gridHeight;
+        }
       }
     });
 
