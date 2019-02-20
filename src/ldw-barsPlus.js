@@ -1244,10 +1244,6 @@ export default {
   updateBars: function () {
     var g = this;
 
-    const containsInvalidBarHeight = !!g.data.find(data => isNaNOrStringNaN(data.offset));
-    if (containsInvalidBarHeight) {
-      return;
-    }
 
     var dim1 = g.data.map(function (d) { return d.dim1; });
     if (g.orientation == "H") dim1.reverse();
@@ -1422,6 +1418,9 @@ export default {
         })
         .attr("width", g.dScale.rangeBand() && g.dScale.rangeBand() > 0 ? g.dScale.rangeBand() : 0) // ignore NaN: causing errors in transitions
         .attr("height", function (d) {
+          if(!Number.isFinite(d.qNum)){
+            return 0;
+          }
           return g.mScale(0) > g.mScale(d.qNum) ? g.mScale(0) - g.mScale(d.qNum) : 0; // ignore negatives: causing errors in transitions
         })
       ;
