@@ -1083,7 +1083,7 @@ export default {
         if(g.labelStyleD === 'T'){
           if(g.orientation === 'V'){
             d3.select(this)
-              .select('text').attr('transform', 'translate(-5,15) rotate(-45)');
+              .select('text').attr('transform', 'translate(-5,25) rotate(-45)');
           }
           if(g.orientation === 'H'){
             d3.select(this)
