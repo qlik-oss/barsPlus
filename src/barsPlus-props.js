@@ -321,9 +321,8 @@ const definition ={
               component: "dropdown",
               label: "Label style",
               ref: "props.labelStyleD",
-              defaultValue: "A",
+              defaultValue: "H",
               options: [
-                { value: "A", label: "Auto" },
                 { value: "H", label: "Horizontal" },
                 { value: "S", label: "Staggered" },
                 { value: "T", label: "Tilted" }
@@ -417,9 +416,8 @@ const definition ={
               component: "dropdown",
               label: "Label style",
               ref: "props.labelStyleM",
-              defaultValue: "A",
+              defaultValue: "H",
               options: [
-                { value: "A", label: "Auto" },
                 { value: "H", label: "Horizontal" },
                 { value: "S", label: "Staggered" },
                 { value: "T", label: "Tilted" }

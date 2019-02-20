@@ -45,7 +45,7 @@
 
  axisTitleD			Dimension axis title
  labelTitleD		Dimension axis: B - labels & title, L - labels only, T - titles only, N - none
- labelStyleD		Dimension style: A - Auto, H - horizontal, S - staggered, T - tilted
+ labelStyleD		Dimension style: H - horizontal, S - staggered, T - tilted
  gridlinesD			Dimension gridlines
  axisMarginD		Dimension margin size: N - narrow, M - medium, W - wide
 
@@ -53,7 +53,7 @@
 
  axisTitleM			Measure axis title
  labelTitleM		Measure axis: B - labels & title, L - labels only, T - titles only, N - none
- labelStyleM		Measure style: A - Auto, H - horizontal, S - staggered, T - tilted
+ labelStyleM		Measure style: H - horizontal, S - staggered, T - tilted
  gridlinesM			Measure gridlines
  axisMarginM		Measure margin size: N - narrow, M - medium, W - wide
  ticks				Recommended number of ticks
@@ -1072,7 +1072,7 @@ export default {
         })
       ;
     }
-    d3.select('.ldwaxis') //Dimension labels styling
+    d3.select('.ldw-d') //Dimension labels styling
       .selectAll('.tick')
       .each(function(tick , i){
         if(g.labelStyleD === 'T'){
@@ -1088,6 +1088,30 @@ export default {
         if(g.labelStyleD === 'S'){
           if ( i % 2 === 0){
             if(g.orientation === 'V'){
+              d3.select(this)
+                .select('text').attr('transform', 'translate(0,20)');
+            }
+          }
+        }
+      });
+
+
+    d3.select('.ldw-m') //Measures labels styling
+      .selectAll('.tick')
+      .each(function(tick , i){
+        if(g.labelStyleM === 'T'){
+          if(g.orientation === 'V'){
+            d3.select(this)
+              .select('text').attr('transform', 'translate(-5,-10) rotate(-45)');
+          }
+          if(g.orientation === 'H'){
+            d3.select(this)
+              .select('text').attr('transform', 'translate(-5,20) rotate(-45)');
+          }
+        }
+        if(g.labelStyleM === 'S'){
+          if ( i % 2 === 0){
+            if(g.orientation === 'H'){
               d3.select(this)
                 .select('text').attr('transform', 'translate(0,20)');
             }
@@ -1281,7 +1305,7 @@ export default {
         var maxWidth = isXAxis ? lbl.node().getBBox().width / txt[0].length : g.yAxisWidth - 5;
 
         // If auto labels and any overlap, set to tilted
-        if (labelStyle == "A") {
+        if (labelStyle == "H") {
           txt.each(function (d, i) {
             if (d3.select(this).node().getComputedTextLength() > maxWidth) {
               labelStyle = "T"; // no break for each
