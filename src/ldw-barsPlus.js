@@ -311,6 +311,7 @@ export default {
               dim2: p[k].dim2 || '',
               delta: c[k].qNum - p[k].qNum,
               deltaPct: 0,
+              measureNumber: p[k].measureNumber,
               points: [
                 p[k].offset,
                 c[k].offset,
@@ -658,12 +659,9 @@ export default {
       .attr(g.orientation == "V" ? "y" : "x", function (d) { return g.mScale(0); })		// grow from bottom
       .attr(g.orientation == "V" ? "width" : "height", g.dScale.rangeBand())
       .attr(g.orientation == "V" ? "height" : "width", function (d) { return 0; })
-      .style("fill", function (d,i) {
-
-        if(g.defMeas === 2 && g.measures[0] === g.measures[1]){
-          return g.cScale(d.dim2 + d.measureNumber);
-        }
-        return g.cScale(d.dim2); })
+      .style("fill", function (d) {
+        return g.cScale(d.dim2);
+      })
       .style("opacity", "0")
       .attr("class", "selectable ldwbar")
       .on("click", function (d) {
@@ -1047,10 +1045,8 @@ export default {
             .attr("width", g.lgn.box[0])
             .attr("height", g.lgn.box[1])
             .style("fill", function (e) {
-              if(g.defMeas === 2 && g.measures[0] === g.measures[1]){
-                return g.cScale(d + i);
-              }
-              return g.cScale(d); })
+              return g.cScale(e);
+            })
 
           ;
           d3.select(this)
@@ -1224,7 +1220,7 @@ export default {
     if(total){
       textLength = g.tref.node().getComputedTextLength();
       txt = g.tref.text();
-      while (textLength > barWidth){
+      while (textLength > barWidth && textLength > 0 && g.orientation !=='H'){
         txt = txt.slice(0, -1);
         g.tref.text(txt + ellipsis);
         textLength = g.tref.node().getComputedTextLength();
@@ -1233,7 +1229,6 @@ export default {
         }
       }
       if (txt.length != 0) txt = g.tref.text();
-
     }
     return {
       x: Number.isFinite(tx) ? tx : 0,
@@ -1418,6 +1413,9 @@ export default {
           }
           return g.cScale(d.dim2); })
         .style("opacity", "1")
+        .style("fill", function (d) {
+          return g.cScale(d.dim2);
+        })
         .attr("x", function (d, i) {
           return g.dScale(d.dim1) ? g.dScale(d.dim1) : 0; // ignore NaN: causing errors in transitions
         })
@@ -1487,6 +1485,7 @@ export default {
             .style("opacity", "1")
             .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(d.dim2)) : g.textColor)
             .style("font-size", g.tref.style("font-size"))
+            .attr({ x: txp.x, y: txp.y })
             .text(txp.text)
           ;
         })
@@ -1573,10 +1572,8 @@ export default {
             })
             .style("opacity", "1")
             .style("fill", function (e) {
-              if(g.defMeas === 2 && g.measures[0] === g.measures[1]){
-                return g.cScale(e + i);
-              }
-              return g.cScale(e); })
+              return g.cScale(e);
+            })
           ;
           var txt = d3.select(this)
             .transition()
