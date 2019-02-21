@@ -442,12 +442,36 @@ export default {
       .domain(dim1)
       .rangeRoundBands(g.orientation == "V" ? [0, innerWidth] : [innerHeight, 0], g.barGap, g.outerGap)
     ;
+    g.max = d3.max(g.data, function (d) {
+      if(d.offset < 0) {
+        if(d.values){
+          if(d.values[0].qNum > d.values[1].qNum){
+            return (g.normalized ? 1 : d.values[0].qNum) * g.gridHeight;
+          }else{
+            return (g.normalized ? 1 : d.values[1].qNum) * g.gridHeight;
+          }
+        }
+        else{
+          return 0;
+        }
+      }
+      else{
+        var valuesOffset=[];
+        d.values.forEach(dataObject => {
+          if(dataObject.offset > d.offset && dataObject.offset >= valuesOffset){
+            valuesOffset = dataObject.offset;
+          }
+        });
+        if(valuesOffset > d.offset){
+          return (g.normalized ? 1 : valuesOffset) * g.gridHeight;
+        }else{
+          return (g.normalized ? 1 : d.offset) * g.gridHeight;
+        }
+      }
+    });
+
     g.mScale = d3.scale.linear()
-      .domain([0, d3.max(g.data, function (d) {
-        const unscaledBarHeight = g.normalized ? 1 : d.offset;
-        const unscaledBarHeightNumber = !isNaNOrStringNaN(unscaledBarHeight) ? unscaledBarHeight : 1;
-        return unscaledBarHeightNumber * g.gridHeight;
-      })])
+      .domain([0, g.max > 0 ? g.max : 1])
       .range(g.orientation == "V" ? [innerHeight, 0] : [0, innerWidth])
       .nice()
     ;
@@ -1248,7 +1272,7 @@ export default {
     var dim1 = g.data.map(function (d) { return d.dim1; });
     if (g.orientation == "H") dim1.reverse();
     g.dScale.domain(dim1);
-    g.mScale.domain([0, d3.max(g.data, function (d) { return (g.normalized ? 1 : d.offset) * g.gridHeight; })]);
+    g.mScale.domain([0, g.max > 0 ? g.max : 1]);
     const isPrinting = qlik.navigation && !qlik.navigation.inClient;
     var tDelay = g.transitions && !g.editMode && !isPrinting ? g.transitionDelay : 0;
     var tDuration = g.transitions && !g.editMode && !isPrinting ? g.transitionDuration : 0;
@@ -1413,8 +1437,13 @@ export default {
           return g.dScale(d.dim1) ? g.dScale(d.dim1) : 0; // ignore NaN: causing errors in transitions
         })
         .attr("y", function (d) {
-          const num = Number.isFinite(d.qNum) ? d.qNum : 0;
-          return g.mScale(d.offset) - (g.mScale(0) - g.mScale(num));
+          const num = Number.isFinite(d.qNum) && d.qNum > 0 ? d.qNum : 0;
+          if(d.offset < 0){
+            return g.mScale(0) - (g.mScale(0) - g.mScale(num));
+          }
+          else{
+            return g.mScale(d.offset) - (g.mScale(0) - g.mScale(num));
+          }
         })
         .attr("width", g.dScale.rangeBand() && g.dScale.rangeBand() > 0 ? g.dScale.rangeBand() : 0) // ignore NaN: causing errors in transitions
         .attr("height", function (d) {
