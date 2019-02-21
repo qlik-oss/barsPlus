@@ -45,7 +45,7 @@
 
  axisTitleD			Dimension axis title
  labelTitleD		Dimension axis: B - labels & title, L - labels only, T - titles only, N - none
- labelStyleD		Dimension style: A - Auto, H - horizontal, S - staggered, T - tilted
+ labelStyleD		Dimension style: H - horizontal, S - staggered, T - tilted
  gridlinesD			Dimension gridlines
  axisMarginD		Dimension margin size: N - narrow, M - medium, W - wide
 
@@ -53,7 +53,7 @@
 
  axisTitleM			Measure axis title
  labelTitleM		Measure axis: B - labels & title, L - labels only, T - titles only, N - none
- labelStyleM		Measure style: A - Auto, H - horizontal, S - staggered, T - tilted
+ labelStyleM		Measure style: H - horizontal, S - staggered, T - tilted
  gridlinesM			Measure gridlines
  axisMarginM		Measure margin size: N - narrow, M - medium, W - wide
  ticks				Recommended number of ticks
@@ -67,9 +67,7 @@
  showTot			What to show for total: M - measure, D - dimension
  innerBarPadH		Horizontal inner bar padding (px)
  innerBarPadV		Vertical inner bar padding (px)
- textSizeAbs		Whether to use textSize instead of textSizeFactor (horizontal bars only)
- textSizeFactor		Text size as proportion of bar height (horizontal bars only)
- textSize			Text size (px), when vertical bars or textSizeAbs = false
+ textSize			Text size (px), when vertical bars
  textDots			Whether to show text at all if ellipsis would be shown
  textColor			"Auto" - Choose white or black depending on bar color, else text color string
  vAlign				Vertical alignment: C - center, T - top, B - bottom
@@ -1103,6 +1101,52 @@ export default {
         })
       ;
     }
+    d3.select('.ldw-d') //Dimension labels styling
+      .selectAll('.tick')
+      .each(function(tick , i){
+        if(g.labelStyleD === 'T'){
+          if(g.orientation === 'V'){
+            d3.select(this)
+              .select('text').attr('transform', 'translate(-5,25) rotate(-45)');
+          }
+          if(g.orientation === 'H'){
+            d3.select(this)
+              .select('text').attr('transform', 'translate(-5,-20) rotate(-45)');
+          }
+        }
+        if(g.labelStyleD === 'S'){
+          if ( i % 2 === 0){
+            if(g.orientation === 'V'){
+              d3.select(this)
+                .select('text').attr('transform', 'translate(0,20)');
+            }
+          }
+        }
+      });
+
+
+    d3.select('.ldw-m') //Measures labels styling
+      .selectAll('.tick')
+      .each(function(tick , i){
+        if(g.labelStyleM === 'T'){
+          if(g.orientation === 'V'){
+            d3.select(this)
+              .select('text').attr('transform', 'translate(-5,-10) rotate(-45)');
+          }
+          if(g.orientation === 'H'){
+            d3.select(this)
+              .select('text').attr('transform', 'translate(-5,20) rotate(-45)');
+          }
+        }
+        if(g.labelStyleM === 'S'){
+          if ( i % 2 === 0){
+            if(g.orientation === 'H'){
+              d3.select(this)
+                .select('text').attr('transform', 'translate(0,20)');
+            }
+          }
+        }
+      });
   },
   /**
  *--------------------------------------
@@ -1123,18 +1167,7 @@ export default {
     var hAlign = g.hAlign, vAlign = g.vAlign,
       innerBarPadV = +g.innerBarPadV,
       innerBarPadH = +g.innerBarPadH;
-    if (g.textSizeAbs)
-      ts = g.textSize;
-    else {
-      if (total)
-        if (g.orientation == "H")
-          innerBarPadV = 1;
-        else
-          innerBarPadH = 1;
-      ts = g.textSizeFactor * (g.dScale.rangeBand() - 2 * (g.orientation == "H" ? innerBarPadV : innerBarPadH));
-      // limit size to maximum, also stored in textSize
-      if (ts > g.textSize) ts = g.textSize;
-    }
+    ts = g.textSize;
     g.tref.style("font-size", ts);
 
     if (total) { // Override some alignment for total
@@ -1173,7 +1206,7 @@ export default {
         : g.dScale(d.dim1) + g.dScale.rangeBand() - innerBarPadV;
     txt = "";
     var barWidth = g.bars[0][0].width.baseVal.value;
-    if (bb.height + 2 * innerBarPadV <= bHeight || (g.orientation != "V" && !g.textSizeAbs)) {
+    if (bb.height + 2 * innerBarPadV <= bHeight || (g.orientation != "V")) {
       if (bb.width + 2 * innerBarPadH <= textX) {
         if (hAlign == "C") {
           tx = origX + (textX - bb.width) / 2;
@@ -1251,6 +1284,9 @@ export default {
       }
       if (txt.length != 0) txt = g.tref.text();
     }
+    if(g.barGap === 1){
+      txt = '';
+    }
     return {
       x: Number.isFinite(tx) ? tx : 0,
       y: Number.isFinite(textY) ? textY : 0,
@@ -1294,7 +1330,7 @@ export default {
         var maxWidth = isXAxis ? lbl.node().getBBox().width / txt[0].length : g.yAxisWidth - 5;
 
         // If auto labels and any overlap, set to tilted
-        if (labelStyle == "A") {
+        if (labelStyle == "H") {
           txt.each(function (d, i) {
             if (d3.select(this).node().getComputedTextLength() > maxWidth) {
               labelStyle = "T"; // no break for each
