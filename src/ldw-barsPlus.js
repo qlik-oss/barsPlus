@@ -454,12 +454,14 @@ export default {
         }
       }
       else{
-        var valuesOffset=[];
-        d.values.forEach(dataObject => {
-          if(dataObject.offset > d.offset && dataObject.offset >= valuesOffset){
-            valuesOffset = dataObject.offset;
-          }
-        });
+        var valuesOffset=1;
+        if(d.values){
+          d.values.forEach(dataObject => {
+            if(dataObject.offset > d.offset && dataObject.offset >= valuesOffset){
+              valuesOffset = dataObject.offset;
+            }
+          });
+        }
         if(valuesOffset > d.offset){
           return (g.normalized ? 1 : valuesOffset) * g.gridHeight;
         }else{
