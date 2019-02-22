@@ -686,6 +686,7 @@ export default {
       .style("opacity", "0")
       .attr("class", "selectable ldwbar")
       .on("click", function (d) {
+        if (d.qElemNumber < 0) return;
         if (g.self.$scope.g.defDims == 2){ //if we have two Dims
           if ( d && d.dim2 ){
             if (g.selectionMode == "QUICK") {
