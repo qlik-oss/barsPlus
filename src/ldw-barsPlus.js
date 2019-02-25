@@ -1320,14 +1320,15 @@ export default {
     var updateAxis = function (labelTitle, labelStyle, axis, axisClass, isXAxis, axisWidth) {
       if (labelTitle == 'B' || labelTitle == 'L') {
         // Update axis with transition
-        g.svg.select("#" + g.id + " ." + axisClass + ".ldwaxis")
+        const axisCssSelector = `#${g.id} .${axisClass}.ldwaxis`;
+        g.svg.select(axisCssSelector)
           .transition()
           .delay(tDelay)
           .duration(tDuration)
           .ease(g.ease)
           .call(axis)
         ;
-        var lbl = d3.selectAll("#" + g.id + " ." + axisClass + ".ldwaxis");
+        var lbl = d3.selectAll(axisCssSelector);
         var txt = lbl.selectAll(".tick.major text")
           .attr("transform", null); // All horizontal initially
         var maxWidth = isXAxis ? lbl.node().getBBox().width / txt[0].length : g.yAxisWidth - 5;
@@ -1459,7 +1460,8 @@ export default {
 
     // Update bars
     if (g.orientation == "V") {
-      g.bars.transition()
+      g.bars
+        .transition()
         .delay(tDelay)
         .duration(tDuration)
         .ease(g.ease)
