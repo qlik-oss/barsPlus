@@ -544,37 +544,57 @@ export default {
 
     // Create Legend
     if (g.lgn.use) {
-      var lPos = g.legendPosition;
-      const legendpadding = 10;
+      var legendPosition = g.legendPosition;
+      const legendPadding = 10;
       var lgn = g.component
-        .append("div")
-        .attr("id", "ldwlegend")
-        .style("transform", "translate(" +( g.lgn.x - legendpadding) + 'px' + "," + (g.lgn.y - legendpadding) + 'px' + ")")
+        .append('div')
+        .attr('id', 'ldwlegend')
+        .style('transform', `translate(${g.lgn.x - legendPadding}px, ${g.lgn.y - legendPadding}px)`)
         .style('position', 'relative')
-        .style('height' , ()=> lPos === 'R' || lPos === 'L' ? g.height + 'px' : lPos === 'T' || lPos === 'B'? 'auto' : g.height + 'px')
+        .style('height' , () => legendPosition === 'R' || legendPosition === 'L'
+          ? g.height + 'px'
+          : legendPosition === 'T' || legendPosition === 'B'
+            ? 'auto'
+            : g.height + 'px')
         .style('overflow' ,'hidden')
-        .style('width' , ()=> lPos === 'R' || lPos === 'L' ? 'fit-content' : lPos === 'T' || lPos === 'B'? 'auto' : g.height + 'fit-content')
-        .style('flex-direction' , ()=> lPos === 'R' || lPos === 'L' ? 'column' : lPos === 'T' || lPos === 'B'? 'row-reverse' : g.height + 'column')
+        .style('width' , () => legendPosition === 'R' || legendPosition === 'L'
+          ? 'fit-content'
+          : legendPosition === 'T' || legendPosition === 'B'
+            ? 'auto'
+            : g.height + 'fit-content')
+        .style('flex-direction' , () => legendPosition === 'R' || legendPosition === 'L'
+          ? 'column'
+          : legendPosition === 'T' || legendPosition === 'B'
+            ? 'row-reverse'
+            : g.height + 'column')
         ;
 
       var lgnContainer =lgn.append('div')
         .attr('class', 'lgnContainer')
         .style('overflow', 'hidden')
         .style('margin-right' , '50px')
-        .style('width' , ()=> lPos === 'R' || lPos === 'L' ? 'auto' : lPos === 'T' || lPos === 'B' ? g.width + 'px' : 'auto' )
-        .style('height' , ()=> lPos === 'R' || lPos === 'L' ? g.height + 'px' : lPos === 'T' || lPos === 'B' ? '34px' : g.height + 'px' )
+        .style('width' , () => legendPosition === 'R' || legendPosition === 'L'
+          ? 'auto'
+          : legendPosition === 'T' || legendPosition === 'B'
+            ? g.width + 'px'
+            : 'auto' )
+        .style('height' , () => legendPosition === 'R' || legendPosition === 'L'
+          ? g.height + 'px'
+          : legendPosition === 'T' || legendPosition === 'B'
+            ? '34px'
+            : g.height + 'px' )
         ;
 
       var legendItems = lgnContainer.append("svg")
         .attr("class", "ldwlgnitems")
-        .attr('width' , ()=> lPos === 'T' ? g.width + 'px' : g.width + 'px' );
+        .attr('width' , () => legendPosition === 'T' ? g.width + 'px' : g.width + 'px' );
       if (g.legendPosition == 'R' || g.legendPosition == 'L'){
         legendItems.attr('height', g.allDim2.length * 20 +'px');
       }
       if(legendItems[0][0].clientHeight > lgnContainer[0][0].clientHeight){
         var btnContainer = lgn.append('div')
           .attr('class', 'btnContainer')
-          .style('margin-right' , ()=> lPos === 'T' || lPos === 'B' ? '0' : '50px');
+          .style('margin-right' , () => legendPosition === 'T' || legendPosition === 'B' ? '0' : '50px');
         var btnWrapper = btnContainer.append('div')
           .attr('class', 'btnWrapper');
         var scrollHeight = legendItems[0][0].clientHeight - lgnContainer[0][0].clientHeight;
