@@ -1477,11 +1477,12 @@ export default {
         })
         .attr("y", function (d) {
           const num = Number.isFinite(d.qNum) && d.qNum > 0 ? d.qNum : 0;
-          if(d.offset < 0){
+          const offset = typeof d.offset === 'string' ? 0 : d.offset; // in transition elastic, we somehow concatinate 0 and NaN into "0NaN"
+          if(offset < 0){
             return g.mScale(0) - (g.mScale(0) - g.mScale(num));
           }
           else{
-            return g.mScale(d.offset) - (g.mScale(0) - g.mScale(num));
+            return g.mScale(offset) - (g.mScale(0) - g.mScale(num));
           }
         })
         .attr("width", g.dScale.rangeBand() && g.dScale.rangeBand() > 0 ? g.dScale.rangeBand() : 0) // ignore NaN: causing errors in transitions
