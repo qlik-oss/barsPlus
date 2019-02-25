@@ -951,6 +951,65 @@ export default {
           return g.cScale(d.dim2);
         })
         .style("opacity", "0")
+        .on("mouseenter", function (d) {	
+          var pt = this.getAttribute("points").split(" ");	
+          var sx = 0, sy = 0;	
+          pt.forEach(function (e, i) {	
+            var x = e.split(",");	
+            if (g.orientation == "H") {	
+              if (i < 2) {	
+                sx += parseFloat(x[0]);	
+                sy += parseFloat(x[1]);	
+              }	
+            }	
+            else if (i == 0 || i == 3) {	
+              sx += parseFloat(x[0]);	
+              sy += parseFloat(x[1]);	
+            }	
+          });	
+          sx /= 2;	
+          sy /= 2;	
+
+          if (g.inSelections || g.editMode) return;	
+
+          d3.select(this)	
+            .style("opacity", "0.5")	
+            .attr("stroke", "white")	
+            .attr("stroke-width", "2");	
+          // Place text in tooltip	
+          d3.select("#" + g.id + " .ldwttheading")	
+            .text(d.dim2 + ", " + d.dim1p + "-" + d.dim1c);	
+          d3.select("#" + g.id + " .ldwttvalue")	
+            .text(d3.format(g.normalized ? "+.1%" : "+.3s")(d.delta));	
+
+          var matrix = this.getScreenCTM()	
+            .translate(sx, sy);	
+
+          var xPosition = (window.pageXOffset + matrix.e)	
+            - d3.select("#" + g.id + " .ldwtooltip")[0][0].clientWidth / 2	
+            ;	
+          var yPosition = (window.pageYOffset + matrix.f)	
+            - d3.select("#" + g.id + " .ldwtooltip")[0][0].clientHeight	
+            - 10	
+            ;	
+          d3.select("#" + g.id + " .ldwtooltip")	
+            .style("left", xPosition + "px")	
+            .style("top", yPosition + "px")	
+            .transition()	
+            .delay(750)	
+            .style("opacity", "0.95")	
+          ;	
+        })	
+        .on("mouseleave", function () {	
+          d3.select(this)	
+            .style("opacity", g.barGap == 1 ? "1" : "0.5")	
+            .attr("stroke", "none")	
+          ;	
+          d3.select("#" + g.id + " .ldwtooltip")	
+            .style("opacity", "0")	
+            .transition()	
+            .remove;	
+        })
       ;
     }
     // create legend
@@ -1744,11 +1803,3 @@ export default {
   },
   /*- end http://stackoverflow.com/questions/11867545 */
 };
-
-
-function isNaNOrStringNaN (input) {
-  if (!input) {
-    return false;
-  }
-  return isNaN(input) || input === 'NaN';
-}
