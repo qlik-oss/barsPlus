@@ -104,6 +104,7 @@
 import d3 from 'd3';
 import qlik from 'qlik';
 import { getColorSchemaByName, getDefaultSingleColor } from './colorSchemas';
+import { getBarLabelText } from './barLabelText';
 
 export default {
 
@@ -644,7 +645,11 @@ export default {
       .data(g.flatData)
     ;
     // Text on bars
-    if (g.showTexts != "N") {
+    const SHOW_NO_TEXT = 'N';
+    const SHOW_TEXT_TOTAL = 'T';
+    const SHOW_TEXT_INSIDE_BARS = 'B';
+    const SHOW_TEXT_BOTH = 'A';
+    if (g.showTexts !== SHOW_NO_TEXT) {
       // Create text box for determining sizing
       g.tref = g.svg.append("text")
         .attr("x", "0")
@@ -652,13 +657,13 @@ export default {
         .attr("class", "ldwtxtref")
       ;
 
-      if (~"TA".indexOf(g.showTexts) && !g.normalized) {
+      if ((g.showTexts === SHOW_TEXT_TOTAL || g.showTexts === SHOW_TEXT_BOTH) && !g.normalized) {
         // Create bars totals
         g.totals = g.svg.selectAll("#" + g.id + " .ldwtot")
           .data(g.data, function (d) { return d.dim1; })
         ;
       }
-      if (~"BA".indexOf(g.showTexts)) {
+      if (g.showTexts === SHOW_TEXT_INSIDE_BARS || g.showTexts === SHOW_TEXT_BOTH) {
         // Create text on bars
         g.texts = g.svg.selectAll("#" + g.id + " .ldwtxt")
           .data(g.flatData)
@@ -674,7 +679,6 @@ export default {
     // Create legend items
     if (g.lgn.use) {
       g.lgn.items = d3.select("." + "ldwlgnitems")
-        // .attr('height', g.allDim2.length * 20)
         .selectAll("g")
         .data(g.allDim2)
       ;
@@ -1278,12 +1282,7 @@ export default {
     bHeight = g.orientation == "V" ? g.mScale(0) - g.mScale(d.qNum) : g.dScale.rangeBand();
     textX = g.orientation == "V" ? g.dScale.rangeBand() : g.mScale(d.qNum);
 
-    g.tref.text(d.qNum == 0 ? ""
-      : (total
-        ? (g.showTot == "D" ? d.dim1 : d.qText)
-        : (g.showDim == "D" ? d.dim1 : (g.showDim == "P" && g.normalized ? d.qTextPct : d.qText))
-      )
-    );
+    g.tref.text(getBarLabelText(d, g, total));
 
     bb = g.tref.node().getBBox();
     tx = origX + innerBarPadH;
