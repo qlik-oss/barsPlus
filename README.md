@@ -366,6 +366,7 @@ A standalone AngularJS application has been created to allow seeing the effect o
 # Known Limitations
 
 * No lasso in standard selections
+* When selecting "elastic" or "back" transitions, there are console errors starting with: `Error: <rect> attribute height: A negative value is not valid.`
 
 
 # Original author
