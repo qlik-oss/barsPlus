@@ -1281,7 +1281,7 @@ export default {
     g.tref.text(d.qNum == 0 ? ""
       : (total
         ? (g.showTot == "D" ? d.dim1 : d.qText)
-        : (g.showDim == "D" ? d.dim1 : (g.showDim == "P" && g.normalized ? d.qTextPct : d.qText))
+        : (g.showDim == "D" ? d.dim2 : (g.showDim == "P" && g.normalized ? d.qTextPct : d.qText))
       )
     );
 
