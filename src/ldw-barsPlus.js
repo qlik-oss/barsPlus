@@ -104,6 +104,7 @@
 import d3 from 'd3';
 import qlik from 'qlik';
 import { getColorSchemaByName, getDefaultSingleColor } from './colorSchemas';
+import { getBarLabelText } from './barLabelText';
 
 export default {
 
@@ -1281,12 +1282,7 @@ export default {
     bHeight = g.orientation == "V" ? g.mScale(0) - g.mScale(d.qNum) : g.dScale.rangeBand();
     textX = g.orientation == "V" ? g.dScale.rangeBand() : g.mScale(d.qNum);
 
-    g.tref.text(d.qNum == 0 ? ""
-      : (total
-        ? (g.showTot == "D" ? d.dim1 : d.qText)
-        : (g.showDim == "D" ? d.dim2 : (g.showDim == "P" && g.normalized ? d.qTextPct : d.qText))
-      )
-    );
+    g.tref.text(getBarLabelText(d, g, total));
 
     bb = g.tref.node().getBBox();
     tx = origX + innerBarPadH;
