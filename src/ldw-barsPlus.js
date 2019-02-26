@@ -706,6 +706,10 @@ export default {
       .style("opacity", "0")
       .attr("class", "selectable ldwbar")
       .on("click", function (d) {
+        const hasNullValue = d.qElemNumber < 0;
+        if (hasNullValue) {
+          return;
+        }
         if (g.self.$scope.g.defDims == 2){ //if we have two Dims
           if ( d && d.dim2 ){
             if (g.selectionMode == "QUICK") {
@@ -940,32 +944,45 @@ export default {
       ;
     }
 
-    if (g.showDeltas && g.nDims == 2) {
+    if (g.showDeltas && g.nDims === 2) {
       // Create deltas
+
+      let verticalCoordinates = {
+        x1: 0,
+        x2: 0,
+        y: 0
+      };
+      let horizontalCoordinates = {
+        y1: 0,
+        y2: 0,
+        x: 0
+      };
+
+      const zeroMeasureScale = g.mScale(0);
+      const dimensionScaleRange = g.dScale.rangeBand();
+      const VERTICAL_ORIENTATION = 'V';
+
       g.polys
         .enter()
-        .append("polygon")
-        .attr("points", function (d) {
-          var p;
-          if (g.orientation == "V") {
-            p = (g.dScale(d.dim1p) + g.dScale.rangeBand()) + ","
-              + g.mScale(0) + " "
-              + (g.dScale(d.dim1p) + g.dScale.rangeBand()) + ","
-              + g.mScale(0) + " "
-              + (g.dScale(d.dim1c)) + ","
-              + g.mScale(0) + " "
-              + (g.dScale(d.dim1c)) + ","
-              + g.mScale(0)
-            ;
+        .append('polygon')
+        .attr('points', function (datum) {
+          const fromBar = g.dScale(datum.dim1p);
+          const toBar = g.dScale(datum.dim1c);
+          const distance = fromBar + dimensionScaleRange;
+          
+          if (g.orientation === VERTICAL_ORIENTATION) {
+            let { x1, x2, y } = verticalCoordinates;
+            y = zeroMeasureScale;
+            x1 = distance;
+            x2 = toBar;
+            return `${x1},${y} ${x1},${y} ${x2},${y} ${x2},${y}`;
           }
-          else {
-            p = g.mScale(0) + "," + (g.dScale(d.dim1p) + g.dScale.rangeBand()) + " "
-              + g.mScale(0) + "," + (g.dScale(d.dim1p) + g.dScale.rangeBand()) + " "
-              + g.mScale(0) + "," + g.dScale(d.dim1c) + " "
-              + g.mScale(0) + "," + g.dScale(d.dim1c)
-            ;
-          }
-          return p;
+          
+          let { y1, y2, x } = horizontalCoordinates;
+          x = zeroMeasureScale;
+          y1 = distance;
+          y2 = toBar;
+          return `${x},${y1} ${x},${y1} ${x},${y2} ${x},${y2}`;
         })
         .style("fill", function (d) {
           return g.cScale(d.dim2);
@@ -1398,14 +1415,15 @@ export default {
     var updateAxis = function (labelTitle, labelStyle, axis, axisClass, isXAxis, axisWidth) {
       if (labelTitle == 'B' || labelTitle == 'L') {
         // Update axis with transition
-        g.svg.select("#" + g.id + " ." + axisClass + ".ldwaxis")
+        const axisCssSelector = `#${g.id} .${axisClass}.ldwaxis`;
+        g.svg.select(axisCssSelector)
           .transition()
           .delay(tDelay)
           .duration(tDuration)
           .ease(g.ease)
           .call(axis)
         ;
-        var lbl = d3.selectAll("#" + g.id + " ." + axisClass + ".ldwaxis");
+        var lbl = d3.selectAll(axisCssSelector);
         var txt = lbl.selectAll(".tick.major text")
           .attr("transform", null); // All horizontal initially
         var maxWidth = isXAxis ? lbl.node().getBBox().width / txt[0].length : g.yAxisWidth - 5;
@@ -1537,7 +1555,8 @@ export default {
 
     // Update bars
     if (g.orientation == "V") {
-      g.bars.transition()
+      g.bars
+        .transition()
         .delay(tDelay)
         .duration(tDuration)
         .ease(g.ease)
@@ -1555,11 +1574,12 @@ export default {
         })
         .attr("y", function (d) {
           const num = Number.isFinite(d.qNum) && d.qNum > 0 ? d.qNum : 0;
-          if(d.offset < 0){
+          const offset = typeof d.offset === 'string' ? 0 : d.offset; // in transition elastic, we somehow concatinate 0 and NaN into "0NaN"
+          if(offset < 0){
             return g.mScale(0) - (g.mScale(0) - g.mScale(num));
           }
           else{
-            return g.mScale(d.offset) - (g.mScale(0) - g.mScale(num));
+            return g.mScale(offset) - (g.mScale(0) - g.mScale(num));
           }
         })
         .attr("width", g.dScale.rangeBand() && g.dScale.rangeBand() > 0 ? g.dScale.rangeBand() : 0) // ignore NaN: causing errors in transitions
@@ -1634,43 +1654,62 @@ export default {
       ;
     }
 
-    if (g.showDeltas && g.nDims == 2) {
+    if (g.showDeltas && g.nDims === 2) {
       // update deltas
+
+      let verticalCoordinates = {
+        x1: 0,
+        x2: 0,
+        y1: 0,
+        y2: 0,
+        y3: 0,
+        y4: 0
+      };
+      let horizontalCoordinates = {
+        x1: 0,
+        x2: 0,
+        x3: 0,
+        x4: 0,
+        y1: 0,
+        y2: 0,
+      };
+
+      const zeroMeasureScale = g.mScale(0);
+      const dimensionScaleRange = g.dScale.rangeBand();
+      const VERTICAL_ORIENTATION = 'V';
+
       g.polys.transition()
         .delay(tDelay)
         .duration(tDuration)
         .ease(g.ease)
-        .attr("points", function (d) {
-          var p;
-          if (g.orientation == "V") {
-            p = (g.dScale(d.dim1p) + g.dScale.rangeBand()) + ","
-              + (g.mScale(d.points[0]) - (g.mScale(0) - g.mScale(d.points[2]))) + " "
+        .attr('points', function (datum) {
+          const fromBar = g.dScale(datum.dim1p);
+          const toBar = g.dScale(datum.dim1c);
+          const distance = fromBar + dimensionScaleRange;
+          const [pointX1, pointY1, pointX2, pointY2] = datum.points.map(point => {
+            const scaledPoint = g.mScale(point);
+            return isNaN(scaledPoint) ? zeroMeasureScale : scaledPoint;
+          });
 
-              + (g.dScale(d.dim1p) + g.dScale.rangeBand()) + ","
-              + g.mScale(d.points[0]) + " "
-
-              + (g.dScale(d.dim1c)) + ","
-              + g.mScale(d.points[1]) + " "
-
-              + (g.dScale(d.dim1c)) + ","
-              + (g.mScale(d.points[1]) - (g.mScale(0) - g.mScale(d.points[3])))
-            ;
+          if (g.orientation === VERTICAL_ORIENTATION) {
+            let { x1, x2, y1, y2, y3, y4 } = verticalCoordinates;
+            x1 = fromBar + dimensionScaleRange;
+            x2 = toBar;
+            y1 = pointX1 - (zeroMeasureScale - pointX2);
+            y2 = pointX1;
+            y3 = pointY1;
+            y4 = pointY1 - (zeroMeasureScale - pointY2);
+            return `${x1},${y1} ${x1},${y2} ${x2},${y3} ${x2},${y4}`;
           }
-          else {
-            p = (g.mScale(d.points[0]) + g.mScale(d.points[2])) + ","
-              + (g.dScale(d.dim1p) + g.dScale.rangeBand()) + " "
 
-              + g.mScale(d.points[0]) + ","
-              + (g.dScale(d.dim1p) + g.dScale.rangeBand()) + " "
-
-              + g.mScale(d.points[1]) + ","
-              + g.dScale(d.dim1c) + " "
-
-              + (g.mScale(d.points[1]) + g.mScale(d.points[3])) + ","
-              + g.dScale(d.dim1c)
-            ;
-          }
-          return p;
+          let { x1, x2, x3, x4, y1, y2 } = horizontalCoordinates;
+          x1 = pointX1 + pointX2;
+          x2 = pointX1;
+          x3 = pointY1;
+          x4 = pointY1 + pointY2;
+          y1 = distance;
+          y2 = toBar;
+          return `${x1},${y1} ${x2},${y1} ${x3},${y2} ${x4},${y2}`;
         })
         .style("fill", function (d) {
           return g.cScale(d.dim2);
