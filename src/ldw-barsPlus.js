@@ -773,7 +773,7 @@ export default {
             if(g.self.selectedArrays){
               selectedArrayDim1 = g.self.selectedArrays[0];
             }
-            if(selectedArrayDim1.indexOf(d.qElemNumber) !== -1){
+            if (selectedArrayDim1 && selectedArrayDim1.indexOf(d.qElemNumber) !== -1){
               g.self.selectValues(0, [d.qElemNumber], true);
             }else{
               g.self.selectValues(0, [d.qElemNumber], false);
