@@ -1575,7 +1575,7 @@ export default {
         })
         .attr("y", function (d) {
           const num = Number.isFinite(d.qNum) && d.qNum > 0 ? d.qNum : 0;
-          const offset = typeof d.offset === 'string' ? 0 : d.offset; // in transition elastic, we somehow concatinate 0 and NaN into "0NaN"
+          const offset = Number.isFinite(d.offset) ? d.offset : 0; // in transition elastic, we somehow concatinate 0 and NaN into "0NaN"
           if(offset < 0){
             return g.mScale(0) - (g.mScale(0) - g.mScale(num));
           }
