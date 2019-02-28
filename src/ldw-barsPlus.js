@@ -769,19 +769,21 @@ export default {
           }
           else if (g.selectionMode == "CONFIRM") {
             var t = d3.select(this).classed("selected");
-            let selectedArrayDim1=[];
-            if(g.self.selectedArrays){
+            let selectedArrayDim1 = [];
+            if (g.self.selectedArrays){
               selectedArrayDim1 = g.self.selectedArrays[0];
             }
-            if(selectedArrayDim1.indexOf(d.qElemNumber) !== -1){
+            if (selectedArrayDim1 && selectedArrayDim1.indexOf(d.qElemNumber) !== -1){
               g.self.selectValues(0, [d.qElemNumber], true);
-            }else{
+            } else {
               g.self.selectValues(0, [d.qElemNumber], false);
             }
+
             // following to address QS bug where clear button does not clear class names
             g.self.clearSelectedValues = function () {
               d3.selectAll("#" + g.id + " .selected").classed("selected", false);
             };
+            
             d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
               .classed("selected", !t);
             d3.select("#" + g.id + " .ldwtooltip")
