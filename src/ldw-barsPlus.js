@@ -1409,8 +1409,10 @@ export default {
     g.dScale.domain(dim1);
     g.mScale.domain([0, g.max > 0 ? g.max : 1]);
     const isPrinting = qlik.navigation && !qlik.navigation.inClient;
-    var tDelay = g.transitions && !g.editMode && !isPrinting ? g.transitionDelay : 0;
-    var tDuration = g.transitions && !g.editMode && !isPrinting ? g.transitionDuration : 0;
+    const transitionDelay = g.transitions && !g.editMode && !isPrinting ? g.transitionDelay : 0;
+    const transitionDuration = g.transitions && !g.editMode && !isPrinting ? g.transitionDuration : 0;
+    var tDelay = g.ease === 'back' ? 0 : transitionDelay; // HACK: prevent back transition crashing the desktop app, skip transition
+    var tDuration = g.ease === 'back' ? 0 : transitionDuration; // HACK: prevent back transition crashing the desktop app, skip transition
 
     // Procedure to update dimension and measure axes
     var updateAxis = function (labelTitle, labelStyle, axis, axisClass, isXAxis, axisWidth) {
