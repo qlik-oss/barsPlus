@@ -1205,7 +1205,9 @@ export default {
         })
       ;
     }
-    d3.select('.ldw-d') //Dimension labels styling
+
+    d3.select(`#${this.id}`)
+      .select('.ldw-d') //Dimension labels styling
       .selectAll('.tick')
       .each(function(tick , i){
         if(g.labelStyleD === 'T'){
@@ -1228,8 +1230,8 @@ export default {
         }
       });
 
-
-    d3.select('.ldw-m') //Measures labels styling
+    d3.select(`#${this.id}`)
+      .select('.ldw-m') //Measures labels styling
       .selectAll('.tick')
       .each(function(tick , i){
         if(g.labelStyleM === 'T'){

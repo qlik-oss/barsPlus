@@ -292,7 +292,7 @@ const definition ={
             return (data.props.orientation == "V" ? "X" : "Y") + "-Axis" + t;
           },
           items: {
-            LabelTitleD: {
+            labelTitleD: {
               type: "string",
               component: "dropdown",
               label: "Labels and title",
@@ -316,7 +316,7 @@ const definition ={
                   && (data.props.labelTitleD == 'B' || data.props.labelTitleD == 'T'));
               }
             },
-            LabelStyleD: {
+            labelStyleD: {
               type: "string",
               component: "dropdown",
               label: "Label style",
@@ -411,7 +411,7 @@ const definition ={
                   && (data.props.labelTitleM == 'B' || data.props.labelTitleM == 'T'));
               }
             },
-            LabelStyleM: {
+            labelStyleM: {
               type: "string",
               component: "dropdown",
               label: "Label style",
