@@ -893,8 +893,7 @@ export default {
           .transition()
           .remove
         ;
-      })
-    ;
+      });
 
     if (~"TA".indexOf(g.showTexts) && !g.normalized) {
       // Create totals
@@ -914,10 +913,8 @@ export default {
             .attr("x", g.orientation == "V" ? txp.x : 0)
             .attr("y", g.orientation == "V" ? g.mScale(0) : txp.y)
             .attr("dy", "-.2em")
-            .text(txp.text)
-          ;
-        })
-      ;
+            .text(txp.text);
+        });
     }
 
     if (~"BA".indexOf(g.showTexts)) {
@@ -1373,15 +1370,30 @@ export default {
     if(total){
       textLength = g.tref.node().getComputedTextLength();
       txt = g.tref.text();
-      while (textLength > barWidth && textLength > 0 && g.orientation !=='H'){
-        txt = txt.slice(0, -1);
-        g.tref.text(txt + ellipsis);
-        textLength = g.tref.node().getComputedTextLength();
-        if(!g.textDots){
+      if (textLength > barWidth && g.orientation !=='H') {
+        if (!g.textDots) {
+          // Not supposed to show ellipsis, so don't show text at all
           txt = '';
+        } else {
+          // Remove characters until length fits or text is empty
+          while (true) { // eslint-disable-line no-constant-condition
+            txt = txt.slice(0, -1);
+            while (txt.length > 0 && txt[txt.length - 1] === '.') {
+              // Don't want to ellipsis directly after a dot, so remove trailing dots as well
+              txt = txt.slice(0, -1);
+            }
+            if (txt.length == 0) {
+              break;
+            }
+            g.tref.text(txt + ellipsis);
+            textLength = g.tref.node().getComputedTextLength();
+            if (textLength <= barWidth) {
+              txt = g.tref.text();
+              break;
+            }
+          }
         }
       }
-      if (txt.length != 0) txt = g.tref.text();
     }
     if(g.barGap === 1){
       txt = '';
@@ -1493,8 +1505,7 @@ export default {
     // Remove totals with transition
     if (~"TA".indexOf(g.showTexts)) {
       g.totals = g.svg.selectAll("#" + g.id + " .ldwtot")
-        .data(g.data, function (d) { return d.dim1; })
-      ;
+        .data(g.data, function (d) { return d.dim1; });
       g.totals
         .exit()
         .transition()
@@ -1502,8 +1513,7 @@ export default {
         .duration(tDuration)
         .ease(g.ease)
         .style("opacity", "0")
-        .remove()
-      ;
+        .remove();
     }
     // Remove texts with transition
     if (~"BA".indexOf(g.showTexts)) {
