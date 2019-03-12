@@ -547,99 +547,106 @@ export default {
     if (g.lgn.use) {
       var legendPosition = g.legendPosition;
       const legendPadding = 10;
+
       var lgn = g.component
         .append('div')
         .attr('id', 'ldwlegend')
         .style('transform', `translate(${g.lgn.x - legendPadding}px, ${g.lgn.y - legendPadding}px)`)
-        .style('position', 'relative')
-        .style('height' , () => legendPosition === 'R' || legendPosition === 'L'
-          ? g.height + 'px'
-          : legendPosition === 'T' || legendPosition === 'B'
-            ? 'auto'
-            : g.height + 'px')
-        .style('overflow' ,'hidden')
-        .style('width' , () => legendPosition === 'R' || legendPosition === 'L'
-          ? 'fit-content'
-          : legendPosition === 'T' || legendPosition === 'B'
-            ? 'auto'
-            : g.height + 'fit-content')
-        .style('flex-direction' , () => legendPosition === 'R' || legendPosition === 'L'
-          ? 'column'
-          : legendPosition === 'T' || legendPosition === 'B'
-            ? 'row-reverse'
-            : g.height + 'column')
-        ;
-
-      var lgnContainer =lgn.append('div')
-        .attr('class', 'lgnContainer')
-        .style('overflow', 'hidden')
-        .style('margin-right' , '50px')
-        .style('width' , () => legendPosition === 'R' || legendPosition === 'L'
-          ? 'auto'
-          : legendPosition === 'T' || legendPosition === 'B'
-            ? g.width + 'px'
-            : 'auto' )
-        .style('height' , () => legendPosition === 'R' || legendPosition === 'L'
-          ? g.height + 'px'
-          : legendPosition === 'T' || legendPosition === 'B'
-            ? '34px'
-            : g.height + 'px' )
-        ;
-
-      var legendItems = lgnContainer.append("svg")
-        .attr("class", "ldwlgnitems")
-        .attr('width' , () => legendPosition === 'T' ? g.width + 'px' : g.width + 'px' );
-      if (g.legendPosition == 'R' || g.legendPosition == 'L'){
-        legendItems.attr('height', g.allDim2.length * 20 +'px');
+        .style('height' , g.lgn.height + 'px')
+        .style('width' , g.lgn.width + 'px')
+        .style('flex-direction',
+          legendPosition === 'R' || legendPosition === 'L' ? 'column' : 'row-reverse')
+        .style('overflow', 'hidden');
+      if (legendPosition === 'R') {
+        lgn.style('padding-left' , '25px');
+      } else if (legendPosition === 'T' || legendPosition === 'B') {
+        lgn.style('padding-right' , '50px');
       }
-      if(legendItems[0][0].clientHeight > lgnContainer[0][0].clientHeight){
-        var btnContainer = lgn.append('div')
-          .attr('class', 'btnContainer')
-          .style('margin-right' , () => legendPosition === 'T' || legendPosition === 'B' ? '0' : '50px');
-        var btnWrapper = btnContainer.append('div')
+
+      var lgnContainer = lgn.append('div')
+        .attr('class', 'lgnContainer')
+        .style('height' , '100%')
+        .style('width' , '100%')
+        .style('overflow', 'hidden');
+
+      var itemWidth = g.lgn.txtOff + g.lgn.txtWidth;
+      var itemsPerRow = legendPosition === 'R' || legendPosition === 'L'
+        ? 1 : Math.floor(g.lgn.width / itemWidth);
+      var rowCount = Math.ceil(g.allDim2.length / itemsPerRow);
+
+      var itemsHeight = rowCount * g.lgn.itmHeight;
+      var legendItems = lgnContainer.append("svg")
+        .attr('class', 'ldwlgnitems')
+        .style('height', itemsHeight + 'px')
+        .style('width' , '100%');
+
+      g.lgn.items = legendItems
+        .selectAll("g")
+        .data(g.allDim2);
+
+      if (lgnContainer[0][0].clientHeight < itemsHeight) {
+
+        // Can't fit all items in the container, so add scroll buttons
+        g.lgn.btnContainer = lgn.append('div')
+          .attr('class', 'btnContainer');
+        var btnWrapper = g.lgn.btnContainer.append('div')
           .attr('class', 'btnWrapper');
-        var scrollHeight = legendItems[0][0].clientHeight - lgnContainer[0][0].clientHeight;
         var btnDown = btnWrapper.append('button')
-          .attr('class', lgnContainer[0][0].scrollTop >= scrollHeight ? 'ldwLgnBtn disabled' : 'ldwLgnBtn')
-          .attr('id','btnDown')
+          .attr('class', 'ldwLgnBtn')
+          .attr('id', 'btnDown')
           .attr('width', '10px')
           .attr('height', '10px')
-          .on('click', function(e){
-            if (g.self && g.self.$scope.options.interactionState === 2) return;
-            if(g.legendPosition == 'R' || g.legendPosition == 'L'){
-
-              lgnContainer[0][0].scrollTop += 200;
-
-            }else{
-              lgnContainer[0][0].scrollTop += 20;
+          .on('click', function(){
+            if (g.self && g.self.$scope.options.interactionState === 2) {
+              return;
             }
-            btnUp.style('border-bottom-color','black');
-            if(lgnContainer[0][0].scrollTop >= scrollHeight ){
-              btnDown.style('border-top-color','gray');
+
+            lgnContainer[0][0].scrollTop +=
+              g.legendPosition == 'R' || g.legendPosition == 'L' ? g.lgn.height : g.lgn.itmHeight;
+
+            btnUp.style('border-bottom-color', 'black');
+            btnUp.property('disabled', false);
+            var remainingScroll = lgnContainer[0][0].scrollHeight
+              - lgnContainer[0][0].clientHeight - lgnContainer[0][0].scrollTop;
+            if (remainingScroll < g.lgn.itmHeight) {
+              btnDown.style('border-top-color', 'gray');
+              btnDown.property('disabled', true);
             }
           });
         var btnUp = btnWrapper.append('button')
           .attr('class', 'ldwLgnBtn')
-          .attr('id','btnUp')
+          .attr('id', 'btnUp')
           .attr('width', '10px')
           .attr('height', '10px')
-          .on('click', function(e){
-            if (g.self && g.self.$scope.options.interactionState === 2) return;
-            if(g.legendPosition == 'R' || g.legendPosition == 'L'){
-              lgnContainer[0][0].scrollTop -= 200;
-
-            }else{
-              lgnContainer[0][0].scrollTop -= 20;
+          .property('disabled', true)
+          .on('click', function() {
+            if (g.self && g.self.$scope.options.interactionState === 2) {
+              return;
             }
-            btnDown.style('border-top-color','black');
 
-            if(lgnContainer[0][0].scrollTop == 0){
-              btnUp.style('border-bottom-color','gray');
+            lgnContainer[0][0].scrollTop -=
+              g.legendPosition == 'R' || g.legendPosition == 'L' ? g.lgn.height : g.lgn.itmHeight;
+
+            btnDown.style('border-top-color', 'black');
+            btnDown.property('disabled', false);
+            if (lgnContainer[0][0].scrollTop == 0){
+              btnUp.style('border-bottom-color', 'gray');
+              btnUp.property('disabled', true);
             }
           });
-      }
 
+        if (legendPosition === 'T' || legendPosition === 'B') {
+          // The scroll buttons take up space, so need to adjust the size of the legend item svg
+          itemsPerRow = Math.floor(
+            (g.lgn.width - g.lgn.btnContainer[0][0].clientWidth) / itemWidth);
+          rowCount = Math.ceil(g.allDim2.length / itemsPerRow);
+          legendItems.style('height', rowCount * g.lgn.itmHeight + 'px');
+        }
+      } else {
+        g.lgn.btnContainer = null;
+      }
     }
+
     // Create bars
     g.bars = g.svg.selectAll("#" + g.id + " .ldwbar")
       .data(g.flatData)
@@ -674,13 +681,6 @@ export default {
     if (g.showDeltas && g.nDims == 2) {
       g.polys = g.svg.selectAll("#" + g.id + " polygon")
         .data(g.deltas, function (d) { return d.dim1p + "-" + d.dim1c + "," + d.dim2; })
-      ;
-    }
-    // Create legend items
-    if (g.lgn.use) {
-      g.lgn.items = d3.select("." + "ldwlgnitems")
-        .selectAll("g")
-        .data(g.allDim2)
       ;
     }
   },
@@ -1735,7 +1735,8 @@ export default {
     // update legend items
     if (g.lgn.use) {
       if (g.lgn.use == "T" || g.lgn.use == "B") {
-        var maxprow = Math.floor(g.lgn.width / (g.lgn.txtOff + g.lgn.txtWidth));
+        var btnsWidth = g.lgn.btnContainer ? g.lgn.btnContainer[0][0].clientWidth : 0;
+        var maxprow = Math.floor((g.lgn.width - btnsWidth) / (g.lgn.txtOff + g.lgn.txtWidth));
         var nprow = maxprow;
       }
 
@@ -1769,8 +1770,7 @@ export default {
             .style("opacity", "1")
             .style("fill", function (e) {
               return g.cScale(e);
-            })
-          ;
+            });
           var txt = d3.select(this)
             .transition()
             .delay(tDelay)
@@ -1799,8 +1799,7 @@ export default {
             .style("opacity", "1")
             .text(function(e){
               return e;
-            })
-            ;
+            });
           txt.each(function (d, i) {
             var self = d3.select(this),
               textLength = self.node().getComputedTextLength(),
@@ -1811,8 +1810,7 @@ export default {
               textLength = self.node().getComputedTextLength();
             }
           });
-        })
-      ;
+        });
     }
   },
 
