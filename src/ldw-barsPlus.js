@@ -648,7 +648,7 @@ export default {
     }
 
     // Create bars
-    g.bars = g.svg.selectAll("#" + g.id + " .ldwbar")
+    g.bars = g.svg.selectAll('[id="' + g.id + '"] .ldwbar')
       .data(g.flatData)
     ;
     // Text on bars
@@ -666,20 +666,20 @@ export default {
 
       if ((g.showTexts === SHOW_TEXT_TOTAL || g.showTexts === SHOW_TEXT_BOTH) && !g.normalized) {
         // Create bars totals
-        g.totals = g.svg.selectAll("#" + g.id + " .ldwtot")
+        g.totals = g.svg.selectAll('[id="' + g.id + '"] .ldwtot')
           .data(g.data, function (d) { return d.dim1; })
         ;
       }
       if (g.showTexts === SHOW_TEXT_INSIDE_BARS || g.showTexts === SHOW_TEXT_BOTH) {
         // Create text on bars
-        g.texts = g.svg.selectAll("#" + g.id + " .ldwtxt")
+        g.texts = g.svg.selectAll('[id="' + g.id + '"] .ldwtxt')
           .data(g.flatData)
         ;
       }
     }
     // Create deltas
     if (g.showDeltas && g.nDims == 2) {
-      g.polys = g.svg.selectAll("#" + g.id + " polygon")
+      g.polys = g.svg.selectAll('[id="' + g.id + '"] polygon')
         .data(g.deltas, function (d) { return d.dim1p + "-" + d.dim1c + "," + d.dim2; })
       ;
     }
@@ -748,14 +748,14 @@ export default {
 
               // // following to address QS bug where clear button does not clear class names
               g.self.clearSelectedValues = function () {
-                d3.selectAll("#" + g.id + " .selected").classed("selected", false);
-                d3.selectAll("#" + g.id + " .selected").classed("selectable", false);
+                d3.selectAll('[id="' + g.id + '"] .selected').classed("selected", false);
+                d3.selectAll('[id="' + g.id + '"] .selected').classed("selectable", false);
               };
-              d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
+              d3.selectAll('[id="' + g.id + '"] [ldwdim1="' + d.qElemNumber + '"]')
                 .classed("selected", !t);
-              d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
+              d3.selectAll('[id="' + g.id + '"] [ldwdim1="' + d.qElemNumber + '"]')
                 .classed("selectable", !selecatableClass);
-              d3.select("#" + g.id + " .ldwtooltip")
+              d3.select('[id="' + g.id + '"] .ldwtooltip')
                 .style("opacity", "0")
                 .transition()
                 .remove
@@ -781,12 +781,12 @@ export default {
 
             // following to address QS bug where clear button does not clear class names
             g.self.clearSelectedValues = function () {
-              d3.selectAll("#" + g.id + " .selected").classed("selected", false);
+              d3.selectAll('[id="' + g.id + '"] .selected').classed("selected", false);
             };
             
-            d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
+            d3.selectAll('[id="' + g.id + '"] [ldwdim1="' + d.qElemNumber + '"]')
               .classed("selected", !t);
-            d3.select("#" + g.id + " .ldwtooltip")
+            d3.select('[id="' + g.id + '"] .ldwtooltip')
               .style("opacity", "0")
               .transition()
               .remove
@@ -815,11 +815,11 @@ export default {
 
               // following to address QS bug where clear button does not clear class names
               g.self.clearSelectedValues = function () {
-                d3.selectAll("#" + g.id + " .selected").classed("selected", false);
+                d3.selectAll('[id="' + g.id + '"] .selected').classed("selected", false);
               };
-              d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
+              d3.selectAll('[id="' + g.id + '"] [ldwdim1="' + d.qElemNumber + '"]')
                 .classed("selected", !t);
-              d3.select("#" + g.id + " .ldwtooltip")
+              d3.select('[id="' + g.id + '"] .ldwtooltip')
                 .style("opacity", "0")
                 .transition()
                 .remove
@@ -836,11 +836,11 @@ export default {
             g.self.selectValues(0, [d.qElemNumber], true);
             // following to address QS bug where clear button does not clear class names
             g.self.clearSelectedValues = function () {
-              d3.selectAll("#" + g.id + " .selected").classed("selected", false);
+              d3.selectAll('[id="' + g.id + '"] .selected').classed("selected", false);
             };
-            d3.selectAll("#" + g.id + " [ldwdim1='" + d.qElemNumber + "']")
+            d3.selectAll('[id="' + g.id + '"] [ldwdim1="' + d.qElemNumber + '"]')
               .classed("selected", !t);
-            d3.select("#" + g.id + " .ldwtooltip")
+            d3.select('[id="' + g.id + '"] .ldwtooltip')
               .style("opacity", "0")
               .transition()
               .remove
@@ -857,9 +857,9 @@ export default {
           .attr("stroke-width", "2")
         ;
         // Place text in tooltip
-        d3.select("#" + g.id + " .ldwttheading")
+        d3.select('[id="' + g.id + '"] .ldwttheading')
           .text(g.nDims == 2 ? d.dim1 + ", " + d.dim2 : d.dim1);
-        d3.select("#" + g.id + " .ldwttvalue")
+        d3.select('[id="' + g.id + '"] .ldwttvalue')
           .text(g.nDims == 2
             ? (g.normalized ? d.qTextPct + ", " + d.qText : d.qText)
             : d.qText);
@@ -868,14 +868,14 @@ export default {
           .translate(+this.getAttribute("x"), +this.getAttribute("y"));
 
         var xPosition = (window.pageXOffset + matrix.e)
-          - d3.select("#" + g.id + " .ldwtooltip")[0][0].clientWidth / 2
+          - d3.select('[id="' + g.id + '"] .ldwtooltip')[0][0].clientWidth / 2
           + (g.orientation == "V" ? g.dScale.rangeBand() : d3.select(this).attr("width")) / 2
           ;
         var yPosition = (window.pageYOffset + matrix.f)
-          - d3.select("#" + g.id + " .ldwtooltip")[0][0].clientHeight
+          - d3.select('[id="' + g.id + '"] .ldwtooltip')[0][0].clientHeight
           - 10
           ;
-        d3.select("#" + g.id + " .ldwtooltip")
+        d3.select('[id="' + g.id + '"] .ldwtooltip')
           .style("left", xPosition + "px")
           .style("top", yPosition + "px")
           .transition()
@@ -888,7 +888,7 @@ export default {
           .style("opacity", "1.0")
           .attr("stroke", "none")
         ;
-        d3.select("#" + g.id + " .ldwtooltip")
+        d3.select('[id="' + g.id + '"] .ldwtooltip')
           .style("opacity", "0")
           .transition()
           .remove
@@ -1017,40 +1017,35 @@ export default {
             .attr("stroke", "white")	
             .attr("stroke-width", "2");	
           // Place text in tooltip	
-          d3.select("#" + g.id + " .ldwttheading")	
-            .text(d.dim2 + ", " + d.dim1p + "-" + d.dim1c);	
-          d3.select("#" + g.id + " .ldwttvalue")	
-            .text(d3.format(g.normalized ? "+.1%" : "+.3s")(d.delta));	
+          d3.select('[id="' + g.id + '"] .ldwttheading')
+            .text(d.dim2 + ", " + d.dim1p + "-" + d.dim1c);
+          d3.select('[id="' + g.id + '"] .ldwttvalue')
+            .text(d3.format(g.normalized ? "+.1%" : "+.3s")(d.delta));
 
-          var matrix = this.getScreenCTM()	
-            .translate(sx, sy);	
+          var matrix = this.getScreenCTM()
+            .translate(sx, sy);
 
-          var xPosition = (window.pageXOffset + matrix.e)	
-            - d3.select("#" + g.id + " .ldwtooltip")[0][0].clientWidth / 2	
-            ;	
-          var yPosition = (window.pageYOffset + matrix.f)	
-            - d3.select("#" + g.id + " .ldwtooltip")[0][0].clientHeight	
-            - 10	
-            ;	
-          d3.select("#" + g.id + " .ldwtooltip")	
-            .style("left", xPosition + "px")	
-            .style("top", yPosition + "px")	
-            .transition()	
-            .delay(750)	
-            .style("opacity", "0.95")	
-          ;	
-        })	
-        .on("mouseleave", function () {	
-          d3.select(this)	
-            .style("opacity", g.barGap == 1 ? "1" : "0.5")	
-            .attr("stroke", "none")	
-          ;	
-          d3.select("#" + g.id + " .ldwtooltip")	
-            .style("opacity", "0")	
-            .transition()	
-            .remove;	
+          var xPosition = (window.pageXOffset + matrix.e)
+            - d3.select('[id="' + g.id + '"] .ldwtooltip')[0][0].clientWidth / 2;
+          var yPosition = (window.pageYOffset + matrix.f)
+            - d3.select('[id="' + g.id + '"] .ldwtooltip')[0][0].clientHeight
+            - 10;
+          d3.select('[id="' + g.id + '"] .ldwtooltip')
+            .style("left", xPosition + "px")
+            .style("top", yPosition + "px")
+            .transition()
+            .delay(750)
+            .style("opacity", "0.95");
         })
-      ;
+        .on("mouseleave", function () {
+          d3.select(this)
+            .style("opacity", g.barGap == 1 ? "1" : "0.5")
+            .attr("stroke", "none");
+          d3.select('[id="' + g.id + '"] .ldwtooltip')
+            .style("opacity", "0")
+            .transition()
+            .remove;
+        });
     }
     // create legend
     if (g.lgn.use) {
@@ -1203,8 +1198,7 @@ export default {
       ;
     }
 
-    d3.select(`#${this.id}`)
-      .select('.ldw-d') //Dimension labels styling
+    d3.select('[id="' + g.id + '"] .ldw-d') // Dimension labels styling
       .selectAll('.tick')
       .each(function(tick , i){
         if(g.labelStyleD === 'T'){
@@ -1227,8 +1221,7 @@ export default {
         }
       });
 
-    d3.select(`#${this.id}`)
-      .select('.ldw-m') //Measures labels styling
+    d3.select('[id="' + g.id + '"] .ldw-m') // Measures labels styling
       .selectAll('.tick')
       .each(function(tick , i){
         if(g.labelStyleM === 'T'){
@@ -1432,7 +1425,7 @@ export default {
     var updateAxis = function (labelTitle, labelStyle, axis, axisClass, isXAxis, axisWidth) {
       if (labelTitle == 'B' || labelTitle == 'L') {
         // Update axis with transition
-        const axisCssSelector = `#${g.id} .${axisClass}.ldwaxis`;
+        const axisCssSelector = '[id="' + g.id + '"] .' + axisClass + '.ldwaxis';
         g.svg.select(axisCssSelector)
           .transition()
           .delay(tDelay)
@@ -1490,7 +1483,7 @@ export default {
     // Update measure axis
     updateAxis(g.labelTitleM, g.labelStyleM, g.mAxis, "ldw-m", g.orientation != "V");
 
-    g.bars = g.svg.selectAll("#" + g.id + " .ldwbar")
+    g.bars = g.svg.selectAll('[id="' + g.id + '"] .ldwbar')
       .data(g.flatData)
     ;
     // Remove bars with transition
@@ -1506,7 +1499,7 @@ export default {
 
     // Remove totals with transition
     if (~"TA".indexOf(g.showTexts)) {
-      g.totals = g.svg.selectAll("#" + g.id + " .ldwtot")
+      g.totals = g.svg.selectAll('[id="' + g.id + '"] .ldwtot')
         .data(g.data, function (d) { return d.dim1; });
       g.totals
         .exit()
@@ -1519,7 +1512,7 @@ export default {
     }
     // Remove texts with transition
     if (~"BA".indexOf(g.showTexts)) {
-      g.texts = g.svg.selectAll("#" + g.id + " .ldwtxt")
+      g.texts = g.svg.selectAll('[id="' + g.id + '"] .ldwtxt')
         .data(g.flatData)
       ;
       g.texts
@@ -1534,7 +1527,7 @@ export default {
     }
 
     if (g.showDeltas && g.nDims == 2) {
-      g.polys = g.svg.selectAll("#" + g.id + " polygon")
+      g.polys = g.svg.selectAll('[id="' + g.id + '"] polygon')
         .data(g.deltas, function (d) { return d.dim1p + "-" + d.dim1c + "," + d.dim2; })
       ;
       // Remove deltas with transition
@@ -1550,7 +1543,7 @@ export default {
     }
     // remove legend items with transition
     if (g.lgn.use) {
-      g.lgn.items = d3.selectAll("#" + g.id + " .ldwlgnitems")
+      g.lgn.items = d3.selectAll('[id="' + g.id + '"] .ldwlgnitems')
         .selectAll("g")
         .data(g.allDim2,g.allDim2.forEach(element => element))
       ;
