@@ -98,7 +98,12 @@ const definition ={
               options: [
                 { value: "V", label: "Vertical bars" },
                 { value: "H", label: "Horizontal bars" },
-              ]
+              ],
+              change: function(data, handler, properties) {
+                var prevLabelStyleD = data.props.labelStyleD;
+                properties.props.labelStyleD = data.props.labelStyleM;
+                properties.props.labelStyleM = prevLabelStyleD;
+              }
             },
             normalized: {
               type: "boolean",
@@ -322,11 +327,14 @@ const definition ={
               label: "Label style",
               ref: "props.labelStyleD",
               defaultValue: "H",
-              options: [
-                { value: "H", label: "Horizontal" },
-                { value: "S", label: "Staggered" },
-                { value: "T", label: "Tilted" }
-              ],
+              options: function (data) {
+                var options = [{ value: "H", label: "Horizontal" }];
+                if (data.props.orientation == 'V') {
+                  options.push({ value: "S", label: "Staggered" });
+                }
+                options.push({ value: "T", label: "Tilted" });
+                return options;
+              },
               show: function (data) {
                 return data.props.labelTitleD != 'N' && data.props.labelTitleD != 'T';
               }
@@ -417,11 +425,14 @@ const definition ={
               label: "Label style",
               ref: "props.labelStyleM",
               defaultValue: "H",
-              options: [
-                { value: "H", label: "Horizontal" },
-                { value: "S", label: "Staggered" },
-                { value: "T", label: "Tilted" }
-              ],
+              options: function (data) {
+                var options = [{ value: "H", label: "Horizontal" }];
+                if (data.props.orientation == 'H') {
+                  options.push({ value: "S", label: "Staggered" });
+                }
+                options.push({ value: "T", label: "Tilted" });
+                return options;
+              },
               show: function (data) {
                 return data.props.labelTitleM != 'N' && data.props.labelTitleM != 'T';
               }
