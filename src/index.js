@@ -46,17 +46,22 @@ export default {
     dimensions: {
       uses: "dimensions",
       min: 0,
-      max: function(nMeasures){
-        if(nMeasures >= 2){
-          return 1;
+      max: function(nMeasures) {
+        if (nMeasures > 5) {
+          return 0;
         }
-        return 2;
+        return nMeasures < 2 ? 2 : 1;
       }
     },
     measures: {
       uses: "measures",
       min: 1,
-      max: 10
+      max: function(nDimensions) {
+        if (nDimensions == 0) {
+          return 10;
+        }
+        return nDimensions == 1 ? 5 : 1;
+      }
     }
   },
   definition: props,
