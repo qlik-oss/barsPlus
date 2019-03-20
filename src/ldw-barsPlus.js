@@ -516,7 +516,7 @@ export default {
         .orient(g.orientation == "V" ? "left" : "bottom")
         .tickSize(g.gridlinesM ? (g.orientation == "V" ? -innerWidth : -innerHeight) : 6)
         .ticks(g.ticks)
-        .tickFormat(d3.format([",.3s", ",.0f", ",.0%", ",.3s", g.axisFormatMs]["ANPSC".indexOf(g.axisFormatM)]))
+        .tickFormat(d3.format([",.3s", ",.g", ",.0%", ",.3s", g.axisFormatMs]["ANPSC".indexOf(g.axisFormatM)]))
         .tickPadding(5)
       ;
       mGrp.call(g.mAxis);
@@ -904,7 +904,7 @@ export default {
         .style("opacity", "0")
         .each(function (d) {
           d.qNum = g.mScale.domain()[1] - d.offset;
-          d.qText = d3.format([",.0f", ",.0%", ",.3s", g.totalFormatMs]["NPSC".indexOf(g.totalFormatM)])(d.offset);
+          d.qText = d3.format([",.g", ",.0%", ",.3s", g.totalFormatMs]["NPSC".indexOf(g.totalFormatM)])(d.offset);
           var txp = g.barText(d, true);
 
           d3.select(this)
@@ -1624,7 +1624,7 @@ export default {
       g.totals
         .each(function (d) {
           d.qNum = g.mScale.domain()[1] - d.offset;
-          d.qText = d3.format([",.0f", ",.0%", ",.3s", g.totalFormatMs]["NPSC".indexOf(g.totalFormatM)])(d.offset);
+          d.qText = d3.format([",.g", ",.0%", ",.3s", g.totalFormatMs]["NPSC".indexOf(g.totalFormatM)])(d.offset);
           var txp = g.barText(d, true);
           d3.select(this)
             .transition()
