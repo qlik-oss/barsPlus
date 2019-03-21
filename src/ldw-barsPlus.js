@@ -268,6 +268,7 @@ export default {
         }
         else {
           num = d.values[j].values[0][2].qNum;
+          num = Number.isFinite(num) ? num : 0;
           txt = d.values[j].values[0][2].qText;
           if(g.defDims == 2){
             elm = [d.values[j].values[0][0].qElemNumber,d.values[j].values[0][1].qElemNumber];
@@ -1280,21 +1281,18 @@ export default {
 
     bb = g.tref.node().getBBox();
     tx = origX + innerBarPadH;
-    if (vAlign == "C")
-    {
-
+    if (vAlign == "C") {
       textY = g.orientation == "V" ? g.mScale(d.offset) - (g.mScale(0) - g.mScale(d.qNum))
         + (g.mScale(0) - g.mScale(d.qNum) + bb.height) / 2
         : g.dScale(d.dim1) + (g.dScale.rangeBand() + bb.height) / 2;
-    }
-
-    else if (vAlign == "T")
+    } else if (vAlign == "T") {
       textY = g.orientation == "V" ? g.mScale(d.offset) - (g.mScale(0) - g.mScale(d.qNum))
         + bb.height + innerBarPadV
         : g.dScale(d.dim1) + innerBarPadV + bb.height;
-    else
+    } else {
       textY = g.orientation == "V" ? g.mScale(d.offset) - innerBarPadV
         : g.dScale(d.dim1) + g.dScale.rangeBand() - innerBarPadV;
+    }
     txt = "";
     var barWidth = g.bars[0][0].width.baseVal.value;
     if (bb.height + 2 * innerBarPadV <= bHeight || (g.orientation != "V")) {
