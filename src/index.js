@@ -24,6 +24,8 @@
 import './barsPlus-directive';
 import props from './barsPlus-props';
 import { updateColorSchemas } from './colorSchemas';
+import { overrideD3FormatPrefix } from './numerical-abbrevation';
+import qlik from 'qlik';
 
 if (!window._babelPolyfill) { //eslint-disable-line no-underscore-dangle
   require('@babel/polyfill');
@@ -71,8 +73,12 @@ export default {
     exportData: true
   },
   template: '<bars-plus qv-extension />',
-  controller: ['$scope', function ($scope) {
-  }],
+  mounted: function () {
+    const app = qlik.currApp(this);
+    app.getAppLayout().then(function (res) {
+      overrideD3FormatPrefix(res.layout.qLocaleInfo.qNumericalAbbreviation);
+    });
+  },
   paint: function ($element, layout) {
     var self = this;
     self.$scope.g.self = self; // Save reference for call to backendApi

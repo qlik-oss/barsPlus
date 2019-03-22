@@ -440,40 +440,44 @@ export default {
     if (g.orientation == "H") dim1.reverse();
     g.dScale = d3.scale.ordinal()
       .domain(dim1)
-      .rangeRoundBands(g.orientation == "V" ? [0, innerWidth] : [innerHeight, 0], g.barGap, g.outerGap)
-    ;
+      .rangeRoundBands(g.orientation == "V" ? [0, innerWidth] : [innerHeight, 0], g.barGap, g.outerGap);
+
     g.max = d3.max(g.data, function (d) {
-      if(d.offset < 0) {
-        if(d.values){
-          if(d.values[0].qNum > d.values[1].qNum){
-            return (g.normalized ? 1 : d.values[0].qNum) * g.gridHeight;
-          }else{
-            return (g.normalized ? 1 : d.values[1].qNum) * g.gridHeight;
+      if (g.normalized) {
+        return g.gridHeight;
+      }
+
+      var maxOffset = Math.max(0, d.offset);
+      if (d.values) {
+        d.values.forEach(dataObject => {
+          if (dataObject.offset > maxOffset) {
+            maxOffset = dataObject.offset;
           }
-        }
-        else{
-          return 0;
-        }
+        });
       }
-      else{
-        var valuesOffset=1;
-        if(d.values){
-          d.values.forEach(dataObject => {
-            if(dataObject.offset > d.offset && dataObject.offset >= valuesOffset){
-              valuesOffset = dataObject.offset;
-            }
-          });
-        }
-        if(valuesOffset > d.offset){
-          return (g.normalized ? 1 : valuesOffset) * g.gridHeight;
-        }else{
-          return (g.normalized ? 1 : d.offset) * g.gridHeight;
-        }
+
+      return maxOffset * g.gridHeight;
+    });
+
+    g.min = d3.min(g.data, function (d) {
+      if (g.normalized) {
+        return 0;
       }
+
+      var minOffset = Math.min(0, d.offset);
+      if (d.values) {
+        d.values.forEach(dataObject => {
+          if (dataObject.offset < minOffset) {
+            minOffset = dataObject.offset;
+          }
+        });
+      }
+
+      return minOffset * g.gridHeight;
     });
 
     g.mScale = d3.scale.linear()
-      .domain([0, g.max > 0 ? g.max : 1])
+      .domain([g.min, g.max])
       .range(g.orientation == "V" ? [innerHeight, 0] : [0, innerWidth])
       .nice()
     ;
@@ -517,7 +521,7 @@ export default {
         .orient(g.orientation == "V" ? "left" : "bottom")
         .tickSize(g.gridlinesM ? (g.orientation == "V" ? -innerWidth : -innerHeight) : 6)
         .ticks(g.ticks)
-        .tickFormat(d3.format([",.3s", ",.g", ",.0%", ",.3s", g.axisFormatMs]["ANPSC".indexOf(g.axisFormatM)]))
+        .tickFormat(d3.format(["s", ",.g", ",.0%", "s", g.axisFormatMs]["ANPSC".indexOf(g.axisFormatM)]))
         .tickPadding(5)
       ;
       mGrp.call(g.mAxis);
@@ -905,7 +909,7 @@ export default {
         .style("opacity", "0")
         .each(function (d) {
           d.qNum = g.mScale.domain()[1] - d.offset;
-          d.qText = d3.format([",.g", ",.0%", ",.3s", g.totalFormatMs]["NPSC".indexOf(g.totalFormatM)])(d.offset);
+          d.qText = d3.format([",.g", ",.0%", "s", g.totalFormatMs]["NPSC".indexOf(g.totalFormatM)])(d.offset);
           var txp = g.barText(d, true);
 
           d3.select(this)
@@ -1412,7 +1416,7 @@ export default {
     var dim1 = g.data.map(function (d) { return d.dim1; });
     if (g.orientation == "H") dim1.reverse();
     g.dScale.domain(dim1);
-    g.mScale.domain([0, g.max > 0 ? g.max : 1]);
+    g.mScale.domain([g.min, g.max]);
     const isPrinting = qlik.navigation && !qlik.navigation.inClient;
     const transitionDelay = g.transitions && !g.editMode && !isPrinting ? g.transitionDelay : 0;
     const transitionDuration = g.transitions && !g.editMode && !isPrinting ? g.transitionDuration : 0;
@@ -1579,21 +1583,14 @@ export default {
           return g.dScale(d.dim1) ? g.dScale(d.dim1) : 0; // ignore NaN: causing errors in transitions
         })
         .attr("y", function (d) {
-          const num = Number.isFinite(d.qNum) && d.qNum > 0 ? d.qNum : 0;
+          const num = Number.isFinite(d.qNum) ? d.qNum : 0;
           const offset = Number.isFinite(d.offset) ? d.offset : 0; // in transition elastic, we somehow concatinate 0 and NaN into "0NaN"
-          if(offset < 0){
-            return g.mScale(0) - (g.mScale(0) - g.mScale(num));
-          }
-          else{
-            return g.mScale(offset) - (g.mScale(0) - g.mScale(num));
-          }
+          console.log(num + " :: " + offset);
+          return g.mScale(offset) - (g.mScale(0) - g.mScale(Math.max(0, num)));
         })
         .attr("width", g.dScale.rangeBand() && g.dScale.rangeBand() > 0 ? g.dScale.rangeBand() : 0) // ignore NaN: causing errors in transitions
         .attr("height", function (d) {
-          if(!Number.isFinite(d.qNum)){
-            return 0;
-          }
-          return g.mScale(0) > g.mScale(d.qNum) ? g.mScale(0) - g.mScale(d.qNum) : 0; // ignore negatives: causing errors in transitions
+          return Number.isFinite(d.qNum) ? Math.abs(g.mScale(0) - g.mScale(d.qNum)) : 0;
         })
       ;
     }
@@ -1604,14 +1601,15 @@ export default {
         .ease(g.ease)
         .style("opacity", "1")
         .attr("x", function (d) {
-          return g.mScale(d.offset);
+          const num = Number.isFinite(d.qNum) ? d.qNum : 0;
+          const offset = Number.isFinite(d.offset) ? d.offset : 0; // in transition elastic, we somehow concatinate 0 and NaN into "0NaN"
+          return g.mScale(offset) - (g.mScale(0) - g.mScale(Math.min(0, num)));
         })
         .attr("y", function (d, i) {
           return g.dScale(d.dim1);
         })
         .attr("width", function (d) {
-          const num = Number.isFinite(d.qNum) ? d.qNum : 0;
-          return g.mScale(num);
+          return Number.isFinite(d.qNum) ? Math.abs(g.mScale(0) - g.mScale(d.qNum)) : 0;
         })
         .attr("height", g.dScale.rangeBand())
       ;
@@ -1622,7 +1620,7 @@ export default {
       g.totals
         .each(function (d) {
           d.qNum = g.mScale.domain()[1] - d.offset;
-          d.qText = d3.format([",.g", ",.0%", ",.3s", g.totalFormatMs]["NPSC".indexOf(g.totalFormatM)])(d.offset);
+          d.qText = d3.format([",.g", ",.0%", "s", g.totalFormatMs]["NPSC".indexOf(g.totalFormatM)])(d.offset);
           var txp = g.barText(d, true);
           d3.select(this)
             .transition()
