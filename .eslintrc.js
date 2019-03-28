@@ -24,7 +24,6 @@ module.exports = {
   },
   rules: {
     "indent": ["error", 2, { "SwitchCase": 1 }],
-    "linebreak-style": ["error", "unix"],
     "object-curly-spacing": ["error", "always"],
     "max-lines": ["warn", 300],
     "max-len": ["warn", { "code": 120, "ignoreComments": true, "ignoreTrailingComments": false }],
