@@ -106,6 +106,19 @@ import qlik from 'qlik';
 import { getColorSchemaByName, getDefaultSingleColor } from './colorSchemas';
 import { getBarLabelText } from './barLabelText';
 
+// Text on bars
+const SHOW_NO_TEXT = 'N';
+const SHOW_TEXT_TOTAL = 'T';
+const SHOW_TEXT_INSIDE_BARS = 'B';
+const SHOW_TEXT_BOTH = 'A';
+
+const TYPE_INSIDE_BARS = 1;
+const TYPE_TOTAL_POS = 2;
+const TYPE_TOTAL_NEG = 3;
+
+const ORIENTATION_HORIZONTAL = 'H';
+const ORIENTATION_VERTICAL = 'V';
+
 export default {
 
   /**
@@ -170,8 +183,17 @@ export default {
     if (inData[0].length == 2) {
       g.nDims = 1;
       g.normalized = false;
+      var offsetPos = 0;
+      var offsetNeg = 0;
       inData.forEach(function (d) {
-        struc.push({ dim1: d[0].qText, offset: d[1].qNum });
+        if (d[1].qNum < 0) {
+          offsetNeg = d[1].qNum;
+          offsetPos = 0;
+        } else {
+          offsetNeg = 0;
+          offsetPos = d[1].qNum;
+        }
+        struc.push({ dim1: d[0].qText, offsetPos: offsetPos, offsetNeg: offsetNeg });
         flatData.push({
           dim1: d[0].qText,
           dim2: d[0].qText,
@@ -258,7 +280,7 @@ export default {
         : (p.indexOf(a.key) > p.indexOf(b.key) ? 1 : 0));
     });
     n.forEach(function (d, idx) {
-      var t = 0, v = [], j = 0, num, txt;
+      var posT = 0, negT = 0, t = 0, v = [], j = 0, num, txt;
       for (var i = 0; i < q.length; i++) {
         let elm;
         if (d.values.length <= j || d.values[j].key != q[i]) {
@@ -276,6 +298,13 @@ export default {
             elm = d.values[j].values[0][0].qElemNumber;
           }
           j++;
+          if (num < 0) {
+            t = negT;
+            negT += num;
+          } else {
+            t = posT;
+            posT += num;
+          }
           v.push({
             dim2: q[i],
             qNum: num,
@@ -283,19 +312,19 @@ export default {
             qElemNumber: elm,
             offset: t
           });
-          t += num;
         }
       }
       v.forEach(function (e) {
         e.dim1 = d.key;
         if (g.normalized) {
-          e.offset = e.offset / t;
-          e.qNum = e.qNum / t;
+          let n = e.qNum < 0 ? -negT : posT;
+          e.offset = e.offset / n;
+          e.qNum = e.qNum / n;
           e.qTextPct = d3.format(".1%")(e.qNum);
         }
       });
       flatData.push.apply(flatData, v);
-      struc.push({ dim1: d.key, offset: t, values: v });
+      struc.push({ dim1: d.key, offsetPos: posT, offsetNeg: negT, values: v });
 
       if (idx > 0 && g.showDeltas) {
         var p = struc[idx - 1].values;
@@ -337,15 +366,17 @@ export default {
   initChart: function () {
     var g = this;
 
-    var xLabelTitle = g.orientation == "V" ? g.labelTitleD : g.labelTitleM;
+    var xLabelTitle = g.orientation == ORIENTATION_VERTICAL ? g.labelTitleD : g.labelTitleM;
     g.xAxisHeight = xLabelTitle == "B" || xLabelTitle == "L"
-      ? [70, 40, 25]["WMN".indexOf(g.orientation == "V" ? g.axisMarginD : g.axisMarginM)] : 0;
+      ? [70, 40, 25]["WMN".indexOf(g.orientation == ORIENTATION_VERTICAL
+        ? g.axisMarginD : g.axisMarginM)] : 0;
     var xTitleHeight = xLabelTitle == "B" || xLabelTitle == "T" ? 20 : 0;
     var xAxisPad = 20;
 
-    var yLabelTitle = g.orientation == "V" ? g.labelTitleM : g.labelTitleD;
+    var yLabelTitle = g.orientation == ORIENTATION_VERTICAL ? g.labelTitleM : g.labelTitleD;
     g.yAxisWidth = yLabelTitle == "B" || yLabelTitle == "L"
-      ? [90, 50, 30]["WMN".indexOf(g.orientation == "V" ? g.axisMarginM : g.axisMarginD)] : 0;
+      ? [90, 50, 30]["WMN".indexOf(g.orientation == ORIENTATION_VERTICAL
+        ? g.axisMarginM : g.axisMarginD)] : 0;
     var yTitleWidth = yLabelTitle == "B" || yLabelTitle == "T" ? 20 : 0;
     var yAxisPad = 20;
 
@@ -437,17 +468,19 @@ export default {
     ;
     g.self && g.self.$scope.options.interactionState === 2 ? g.svg.attr('class' , 'in-edit-mode') : g.svg.attr('class', '');
     var dim1 = g.data.map(function (d) { return d.dim1; });
-    if (g.orientation == "H") dim1.reverse();
+    if (g.orientation == ORIENTATION_HORIZONTAL) dim1.reverse();
     g.dScale = d3.scale.ordinal()
       .domain(dim1)
-      .rangeRoundBands(g.orientation == "V" ? [0, innerWidth] : [innerHeight, 0], g.barGap, g.outerGap);
+      .rangeRoundBands(g.orientation == ORIENTATION_VERTICAL
+        ? [0, innerWidth]
+        : [innerHeight, 0], g.barGap, g.outerGap);
 
     g.max = d3.max(g.data, function (d) {
       if (g.normalized) {
         return g.gridHeight;
       }
 
-      var maxOffset = Math.max(0, d.offset);
+      var maxOffset = Math.max(0, d.offsetPos);
       if (d.values) {
         d.values.forEach(dataObject => {
           if (dataObject.offset > maxOffset) {
@@ -461,10 +494,10 @@ export default {
 
     g.min = d3.min(g.data, function (d) {
       if (g.normalized) {
-        return 0;
+        return -g.gridHeight;
       }
 
-      var minOffset = Math.min(0, d.offset);
+      var minOffset = Math.min(0, d.offsetNeg);
       if (d.values) {
         d.values.forEach(dataObject => {
           if (dataObject.offset < minOffset) {
@@ -478,25 +511,25 @@ export default {
 
     g.mScale = d3.scale.linear()
       .domain([g.min, g.max])
-      .range(g.orientation == "V" ? [innerHeight, 0] : [0, innerWidth])
+      .range(g.orientation == ORIENTATION_VERTICAL ? [innerHeight, 0] : [0, innerWidth])
       .nice()
     ;
     var dGrp = g.svg.append("g")
       .attr("class", "ldw-d ldwaxis");
-    if (g.orientation == "V") {
+    if (g.orientation == ORIENTATION_VERTICAL) {
       dGrp.attr("transform", "translate(0," + innerHeight + ")");
     }
     if (g.labelTitleD == 'B' || g.labelTitleD == 'L') {
       g.dAxis = d3.svg.axis()
         .scale(g.dScale)
-        .orient(g.orientation == "V" ? "bottom" : "left")
-        .tickSize(g.gridlinesD ? (g.orientation == "V" ? -innerHeight : -innerWidth) : 6)
+        .orient(g.orientation == ORIENTATION_VERTICAL ? "bottom" : "left")
+        .tickSize(g.gridlinesD ? (g.orientation == ORIENTATION_VERTICAL ? -innerHeight : -innerWidth) : 6)
         .tickPadding(5)
       ;
       dGrp.call(g.dAxis);
     }
     if (g.labelTitleD == 'B' || g.labelTitleD == 'T') {
-      if (g.orientation == "V") {
+      if (g.orientation == ORIENTATION_VERTICAL) {
         tr = "translate(" + (innerWidth / 2) + "," + (g.xAxisHeight + xTitleHeight) + ")";
       }
       else {
@@ -512,14 +545,14 @@ export default {
     var mGrp = g.svg.append("g")
       .attr("class", "ldw-m ldwaxis")
       ;
-    if (g.orientation != "V") {
+    if (g.orientation != ORIENTATION_VERTICAL) {
       mGrp.attr("transform", "translate(0," + innerHeight + ")");
     }
     if (g.labelTitleM == 'B' || g.labelTitleM == 'L') {
       g.mAxis = d3.svg.axis()
         .scale(g.mScale)
-        .orient(g.orientation == "V" ? "left" : "bottom")
-        .tickSize(g.gridlinesM ? (g.orientation == "V" ? -innerWidth : -innerHeight) : 6)
+        .orient(g.orientation == ORIENTATION_VERTICAL ? "left" : "bottom")
+        .tickSize(g.gridlinesM ? (g.orientation == ORIENTATION_VERTICAL ? -innerWidth : -innerHeight) : 6)
         .ticks(g.ticks)
         .tickFormat(d3.format(["s", ",.g", ",.0%", "s", g.axisFormatMs]["ANPSC".indexOf(g.axisFormatM)]))
         .tickPadding(5)
@@ -527,7 +560,7 @@ export default {
       mGrp.call(g.mAxis);
     }
     if (g.labelTitleM == 'B' || g.labelTitleM == 'T') {
-      if (g.orientation == "V") {
+      if (g.orientation == ORIENTATION_VERTICAL) {
         tr = "translate(-" + (g.yAxisWidth + yTitleWidth / 2 + 2) + "," + (innerHeight / 2) + ")rotate(-90)";
       }
       else {
@@ -654,26 +687,22 @@ export default {
 
     // Create bars
     g.bars = g.svg.selectAll('[id="' + g.id + '"] .ldwbar')
-      .data(g.flatData)
-    ;
+      .data(g.flatData);
+
     // Text on bars
-    const SHOW_NO_TEXT = 'N';
-    const SHOW_TEXT_TOTAL = 'T';
-    const SHOW_TEXT_INSIDE_BARS = 'B';
-    const SHOW_TEXT_BOTH = 'A';
     if (g.showTexts !== SHOW_NO_TEXT) {
       // Create text box for determining sizing
       g.tref = g.svg.append("text")
         .attr("x", "0")
         .attr("y", "-100")
-        .attr("class", "ldwtxtref")
-      ;
+        .attr("class", "ldwtxtref");
 
       if ((g.showTexts === SHOW_TEXT_TOTAL || g.showTexts === SHOW_TEXT_BOTH) && !g.normalized) {
         // Create bars totals
-        g.totals = g.svg.selectAll('[id="' + g.id + '"] .ldwtot')
-          .data(g.data, function (d) { return d.dim1; })
-        ;
+        g.totalsPos = g.svg.selectAll('[id="' + g.id + '"] .ldwtot .pos')
+          .data(g.data, function (d) { return d.dim1; });
+        g.totalsNeg = g.svg.selectAll('[id="' + g.id + '"] .ldwtot .neg')
+          .data(g.data, function (d) { return d.dim1; });
       }
       if (g.showTexts === SHOW_TEXT_INSIDE_BARS || g.showTexts === SHOW_TEXT_BOTH) {
         // Create text on bars
@@ -705,10 +734,10 @@ export default {
       .enter()
       .append("rect")
       .attr("ldwdim1", function (d) { return d.qElemNumber; })
-      .attr(g.orientation == "V" ? "x" : "y", function (d) { return g.dScale(d.dim1); })
-      .attr(g.orientation == "V" ? "y" : "x", function (d) { return g.mScale(0); })		// grow from bottom
-      .attr(g.orientation == "V" ? "width" : "height", g.dScale.rangeBand())
-      .attr(g.orientation == "V" ? "height" : "width", function (d) { return 0; })
+      .attr(g.orientation == ORIENTATION_VERTICAL ? "x" : "y", function (d) { return g.dScale(d.dim1); })
+      .attr(g.orientation == ORIENTATION_VERTICAL ? "y" : "x", function (d) { return g.mScale(0); })		// grow from bottom
+      .attr(g.orientation == ORIENTATION_VERTICAL ? "width" : "height", g.dScale.rangeBand())
+      .attr(g.orientation == ORIENTATION_VERTICAL ? "height" : "width", function (d) { return 0; })
       .style("fill", function (d) {
         return g.cScale(d.dim2);
       })
@@ -874,7 +903,7 @@ export default {
 
         var xPosition = (window.pageXOffset + matrix.e)
           - d3.select('[id="' + g.id + '"] .ldwtooltip')[0][0].clientWidth / 2
-          + (g.orientation == "V" ? g.dScale.rangeBand() : d3.select(this).attr("width")) / 2
+          + (g.orientation == ORIENTATION_VERTICAL ? g.dScale.rangeBand() : d3.select(this).attr("width")) / 2
           ;
         var yPosition = (window.pageYOffset + matrix.f)
           - d3.select('[id="' + g.id + '"] .ldwtooltip')[0][0].clientHeight
@@ -902,29 +931,47 @@ export default {
 
     if (~"TA".indexOf(g.showTexts) && !g.normalized) {
       // Create totals
-      g.totals
-        .enter()
-        .append("text")
-        .attr("class", "ldwtot")
-        .style("opacity", "0")
-        .each(function (d) {
-          d.qNum = g.mScale.domain()[1] - d.offset;
-          d.qText = d3.format([",.g", ",.0%", "s", g.totalFormatMs]["NPSC".indexOf(g.totalFormatM)])(d.offset);
-          var txp = g.barText(d, true);
-
-          d3.select(this)
-            .style("fill", "black")
-            .style("font-size", g.tref.style("font-size"))
-            .attr("x", g.orientation == "V" ? txp.x : 0)
-            .attr("y", g.orientation == "V" ? g.mScale(0) : txp.y)
-            .attr("dy", "-.2em")
-            .text(txp.text);
-        });
+      let minMax = g.mScale.domain();
+      if (minMax[1] > 0) {
+        g.totalsPos
+          .enter()
+          .append("text")
+          .attr("class", "ldwtot pos")
+          .style("opacity", "0")
+          .each(function (d) {
+            d.qNum = minMax[1] - d.offsetPos;
+            d.qText = d3.format([",.g", ",.0%", "s", g.totalFormatMs]["NPSC".indexOf(g.totalFormatM)])(d.offsetPos);
+            var txp = g.barText(d, TYPE_TOTAL_POS);
+            d3.select(this)
+              .style("fill", "black")
+              .style("font-size", g.tref.style("font-size"))
+              .attr("x", g.orientation == ORIENTATION_VERTICAL ? txp.x : 0)
+              .attr("y", g.orientation == ORIENTATION_VERTICAL ? g.mScale(0) : txp.y)
+              .text(txp.text);
+          });
+      }
+      if (minMax[0] < 0) {
+        g.totalsNeg
+          .enter()
+          .append("text")
+          .attr("class", "ldwtot neg")
+          .style("opacity", "0")
+          .each(function (d) {
+            d.qNum = minMax[0] - d.offsetNeg;
+            d.qText = d3.format([",.g", ",.0%", "s", g.totalFormatMs]["NPSC".indexOf(g.totalFormatM)])(d.offsetNeg);
+            var txp = g.barText(d, TYPE_TOTAL_NEG);
+            d3.select(this)
+              .style("fill", "black")
+              .style("font-size", g.tref.style("font-size"))
+              .attr("x", g.orientation == ORIENTATION_VERTICAL ? txp.x : 0)
+              .attr("y", g.orientation == ORIENTATION_VERTICAL ? g.mScale(0) : txp.y)
+              .text(txp.text);
+          });
+      }
     }
 
     if (~"BA".indexOf(g.showTexts)) {
       // Create text inside bars
-
       g.texts
         .enter()
         .append("text")
@@ -932,7 +979,7 @@ export default {
         .style("opacity", "0")
         .each(function (dataObject) {
 
-          var txp = g.barText(dataObject);
+          var txp = g.barText(dataObject, TYPE_INSIDE_BARS);
           var bar = g.bars[0].find(element=>{
             return element.__data__.dim1 === dataObject.dim1;
           });
@@ -940,13 +987,12 @@ export default {
           d3.select(this)
             .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(dataObject.dim2)) : g.textColor)
             .style("font-size", g.tref.style("font-size"))
-            .attr("x", g.orientation == "V" ? txp.x : 0)
+            .attr("x", g.orientation == ORIENTATION_VERTICAL ? txp.x : 0)
             .attr("y", txp.y)
             .text(txp.text)
           ;
           if (txp.rotation == true){
-            d3.select(this).attr('transform' ,`rotate(-90 ${txp.x + bar.width.baseVal.value/2} ${txp.y + bar.height.baseVal.value/2})  `)
-            ;
+            d3.select(this).attr('transform' ,`rotate(-90 ${txp.x + bar.width.baseVal.value/2} ${txp.y + bar.height.baseVal.value/2})  `);
           }
         })
       ;
@@ -954,7 +1000,6 @@ export default {
 
     if (g.showDeltas && g.nDims === 2) {
       // Create deltas
-
       let verticalCoordinates = {
         x1: 0,
         x2: 0,
@@ -968,7 +1013,6 @@ export default {
 
       const zeroMeasureScale = g.mScale(0);
       const dimensionScaleRange = g.dScale.rangeBand();
-      const VERTICAL_ORIENTATION = 'V';
 
       g.polys
         .enter()
@@ -977,15 +1021,15 @@ export default {
           const fromBar = g.dScale(datum.dim1p);
           const toBar = g.dScale(datum.dim1c);
           const distance = fromBar + dimensionScaleRange;
-          
-          if (g.orientation === VERTICAL_ORIENTATION) {
+
+          if (g.orientation === ORIENTATION_VERTICAL) {
             let { x1, x2, y } = verticalCoordinates;
             y = zeroMeasureScale;
             x1 = distance;
             x2 = toBar;
             return `${x1},${y} ${x1},${y} ${x2},${y} ${x2},${y}`;
           }
-          
+
           let { y1, y2, x } = horizontalCoordinates;
           x = zeroMeasureScale;
           y1 = distance;
@@ -999,29 +1043,29 @@ export default {
         .on("mouseenter", function (d) {	
           var pt = this.getAttribute("points").split(" ");	
           var sx = 0, sy = 0;	
-          pt.forEach(function (e, i) {	
-            var x = e.split(",");	
-            if (g.orientation == "H") {	
-              if (i < 2) {	
-                sx += parseFloat(x[0]);	
-                sy += parseFloat(x[1]);	
-              }	
-            }	
-            else if (i == 0 || i == 3) {	
-              sx += parseFloat(x[0]);	
-              sy += parseFloat(x[1]);	
-            }	
-          });	
-          sx /= 2;	
-          sy /= 2;	
+          pt.forEach(function (e, i) {
+            var x = e.split(",");
+            if (g.orientation == ORIENTATION_HORIZONTAL) {
+              if (i < 2) {
+                sx += parseFloat(x[0]);
+                sy += parseFloat(x[1]);
+              }
+            }
+            else if (i == 0 || i == 3) {
+              sx += parseFloat(x[0]);
+              sy += parseFloat(x[1]);
+            }
+          });
+          sx /= 2;
+          sy /= 2;
 
-          if (g.inSelections || g.editMode) return;	
+          if (g.inSelections || g.editMode) return;
 
-          d3.select(this)	
-            .style("opacity", "0.5")	
-            .attr("stroke", "white")	
-            .attr("stroke-width", "2");	
-          // Place text in tooltip	
+          d3.select(this)
+            .style("opacity", "0.5")
+            .attr("stroke", "white")
+            .attr("stroke-width", "2");
+          // Place text in tooltip
           d3.select('[id="' + g.id + '"] .ldwttheading')
             .text(d.dim2 + ", " + d.dim1p + "-" + d.dim1c);
           d3.select('[id="' + g.id + '"] .ldwttvalue')
@@ -1207,18 +1251,18 @@ export default {
       .selectAll('.tick')
       .each(function(tick , i){
         if(g.labelStyleD === 'T'){
-          if(g.orientation === 'V'){
+          if(g.orientation === ORIENTATION_VERTICAL){
             d3.select(this)
               .select('text').attr('transform', 'translate(-5,25) rotate(-45)');
           }
-          if(g.orientation === 'H'){
+          if(g.orientation === ORIENTATION_HORIZONTAL){
             d3.select(this)
               .select('text').attr('transform', 'translate(-5,-20) rotate(-45)');
           }
         }
         if(g.labelStyleD === 'S'){
           if ( i % 2 === 0){
-            if(g.orientation === 'V'){
+            if(g.orientation === ORIENTATION_VERTICAL){
               d3.select(this)
                 .select('text').attr('transform', 'translate(0,20)');
             }
@@ -1230,18 +1274,18 @@ export default {
       .selectAll('.tick')
       .each(function(tick , i){
         if(g.labelStyleM === 'T'){
-          if(g.orientation === 'V'){
+          if(g.orientation === ORIENTATION_VERTICAL){
             d3.select(this)
               .select('text').attr('transform', 'translate(-5,-10) rotate(-45)');
           }
-          if(g.orientation === 'H'){
+          if(g.orientation === ORIENTATION_HORIZONTAL){
             d3.select(this)
               .select('text').attr('transform', 'translate(-5,20) rotate(-45)');
           }
         }
         if(g.labelStyleM === 'S'){
           if ( i % 2 === 0){
-            if(g.orientation === 'H'){
+            if(g.orientation === ORIENTATION_HORIZONTAL){
               d3.select(this)
                 .select('text').attr('transform', 'translate(0,20)');
             }
@@ -1249,172 +1293,205 @@ export default {
         }
       });
   },
-  /**
- *--------------------------------------
- * Bar Text
- *--------------------------------------
- * Get bar text information: x, y and text
-*/
-  barText: function (d, total) {
 
-    var tx, txt, origX, textX, bb, textY, textLength, ts;
+  /**
+   *--------------------------------------
+   * Bar Text
+   *--------------------------------------
+   * Get bar text information: x, y and text
+   */
+  barText: function (d, type) {
+    var textLength;
     var g = this;
     var rotation = false;
     var isEllip = false;
-    let bHeight;
     const ellipsis = '\u2026';
     // Relative text sizing, relative to bar width
     // For total, make larger by reducing unneeded padding
     var hAlign = g.hAlign, vAlign = g.vAlign,
       innerBarPadV = +g.innerBarPadV,
       innerBarPadH = +g.innerBarPadH;
-    ts = g.textSize;
+    let ts = g.textSize;
     g.tref.style("font-size", ts);
 
-    if (total) { // Override some alignment for total
-      if (g.orientation == "V")
+    let offset;
+    if (type != TYPE_INSIDE_BARS) {
+      offset = type == TYPE_TOTAL_POS ? d.offsetPos : d.offsetNeg;
+      if (g.orientation == ORIENTATION_VERTICAL) {
         vAlign = "B";
-      else
+      } else {
         hAlign = "L";
-    }
-    origX = g.orientation == "V" ? g.dScale(d.dim1) : g.mScale(d.offset);
-    bHeight = g.orientation == "V" ? g.mScale(0) - g.mScale(d.qNum) : g.dScale.rangeBand();
-    textX = g.orientation == "V" ? g.dScale.rangeBand() : g.mScale(d.qNum);
-
-    g.tref.text(getBarLabelText(d, g, total));
-
-    bb = g.tref.node().getBBox();
-    tx = origX + innerBarPadH;
-    if (vAlign == "C") {
-      textY = g.orientation == "V" ? g.mScale(d.offset) - (g.mScale(0) - g.mScale(d.qNum))
-        + (g.mScale(0) - g.mScale(d.qNum) + bb.height) / 2
-        : g.dScale(d.dim1) + (g.dScale.rangeBand() + bb.height) / 2;
-    } else if (vAlign == "T") {
-      textY = g.orientation == "V" ? g.mScale(d.offset) - (g.mScale(0) - g.mScale(d.qNum))
-        + bb.height + innerBarPadV
-        : g.dScale(d.dim1) + innerBarPadV + bb.height;
+      }
     } else {
-      textY = g.orientation == "V" ? g.mScale(d.offset) - innerBarPadV
-        : g.dScale(d.dim1) + g.dScale.rangeBand() - innerBarPadV;
+      offset = d.offset;
     }
-    txt = "";
-    var barWidth = g.bars[0][0].width.baseVal.value;
-    if (bb.height + 2 * innerBarPadV <= bHeight || (g.orientation != "V")) {
-      if (bb.width + 2 * innerBarPadH <= textX) {
+
+    g.tref.text(getBarLabelText(d, g, type != TYPE_INSIDE_BARS));
+    let textBox = g.tref.node().getBBox();
+    let barHeight = g.orientation == ORIENTATION_VERTICAL
+      ? Math.abs(g.mScale(0) - g.mScale(d.qNum))
+      : g.dScale.rangeBand();
+    var barWidth = g.orientation == ORIENTATION_VERTICAL
+      ? g.dScale.rangeBand()
+      : Math.abs(g.mScale(0) - g.mScale(d.qNum));
+    let txt = "";
+
+    let top;
+    let left;
+    if (g.orientation == ORIENTATION_VERTICAL) {
+      left = g.dScale(d.dim1);
+
+      if (type == TYPE_TOTAL_NEG) {
+        // Push the top of the negative totals to below the bars
+        top = g.mScale(offset - d.qNum) + textBox.height + 2 * innerBarPadV;
+      } else {
+        top = g.mScale(d.qNum < 0 ? offset : offset + d.qNum);
+      }
+    } else {
+      top = g.dScale(d.dim1);
+
+      if (type == TYPE_TOTAL_NEG) {
+        // Push the left of the negative totals to the left of the bars
+        left = g.mScale(offset) - textBox.width - 2 * innerBarPadH;
+      } else {
+        left = g.mScale(d.qNum < 0 ? offset + d.qNum : offset);
+      }
+    }
+
+    // Using top-left alignment if not enough of room either vertically, horizontally or both
+    let textY = top + textBox.height + innerBarPadV;
+    let textX = left + innerBarPadH;
+
+    if (textBox.height + 2 * innerBarPadV <= barHeight) {
+      // Enough height for bar text
+
+      if (vAlign == "C") {
+        textY = top + (barHeight + textBox.height) / 2;
+      } else if (vAlign == "B") {
+        textY = top + barHeight - innerBarPadV;
+      }
+
+      if (textBox.width + 2 * innerBarPadH <= barWidth) {
+        // Enough width to use alignment other than left
         if (hAlign == "C") {
-          tx = origX + (textX - bb.width) / 2;
+          textX = left + (barWidth - textBox.width) / 2;
         }
         else if (hAlign == "R") {
-          tx = origX + textX - bb.width - innerBarPadH;
+          textX = left + barWidth - textBox.width - innerBarPadH;
         }
         txt = g.tref.text();
       }
 
-      if(g.rotateLabel && barWidth > 25) {
+      if (g.rotateLabel && barWidth > 25) {
         if (g.textDots) {
           textLength = g.tref.node().getComputedTextLength();
           txt = g.tref.text();
           const ellipsisLength = 25;
           const extraPadding= 15;
-          let remainingSpaceForText = bHeight - ellipsisLength -extraPadding ;
+          let remainingSpaceForText = barHeight - ellipsisLength -extraPadding ;
           let numberOfTextCharacters = txt.length;
           let textOnCharacterPixelRatio = textLength / numberOfTextCharacters;
 
-          if ( remainingSpaceForText < 0) {
+          if (remainingSpaceForText < 0) {
             remainingSpaceForText = 0;
           }
-          if (bHeight - extraPadding > textLength){
+          if (barHeight - extraPadding > textLength) {
             txt = g.tref.text();
-          }
-          else{
+          } else {
             let textThatShouldbeEllip = textLength - remainingSpaceForText ;
-            let numberOfChartoBeEllip = Math.ceil(textThatShouldbeEllip / textOnCharacterPixelRatio) +20;
-            if(g.showTexts !== 'A')
-            {
+            let numberOfChartoBeEllip = Math.ceil(textThatShouldbeEllip / textOnCharacterPixelRatio) + 20;
+            if (g.showTexts !== 'A') {
               isEllip = true;
               txt = txt.slice(0, -numberOfChartoBeEllip);
-              txt +=ellipsis;
-              if (txt === ellipsis){
+              txt += ellipsis;
+              if (txt === ellipsis) {
                 txt = '';
-              }}
+              }
+            }
           }
         }
       }
-      if (!g.rotateLabel && g.textDots){
+      if (!g.rotateLabel && g.textDots) {
         textLength = g.tref.node().getComputedTextLength();
         txt = g.tref.text();
-        while (textLength > textX - 2 * innerBarPadH && txt.length > 0) {
+        while (textLength > barWidth - 2 * innerBarPadH && txt.length > 0) {
           txt = txt.slice(0, -1);
+          while (txt.length > 0 && (txt[txt.length - 1] === '.' || txt[txt.length - 1] === '-')) {
+            // Don't want to ellipsis directly after a . or -, so remove trailing dots as well
+            txt = txt.slice(0, -1);
+          }
           g.tref.text(txt + ellipsis);
           textLength = g.tref.node().getComputedTextLength();
         }
-        if (txt.length != 0) txt = g.tref.text();
+        if (txt.length != 0) {
+          txt = g.tref.text();
+        }
       }
       if(!g.textDots && g.rotateLabel){
         textLength = g.tref.node().getComputedTextLength();
         txt = g.tref.text();
-        if(textLength > bHeight){
+        if (textLength > barHeight) {
           txt ='';
           isEllip = false;
         }
       }
-    }
-    if (g.rotateLabel && g.orientation === "V"){
-      rotation = true;
-    }else if (g.orientation !== "V"){
-      rotation = false;
-    }
-    if(total){
-      textLength = g.tref.node().getComputedTextLength();
-      txt = g.tref.text();
-      if (textLength > barWidth && g.orientation !=='H') {
-        if (!g.textDots) {
-          // Not supposed to show ellipsis, so don't show text at all
-          txt = '';
-        } else {
-          // Remove characters until length fits or text is empty
-          while (true) { // eslint-disable-line no-constant-condition
-            txt = txt.slice(0, -1);
-            while (txt.length > 0 && txt[txt.length - 1] === '.') {
-              // Don't want to ellipsis directly after a dot, so remove trailing dots as well
+
+      if (type != TYPE_INSIDE_BARS) {
+        textLength = g.tref.node().getComputedTextLength();
+        txt = g.tref.text();
+        if (textLength > barWidth && g.orientation !== ORIENTATION_HORIZONTAL) {
+          if (!g.textDots) {
+            // Not supposed to show ellipsis, so don't show text at all
+            txt = '';
+          } else {
+            // Remove characters until length fits or text is empty
+            while (true) { // eslint-disable-line no-constant-condition
               txt = txt.slice(0, -1);
-            }
-            if (txt.length == 0) {
-              break;
-            }
-            g.tref.text(txt + ellipsis);
-            textLength = g.tref.node().getComputedTextLength();
-            if (textLength <= barWidth) {
-              txt = g.tref.text();
-              break;
+              while (txt.length > 0 && (txt[txt.length - 1] === '.' || txt[txt.length - 1] === '-')) {
+                // Don't want to ellipsis directly after a . or -, so remove trailing dots as well
+                txt = txt.slice(0, -1);
+              }
+              if (txt.length == 0) {
+                break;
+              }
+              g.tref.text(txt + ellipsis);
+              textLength = g.tref.node().getComputedTextLength();
+              if (textLength <= barWidth) {
+                txt = g.tref.text();
+                break;
+              }
             }
           }
         }
       }
     }
-    if(g.barGap === 1){
+
+    rotation = g.rotateLabel && g.orientation === ORIENTATION_VERTICAL;
+
+    if (g.barGap === 1) {
       txt = '';
     }
+
     return {
-      x: Number.isFinite(tx) ? tx : 0,
+      x: Number.isFinite(textX) ? textX : 0,
       y: Number.isFinite(textY) ? textY : 0,
       text: txt,
       rotation,
       isEllip
     };
   },
+
   /**
- *--------------------------------------
- * Update Bars
- *--------------------------------------
- * Modify properties of bars, deltas, and legend
-*/
+   *--------------------------------------
+   * Update Bars
+   *--------------------------------------
+   * Modify properties of bars, deltas, and legend
+   */
   updateBars: function () {
     var g = this;
 
-
     var dim1 = g.data.map(function (d) { return d.dim1; });
-    if (g.orientation == "H") dim1.reverse();
+    if (g.orientation == ORIENTATION_HORIZONTAL) dim1.reverse();
     g.dScale.domain(dim1);
     g.mScale.domain([g.min, g.max]);
     const isPrinting = qlik.navigation && !qlik.navigation.inClient;
@@ -1441,7 +1518,7 @@ export default {
         var maxWidth = isXAxis ? lbl.node().getBBox().width / txt[0].length : g.yAxisWidth - 5;
 
         // If auto labels and any overlap, set to tilted
-        if (labelStyle == "H") {
+        if (labelStyle == ORIENTATION_HORIZONTAL) {
           txt.each(function (d, i) {
             if (d3.select(this).node().getComputedTextLength() > maxWidth) {
               labelStyle = "T"; // no break for each
@@ -1466,7 +1543,7 @@ export default {
           ;
         }
         // Horizontal or titled labels, use ellipsis if overlap
-        if (labelStyle == "H" || labelStyle == "T") {
+        if (labelStyle == ORIENTATION_HORIZONTAL || labelStyle == "T") {
           txt.each(function (d, i) {
             var self = d3.select(this),
               textLength = self.node().getComputedTextLength(),
@@ -1481,13 +1558,12 @@ export default {
       }
     };
     // Update dimension axis
-    updateAxis(g.labelTitleD, g.labelStyleD, g.dAxis, "ldw-d", g.orientation == "V");
+    updateAxis(g.labelTitleD, g.labelStyleD, g.dAxis, "ldw-d", g.orientation == ORIENTATION_VERTICAL);
     // Update measure axis
-    updateAxis(g.labelTitleM, g.labelStyleM, g.mAxis, "ldw-m", g.orientation != "V");
+    updateAxis(g.labelTitleM, g.labelStyleM, g.mAxis, "ldw-m", g.orientation != ORIENTATION_VERTICAL);
 
     g.bars = g.svg.selectAll('[id="' + g.id + '"] .ldwbar')
-      .data(g.flatData)
-    ;
+      .data(g.flatData);
     // Remove bars with transition
     g.bars
       .exit()
@@ -1496,14 +1572,23 @@ export default {
       .duration(tDuration)
       .ease(g.ease)
       .style("opacity", "0")
-      .remove()
-    ;
+      .remove();
 
     // Remove totals with transition
     if (~"TA".indexOf(g.showTexts)) {
-      g.totals = g.svg.selectAll('[id="' + g.id + '"] .ldwtot')
+      g.totalsPos = g.svg.selectAll('[id="' + g.id + '"] .ldwtot .pos')
         .data(g.data, function (d) { return d.dim1; });
-      g.totals
+      g.totalsPos
+        .exit()
+        .transition()
+        .delay(tDelay)
+        .duration(tDuration)
+        .ease(g.ease)
+        .style("opacity", "0")
+        .remove();
+      g.totalsNeg = g.svg.selectAll('[id="' + g.id + '"] .ldwtot .neg')
+        .data(g.data, function (d) { return d.dim1; });
+      g.totalsNeg
         .exit()
         .transition()
         .delay(tDelay)
@@ -1515,8 +1600,7 @@ export default {
     // Remove texts with transition
     if (~"BA".indexOf(g.showTexts)) {
       g.texts = g.svg.selectAll('[id="' + g.id + '"] .ldwtxt')
-        .data(g.flatData)
-      ;
+        .data(g.flatData);
       g.texts
         .exit()
         .transition()
@@ -1530,8 +1614,7 @@ export default {
 
     if (g.showDeltas && g.nDims == 2) {
       g.polys = g.svg.selectAll('[id="' + g.id + '"] polygon')
-        .data(g.deltas, function (d) { return d.dim1p + "-" + d.dim1c + "," + d.dim2; })
-      ;
+        .data(g.deltas, function (d) { return d.dim1p + "-" + d.dim1c + "," + d.dim2; });
       // Remove deltas with transition
       g.polys
         .exit()
@@ -1540,15 +1623,13 @@ export default {
         .duration(tDuration)
         .ease(g.ease)
         .style("opacity", "0")
-        .remove()
-      ;
+        .remove();
     }
     // remove legend items with transition
     if (g.lgn.use) {
       g.lgn.items = d3.selectAll('[id="' + g.id + '"] .ldwlgnitems')
         .selectAll("g")
-        .data(g.allDim2,g.allDim2.forEach(element => element))
-      ;
+        .data(g.allDim2,g.allDim2.forEach(element => element));
       g.lgn.items
         .exit()
         .transition()
@@ -1556,15 +1637,14 @@ export default {
         .duration(tDuration)
         .ease(g.ease)
         .style("opacity", "0")
-        .remove()
-      ;
+        .remove();
     }
 
     // Add any new bars/deltas/legend items
     this.createBars();
 
     // Update bars
-    if (g.orientation == "V") {
+    if (g.orientation == ORIENTATION_VERTICAL) {
       g.bars
         .transition()
         .delay(tDelay)
@@ -1585,14 +1665,12 @@ export default {
         .attr("y", function (d) {
           const num = Number.isFinite(d.qNum) ? d.qNum : 0;
           const offset = Number.isFinite(d.offset) ? d.offset : 0; // in transition elastic, we somehow concatinate 0 and NaN into "0NaN"
-          console.log(num + " :: " + offset);
           return g.mScale(offset) - (g.mScale(0) - g.mScale(Math.max(0, num)));
         })
         .attr("width", g.dScale.rangeBand() && g.dScale.rangeBand() > 0 ? g.dScale.rangeBand() : 0) // ignore NaN: causing errors in transitions
         .attr("height", function (d) {
           return Number.isFinite(d.qNum) ? Math.abs(g.mScale(0) - g.mScale(d.qNum)) : 0;
-        })
-      ;
+        });
     }
     else {
       g.bars.transition()
@@ -1611,38 +1689,55 @@ export default {
         .attr("width", function (d) {
           return Number.isFinite(d.qNum) ? Math.abs(g.mScale(0) - g.mScale(d.qNum)) : 0;
         })
-        .attr("height", g.dScale.rangeBand())
-      ;
+        .attr("height", g.dScale.rangeBand());
     }
 
     if (~"TA".indexOf(g.showTexts) && !g.normalized) {
       // Update totals
-      g.totals
-        .each(function (d) {
-          d.qNum = g.mScale.domain()[1] - d.offset;
-          d.qText = d3.format([",.g", ",.0%", "s", g.totalFormatMs]["NPSC".indexOf(g.totalFormatM)])(d.offset);
-          var txp = g.barText(d, true);
-          d3.select(this)
-            .transition()
-            .delay(tDelay)
-            .duration(tDuration)
-            .ease(g.ease)
-            .style("opacity", "1")
-            .style("fill", "black")
-            .style("font-size", g.tref.style("font-size"))
-            .attr({ x: txp.x, y: txp.y, dy: "-.2em" })
-            .text(txp.text)
-          ;
-        })
-      ;
+      let minMax = g.mScale.domain();
+      if (minMax[1] > 0) {
+        g.totalsPos
+          .each(function (d) {
+            d.qNum = minMax[1] - d.offsetPos;
+            d.qText = d3.format([",.g", ",.0%", "s", g.totalFormatMs]["NPSC".indexOf(g.totalFormatM)])(d.offsetPos);
+            var txp = g.barText(d, TYPE_TOTAL_POS);
+            d3.select(this)
+              .transition()
+              .delay(tDelay)
+              .duration(tDuration)
+              .ease(g.ease)
+              .style("opacity", "1")
+              .style("fill", "black")
+              .style("font-size", g.tref.style("font-size"))
+              .attr({ x: txp.x, y: txp.y })
+              .text(txp.text);
+          });
+      }
+      if (minMax[0] < 0) {
+        g.totalsNeg
+          .each(function (d) {
+            d.qNum = minMax[0] - d.offsetNeg;
+            d.qText = d3.format([",.g", ",.0%", "s", g.totalFormatMs]["NPSC".indexOf(g.totalFormatM)])(d.offsetNeg);
+            var txp = g.barText(d, TYPE_TOTAL_NEG);
+            d3.select(this)
+              .transition()
+              .delay(tDelay)
+              .duration(tDuration)
+              .ease(g.ease)
+              .style("opacity", "1")
+              .style("fill", "black")
+              .style("font-size", g.tref.style("font-size"))
+              .attr({ x: txp.x, y: txp.y })
+              .text(txp.text);
+          });
+      }
     }
 
     if (~"BA".indexOf(g.showTexts)) {
       // Update texts
       g.texts
         .each(function (d) {
-          var txp = g.barText(d);
-
+          var txp = g.barText(d, TYPE_INSIDE_BARS);
           d3.select(this)
             .transition()
             .delay(tDelay)
@@ -1661,26 +1756,8 @@ export default {
     if (g.showDeltas && g.nDims === 2) {
       // update deltas
 
-      let verticalCoordinates = {
-        x1: 0,
-        x2: 0,
-        y1: 0,
-        y2: 0,
-        y3: 0,
-        y4: 0
-      };
-      let horizontalCoordinates = {
-        x1: 0,
-        x2: 0,
-        x3: 0,
-        x4: 0,
-        y1: 0,
-        y2: 0,
-      };
-
       const zeroMeasureScale = g.mScale(0);
       const dimensionScaleRange = g.dScale.rangeBand();
-      const VERTICAL_ORIENTATION = 'V';
 
       g.polys.transition()
         .delay(tDelay)
@@ -1690,29 +1767,23 @@ export default {
           const fromBar = g.dScale(datum.dim1p);
           const toBar = g.dScale(datum.dim1c);
           const distance = fromBar + dimensionScaleRange;
-          const [pointX1, pointY1, pointX2, pointY2] = datum.points.map(point => {
-            const scaledPoint = g.mScale(point);
-            return isNaN(scaledPoint) ? zeroMeasureScale : scaledPoint;
-          });
 
-          if (g.orientation === VERTICAL_ORIENTATION) {
-            let { x1, x2, y1, y2, y3, y4 } = verticalCoordinates;
-            x1 = fromBar + dimensionScaleRange;
-            x2 = toBar;
-            y1 = pointX1 - (zeroMeasureScale - pointX2);
-            y2 = pointX1;
-            y3 = pointY1;
-            y4 = pointY1 - (zeroMeasureScale - pointY2);
+          if (g.orientation === ORIENTATION_VERTICAL) {
+            let x1 = fromBar + dimensionScaleRange;
+            let x2 = toBar;
+            let y1 = g.mScale(datum.points[0]) - (zeroMeasureScale - g.mScale(datum.points[2]));
+            let y2 = g.mScale(datum.points[0]);
+            let y3 = g.mScale(datum.points[1]);
+            let y4 = g.mScale(datum.points[1]) - (zeroMeasureScale - g.mScale(datum.points[3]));
             return `${x1},${y1} ${x1},${y2} ${x2},${y3} ${x2},${y4}`;
           }
 
-          let { x1, x2, x3, x4, y1, y2 } = horizontalCoordinates;
-          x1 = pointX1 + pointX2;
-          x2 = pointX1;
-          x3 = pointY1;
-          x4 = pointY1 + pointY2;
-          y1 = distance;
-          y2 = toBar;
+          let x1 = g.mScale(datum.points[0] + datum.points[2]);
+          let x2 = g.mScale(datum.points[0]);
+          let x3 = g.mScale(datum.points[1]);
+          let x4 = g.mScale(datum.points[1] + datum.points[3]);
+          let y1 = distance;
+          let y2 = toBar;
           return `${x1},${y1} ${x2},${y1} ${x3},${y2} ${x4},${y2}`;
         })
         .style("fill", function (d) {
@@ -1811,7 +1882,6 @@ export default {
 */
   refreshChart: function () {
     this.initChart();
-    this.createBars();
     this.updateBars();
   },
   //--------------------------------------
