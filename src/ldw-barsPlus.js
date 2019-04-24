@@ -119,6 +119,12 @@ const TYPE_TOTAL_NEG = 3;
 const ORIENTATION_HORIZONTAL = 'H';
 const ORIENTATION_VERTICAL = 'V';
 
+const ALIGN_CENTER = 'C';
+const ALIGN_HORIZONTAL_LEFT = 'L';
+const ALIGN_HORIZONTAL_RIGHT = 'R';
+const ALIGN_VERTICAL_TOP = 'T';
+const ALIGN_VERTICAL_BOTTOM = 'B';
+
 export default {
 
   /**
@@ -980,19 +986,32 @@ export default {
         .each(function (dataObject) {
 
           var txp = g.barText(dataObject, TYPE_INSIDE_BARS);
-          var bar = g.bars[0].find(element=>{
-            return element.__data__.dim1 === dataObject.dim1;
-          });
 
           d3.select(this)
             .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(dataObject.dim2)) : g.textColor)
             .style("font-size", g.tref.style("font-size"))
             .attr("x", g.orientation == ORIENTATION_VERTICAL ? txp.x : 0)
             .attr("y", txp.y)
-            .text(txp.text)
-          ;
-          if (txp.rotation == true){
-            d3.select(this).attr('transform' ,`rotate(-90 ${txp.x + bar.width.baseVal.value/2} ${txp.y + bar.height.baseVal.value/2})  `);
+            .text(txp.text);
+
+          if (txp.rotation) {
+            let textBox = g.tref.node().getBBox();
+            let offsetX = 0;
+            let offsetY = 0;
+            if (g.hAlign === ALIGN_HORIZONTAL_LEFT) {
+              offsetX = -(textBox.width - textBox.height / 2) / 2;
+            } else if (g.hAlign === ALIGN_HORIZONTAL_RIGHT) {
+              offsetX = -(textBox.width - textBox.height) / 2;
+            } else {
+              offsetX = -(textBox.width - textBox.height / 2) / 2;
+            }
+            if (g.vAlign === ALIGN_VERTICAL_TOP) {
+              offsetY = (textBox.width - textBox.height) / 2;
+            } else if (g.vAlign === ALIGN_VERTICAL_BOTTOM) {
+              offsetY = -(textBox.width - textBox.height) / 2;
+            }
+
+            d3.select(this).attr('transform' ,`translate(${offsetX}, ${offsetY}) rotate(-90 ${txp.x + textBox.width / 2} ${txp.y - textBox.height / 2})`);
           }
         })
       ;
@@ -1303,8 +1322,8 @@ export default {
   barText: function (d, type) {
     var textLength;
     var g = this;
-    var rotation = false;
-    var isEllip = false;
+    var rotation =
+      type == TYPE_INSIDE_BARS && g.rotateLabel && g.orientation === ORIENTATION_VERTICAL;
     const ellipsis = '\u2026';
     // Relative text sizing, relative to bar width
     // For total, make larger by reducing unneeded padding
@@ -1318,9 +1337,9 @@ export default {
     if (type != TYPE_INSIDE_BARS) {
       offset = type == TYPE_TOTAL_POS ? d.offsetPos : d.offsetNeg;
       if (g.orientation == ORIENTATION_VERTICAL) {
-        vAlign = "B";
+        vAlign = ALIGN_VERTICAL_BOTTOM;
       } else {
-        hAlign = "L";
+        hAlign = ALIGN_HORIZONTAL_LEFT;
       }
     } else {
       offset = d.offset;
@@ -1362,59 +1381,33 @@ export default {
     let textY = top + textBox.height + innerBarPadV;
     let textX = left + innerBarPadH;
 
-    if (textBox.height + 2 * innerBarPadV <= barHeight) {
-      // Enough height for bar text
+    if ((rotation && textBox.height + 2 * innerBarPadH <= barWidth)
+      || (!rotation && textBox.height + 2 * innerBarPadV <= barHeight)) {
 
-      if (vAlign == "C") {
+      // Enough room for the height of the characters
+
+      if (vAlign == ALIGN_CENTER) {
         textY = top + (barHeight + textBox.height) / 2;
-      } else if (vAlign == "B") {
+      } else if (vAlign == ALIGN_VERTICAL_BOTTOM) {
         textY = top + barHeight - innerBarPadV;
       }
 
-      if (textBox.width + 2 * innerBarPadH <= barWidth) {
+      let textWidth = rotation ? textBox.height : textBox.width;
+      if (textWidth + 2 * innerBarPadH <= barWidth) {
+
         // Enough width to use alignment other than left
-        if (hAlign == "C") {
-          textX = left + (barWidth - textBox.width) / 2;
+        if (hAlign == ALIGN_CENTER) {
+          textX = left + (barWidth - textWidth) / 2;
         }
-        else if (hAlign == "R") {
-          textX = left + barWidth - textBox.width - innerBarPadH;
-        }
-        txt = g.tref.text();
-      }
-
-      if (g.rotateLabel && barWidth > 25) {
-        if (g.textDots) {
-          textLength = g.tref.node().getComputedTextLength();
-          txt = g.tref.text();
-          const ellipsisLength = 25;
-          const extraPadding= 15;
-          let remainingSpaceForText = barHeight - ellipsisLength -extraPadding ;
-          let numberOfTextCharacters = txt.length;
-          let textOnCharacterPixelRatio = textLength / numberOfTextCharacters;
-
-          if (remainingSpaceForText < 0) {
-            remainingSpaceForText = 0;
-          }
-          if (barHeight - extraPadding > textLength) {
-            txt = g.tref.text();
-          } else {
-            let textThatShouldbeEllip = textLength - remainingSpaceForText ;
-            let numberOfChartoBeEllip = Math.ceil(textThatShouldbeEllip / textOnCharacterPixelRatio) + 20;
-            if (g.showTexts !== 'A') {
-              isEllip = true;
-              txt = txt.slice(0, -numberOfChartoBeEllip);
-              txt += ellipsis;
-              if (txt === ellipsis) {
-                txt = '';
-              }
-            }
-          }
+        else if (hAlign == ALIGN_HORIZONTAL_RIGHT) {
+          textX = left + barWidth - textWidth - innerBarPadH;
         }
       }
-      if (!g.rotateLabel && g.textDots) {
-        textLength = g.tref.node().getComputedTextLength();
-        txt = g.tref.text();
-        while (textLength > barWidth - 2 * innerBarPadH && txt.length > 0) {
+
+      const ellipseText = function (g, maxLength) {
+        let textLength = g.tref.node().getComputedTextLength();
+        let txt = g.tref.text();
+        while (textLength > maxLength && txt.length > 0) {
           txt = txt.slice(0, -1);
           while (txt.length > 0 && (txt[txt.length - 1] === '.' || txt[txt.length - 1] === '-')) {
             // Don't want to ellipsis directly after a . or -, so remove trailing dots as well
@@ -1426,47 +1419,22 @@ export default {
         if (txt.length != 0) {
           txt = g.tref.text();
         }
-      }
-      if(!g.textDots && g.rotateLabel){
-        textLength = g.tref.node().getComputedTextLength();
-        txt = g.tref.text();
-        if (textLength > barHeight) {
-          txt ='';
-          isEllip = false;
-        }
+        return txt;
+      };
+
+      let maxLength;
+      if (type == TYPE_INSIDE_BARS) {
+        maxLength = rotation ? barHeight - 2 * innerBarPadV : barWidth - 2 * innerBarPadH;
+      } else {
+        maxLength = barWidth;
       }
 
-      if (type != TYPE_INSIDE_BARS) {
-        textLength = g.tref.node().getComputedTextLength();
-        txt = g.tref.text();
-        if (textLength > barWidth && g.orientation !== ORIENTATION_HORIZONTAL) {
-          if (!g.textDots) {
-            // Not supposed to show ellipsis, so don't show text at all
-            txt = '';
-          } else {
-            // Remove characters until length fits or text is empty
-            while (true) { // eslint-disable-line no-constant-condition
-              txt = txt.slice(0, -1);
-              while (txt.length > 0 && (txt[txt.length - 1] === '.' || txt[txt.length - 1] === '-')) {
-                // Don't want to ellipsis directly after a . or -, so remove trailing dots as well
-                txt = txt.slice(0, -1);
-              }
-              if (txt.length == 0) {
-                break;
-              }
-              g.tref.text(txt + ellipsis);
-              textLength = g.tref.node().getComputedTextLength();
-              if (textLength <= barWidth) {
-                txt = g.tref.text();
-                break;
-              }
-            }
-          }
-        }
+      if (g.textDots) {
+        txt = ellipseText(g, maxLength);
+      } else {
+        txt = g.tref.node().getComputedTextLength() > maxLength ? '' : g.tref.text();
       }
     }
-
-    rotation = g.rotateLabel && g.orientation === ORIENTATION_VERTICAL;
 
     if (g.barGap === 1) {
       txt = '';
@@ -1476,8 +1444,7 @@ export default {
       x: Number.isFinite(textX) ? textX : 0,
       y: Number.isFinite(textY) ? textY : 0,
       text: txt,
-      rotation,
-      isEllip
+      rotation
     };
   },
 
