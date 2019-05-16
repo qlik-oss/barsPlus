@@ -394,8 +394,10 @@ export default {
       bottom: g.xAxisHeight + xTitleHeight + xAxisPad,
       left: g.yAxisWidth + yTitleWidth + yAxisPad
     };
-    var innerWidth = g.width - margin.left - margin.right;
-    var innerHeight = g.height - margin.top - margin.bottom;
+
+    // On IE11 g.height and g.width sometimes is "undefined" (Note: the actual string)
+    var innerWidth = (!g.width || g.width === "undefined" ? 0 : g.width) - margin.left - margin.right;
+    var innerHeight = (!g.height || g.height === "undefined" ? 0 : g.height) - margin.top - margin.bottom;
 
     g.lgn = {
       minDim: [200, 100], // min inner dimensions for legend to be displayed
@@ -947,13 +949,18 @@ export default {
           .each(function (d) {
             d.qNum = minMax[1] - d.offsetPos;
             d.qText = d3.format([",.g", ",.0%", "s", g.totalFormatMs]["NPSC".indexOf(g.totalFormatM)])(d.offsetPos);
-            var txp = g.barText(d, TYPE_TOTAL_POS);
-            d3.select(this)
-              .style("fill", "black")
-              .style("font-size", g.tref.style("font-size"))
-              .attr("x", g.orientation == ORIENTATION_VERTICAL ? txp.x : 0)
-              .attr("y", g.orientation == ORIENTATION_VERTICAL ? g.mScale(0) : txp.y)
-              .text(txp.text);
+            try {
+              var txp = g.barText(d, TYPE_TOTAL_POS);
+              d3.select(this)
+                .style("fill", "black")
+                .style("font-size", g.tref.style("font-size"))
+                .attr("x", g.orientation == ORIENTATION_VERTICAL ? txp.x : 0)
+                .attr("y", g.orientation == ORIENTATION_VERTICAL ? g.mScale(0) : txp.y)
+                .text(txp.text);
+            } catch (err) {
+              // On IE11 barText() might throw an unexplainable Error. It eventually is handled by
+              // another redraw, so just swallow it.
+            }
           });
       }
       if (minMax[0] < 0) {
@@ -965,13 +972,18 @@ export default {
           .each(function (d) {
             d.qNum = minMax[0] - d.offsetNeg;
             d.qText = d3.format([",.g", ",.0%", "s", g.totalFormatMs]["NPSC".indexOf(g.totalFormatM)])(d.offsetNeg);
-            var txp = g.barText(d, TYPE_TOTAL_NEG);
-            d3.select(this)
-              .style("fill", "black")
-              .style("font-size", g.tref.style("font-size"))
-              .attr("x", g.orientation == ORIENTATION_VERTICAL ? txp.x : 0)
-              .attr("y", g.orientation == ORIENTATION_VERTICAL ? g.mScale(0) : txp.y)
-              .text(txp.text);
+            try {
+              var txp = g.barText(d, TYPE_TOTAL_NEG);
+              d3.select(this)
+                .style("fill", "black")
+                .style("font-size", g.tref.style("font-size"))
+                .attr("x", g.orientation == ORIENTATION_VERTICAL ? txp.x : 0)
+                .attr("y", g.orientation == ORIENTATION_VERTICAL ? g.mScale(0) : txp.y)
+                .text(txp.text);
+            } catch (err) {
+              // On IE11 barText() might throw an unexplainable Error. It eventually is handled by
+              // another redraw, so just swallow it.
+            }
           });
       }
     }
@@ -985,36 +997,40 @@ export default {
         .style("opacity", "0")
         .each(function (dataObject) {
 
-          var txp = g.barText(dataObject, TYPE_INSIDE_BARS);
+          try {
+            var txp = g.barText(dataObject, TYPE_INSIDE_BARS);
 
-          d3.select(this)
-            .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(dataObject.dim2)) : g.textColor)
-            .style("font-size", g.tref.style("font-size"))
-            .attr("x", g.orientation == ORIENTATION_VERTICAL ? txp.x : 0)
-            .attr("y", txp.y)
-            .text(txp.text);
+            d3.select(this)
+              .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(dataObject.dim2)) : g.textColor)
+              .style("font-size", g.tref.style("font-size"))
+              .attr("x", g.orientation == ORIENTATION_VERTICAL ? txp.x : 0)
+              .attr("y", txp.y)
+              .text(txp.text);
 
-          if (txp.rotation) {
-            let textBox = g.tref.node().getBBox();
-            let offsetX = 0;
-            let offsetY = 0;
-            if (g.hAlign === ALIGN_HORIZONTAL_LEFT) {
-              offsetX = -(textBox.width - textBox.height / 2) / 2;
-            } else if (g.hAlign === ALIGN_HORIZONTAL_RIGHT) {
-              offsetX = -(textBox.width - textBox.height) / 2;
-            } else {
-              offsetX = -(textBox.width - textBox.height / 2) / 2;
+            if (txp.rotation) {
+              let textBox = g.tref.node().getBBox();
+              let offsetX = 0;
+              let offsetY = 0;
+              if (g.hAlign === ALIGN_HORIZONTAL_LEFT) {
+                offsetX = -(textBox.width - textBox.height / 2) / 2;
+              } else if (g.hAlign === ALIGN_HORIZONTAL_RIGHT) {
+                offsetX = -(textBox.width - textBox.height) / 2;
+              } else {
+                offsetX = -(textBox.width - textBox.height / 2) / 2;
+              }
+              if (g.vAlign === ALIGN_VERTICAL_TOP) {
+                offsetY = (textBox.width - textBox.height) / 2;
+              } else if (g.vAlign === ALIGN_VERTICAL_BOTTOM) {
+                offsetY = -(textBox.width - textBox.height) / 2;
+              }
+
+              d3.select(this).attr('transform' ,`translate(${offsetX}, ${offsetY}) rotate(-90 ${txp.x + textBox.width / 2} ${txp.y - textBox.height / 2})`);
             }
-            if (g.vAlign === ALIGN_VERTICAL_TOP) {
-              offsetY = (textBox.width - textBox.height) / 2;
-            } else if (g.vAlign === ALIGN_VERTICAL_BOTTOM) {
-              offsetY = -(textBox.width - textBox.height) / 2;
-            }
-
-            d3.select(this).attr('transform' ,`translate(${offsetX}, ${offsetY}) rotate(-90 ${txp.x + textBox.width / 2} ${txp.y - textBox.height / 2})`);
+          } catch (err) {
+            // On IE11 barText() might throw an unexplainable Error. It eventually is handled by
+            // another redraw, so just swallow it.
           }
-        })
-      ;
+        });
     }
 
     if (g.showDeltas && g.nDims === 2) {
@@ -1482,7 +1498,13 @@ export default {
         var lbl = d3.selectAll(axisCssSelector);
         var txt = lbl.selectAll(".tick.major text")
           .attr("transform", null); // All horizontal initially
-        var maxWidth = isXAxis ? lbl.node().getBBox().width / txt[0].length : g.yAxisWidth - 5;
+        var maxWidth;
+        if (isXAxis) {
+          let node = lbl.node();
+          maxWidth = node ? node.getBBox().width / txt[0].length : 0;
+        } else {
+          maxWidth = g.yAxisWidth - 5;
+        }
 
         // If auto labels and any overlap, set to tilted
         if (labelStyle == ORIENTATION_HORIZONTAL) {
@@ -1671,17 +1693,22 @@ export default {
           .each(function (d) {
             d.qNum = minMax[1] - d.offsetPos;
             d.qText = d3.format([",.g", ",.0%", "s", g.totalFormatMs]["NPSC".indexOf(g.totalFormatM)])(d.offsetPos);
-            var txp = g.barText(d, TYPE_TOTAL_POS);
-            d3.select(this)
-              .transition()
-              .delay(tDelay)
-              .duration(tDuration)
-              .ease(g.ease)
-              .style("opacity", "1")
-              .style("fill", "black")
-              .style("font-size", g.tref.style("font-size"))
-              .attr({ x: txp.x, y: txp.y })
-              .text(txp.text);
+            try {
+              var txp = g.barText(d, TYPE_TOTAL_POS);
+              d3.select(this)
+                .transition()
+                .delay(tDelay)
+                .duration(tDuration)
+                .ease(g.ease)
+                .style("opacity", "1")
+                .style("fill", "black")
+                .style("font-size", g.tref.style("font-size"))
+                .attr({ x: txp.x, y: txp.y })
+                .text(txp.text);
+            } catch (err) {
+              // On IE11 barText() might throw an unexplainable Error. It eventually is handled by
+              // another redraw, so just swallow it.
+            }
           });
       }
       if (minMax[0] < 0) {
@@ -1689,17 +1716,22 @@ export default {
           .each(function (d) {
             d.qNum = minMax[0] - d.offsetNeg;
             d.qText = d3.format([",.g", ",.0%", "s", g.totalFormatMs]["NPSC".indexOf(g.totalFormatM)])(d.offsetNeg);
-            var txp = g.barText(d, TYPE_TOTAL_NEG);
-            d3.select(this)
-              .transition()
-              .delay(tDelay)
-              .duration(tDuration)
-              .ease(g.ease)
-              .style("opacity", "1")
-              .style("fill", "black")
-              .style("font-size", g.tref.style("font-size"))
-              .attr({ x: txp.x, y: txp.y })
-              .text(txp.text);
+            try {
+              var txp = g.barText(d, TYPE_TOTAL_NEG);
+              d3.select(this)
+                .transition()
+                .delay(tDelay)
+                .duration(tDuration)
+                .ease(g.ease)
+                .style("opacity", "1")
+                .style("fill", "black")
+                .style("font-size", g.tref.style("font-size"))
+                .attr({ x: txp.x, y: txp.y })
+                .text(txp.text);
+            } catch (err) {
+              // On IE11 barText() might throw an unexplainable Error. It eventually is handled by
+              // another redraw, so just swallow it.
+            }
           });
       }
     }
@@ -1708,20 +1740,23 @@ export default {
       // Update texts
       g.texts
         .each(function (d) {
-          var txp = g.barText(d, TYPE_INSIDE_BARS);
-          d3.select(this)
-            .transition()
-            .delay(tDelay)
-            .duration(tDuration)
-            .ease(g.ease)
-            .style("opacity", "1")
-            .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(d.dim2)) : g.textColor)
-            .style("font-size", g.tref.style("font-size"))
-            .attr({ x: txp.x, y: txp.y })
-            .text(txp.text)
-          ;
-        })
-      ;
+          try {
+            var txp = g.barText(d, TYPE_INSIDE_BARS);
+            d3.select(this)
+              .transition()
+              .delay(tDelay)
+              .duration(tDuration)
+              .ease(g.ease)
+              .style("opacity", "1")
+              .style("fill", g.textColor == "Auto" ? g.txtColor(g.cScale(d.dim2)) : g.textColor)
+              .style("font-size", g.tref.style("font-size"))
+              .attr({ x: txp.x, y: txp.y })
+              .text(txp.text);
+          } catch (err) {
+            // On IE11 barText() might throw an unexplainable Error. It eventually is handled by
+            // another redraw, so just swallow it.
+          }
+        });
     }
 
     if (g.showDeltas && g.nDims === 2) {
