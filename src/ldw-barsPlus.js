@@ -1665,11 +1665,13 @@ export default {
         .attr("y", function (d) {
           const num = Number.isFinite(d.qNum) ? d.qNum : 0;
           const offset = Number.isFinite(d.offset) ? d.offset : 0; // in transition elastic, we somehow concatinate 0 and NaN into "0NaN"
-          return g.mScale(offset) - (g.mScale(0) - g.mScale(Math.max(0, num)));
+          return g.mScale(offset) - (g.mScale(0) - g.mScale(Math.max(0, num))) + 0.5;
         })
         .attr("width", g.dScale.rangeBand() && g.dScale.rangeBand() > 0 ? g.dScale.rangeBand() : 0) // ignore NaN: causing errors in transitions
         .attr("height", function (d) {
-          return Number.isFinite(d.qNum) ? Math.abs(g.mScale(0) - g.mScale(d.qNum)) : 0;
+          const num = Number.isFinite(d.qNum) ? d.qNum : 0;
+          const offset = Number.isFinite(d.offset) ? d.offset : 0; // in transition elastic, we somehow concatinate 0 and NaN into "0NaN"
+          return Math.abs(g.mScale(0) - g.mScale(num)) - 1;
         });
     }
     else {
@@ -1681,13 +1683,15 @@ export default {
         .attr("x", function (d) {
           const num = Number.isFinite(d.qNum) ? d.qNum : 0;
           const offset = Number.isFinite(d.offset) ? d.offset : 0; // in transition elastic, we somehow concatinate 0 and NaN into "0NaN"
-          return g.mScale(offset) - (g.mScale(0) - g.mScale(Math.min(0, num)));
+          return g.mScale(offset) - (g.mScale(0) - g.mScale(Math.min(0, num))) + 0.5;
         })
         .attr("y", function (d, i) {
           return g.dScale(d.dim1);
         })
         .attr("width", function (d) {
-          return Number.isFinite(d.qNum) ? Math.abs(g.mScale(0) - g.mScale(d.qNum)) : 0;
+          const num = Number.isFinite(d.qNum) ? d.qNum : 0;
+          const offset = Number.isFinite(d.offset) ? d.offset : 0; // in transition elastic, we somehow concatinate 0 and NaN into "0NaN"
+          return Math.abs(g.mScale(0) - g.mScale(num)) - 1;
         })
         .attr("height", g.dScale.rangeBand());
     }
