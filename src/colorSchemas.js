@@ -1,7 +1,7 @@
 import qlik from 'qlik';
 
 const defaultSingleColor = {
-  index: 4,
+  index: 6,
   color: '#4477aa'
 };
 const defaultColorSchema = {
