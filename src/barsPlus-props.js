@@ -760,7 +760,26 @@ const definition ={
           }
         }
       }
+    },
+    about: {
+      component: 'items',
+      label: 'About',
+      items: {
+        header: {
+          label: 'Bar and area chart',
+          style: 'header',
+          component: 'text'
+        },
+        paragraph1: {
+          label: `Bar & area chart is Qlik Sense chart which allows you to create simple or stacked bar charts and area charts.`,
+          component: 'text'
+        },
+        paragraph2: {
+          label: 'Bar & area chart is based upon an extension created by Larry Woodside.',
+          component: 'text'
+        }
+      }
     }
-  }
+  },
 };
 export default definition;
