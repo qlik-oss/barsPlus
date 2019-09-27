@@ -485,7 +485,7 @@ export default {
 
     g.max = d3.max(g.data, function (d) {
       if (g.normalized) {
-        return g.gridHeight;
+        return d.offsetPos && d.offsetPos > 0 ? g.gridHeight : 0;//g.gridHeight;
       }
 
       var maxOffset = Math.max(0, d.offsetPos);
@@ -502,7 +502,7 @@ export default {
 
     g.min = d3.min(g.data, function (d) {
       if (g.normalized) {
-        return -g.gridHeight;
+        return d.offsetNeg && d.offsetNeg < 0 ? -g.gridHeight : 0;
       }
 
       var minOffset = Math.min(0, d.offsetNeg);
@@ -821,7 +821,7 @@ export default {
             g.self.clearSelectedValues = function () {
               d3.selectAll('[id="' + g.id + '"] .selected').classed("selected", false);
             };
-            
+
             d3.selectAll('[id="' + g.id + '"] [ldwdim1="' + d.qElemNumber + '"]')
               .classed("selected", !t);
             d3.select('[id="' + g.id + '"] .ldwtooltip')
@@ -1071,9 +1071,9 @@ export default {
           return g.cScale(d.dim2);
         })
         .style("opacity", "0")
-        .on("mouseenter", function (d) {	
-          var pt = this.getAttribute("points").split(" ");	
-          var sx = 0, sy = 0;	
+        .on("mouseenter", function (d) {
+          var pt = this.getAttribute("points").split(" ");
+          var sx = 0, sy = 0;
           pt.forEach(function (e, i) {
             var x = e.split(",");
             if (g.orientation == ORIENTATION_HORIZONTAL) {
