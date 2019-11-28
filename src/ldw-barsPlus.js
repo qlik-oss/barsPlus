@@ -1656,7 +1656,8 @@ export default {
         .attr("height", function (d) {
           const num = Number.isFinite(d.qNum) ? d.qNum : 0;
           const offset = Number.isFinite(d.offset) ? d.offset : 0; // in transition elastic, we somehow concatinate 0 and NaN into "0NaN"
-          return Math.abs(g.mScale(0) - g.mScale(num)) - 1;
+          const result = (Math.abs(g.mScale(0) - g.mScale(num)) - 1) >0 ? (Math.abs(g.mScale(0) - g.mScale(num)) - 1) : 0;
+          return result;
         });
     }
     else {
