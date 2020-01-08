@@ -125,7 +125,7 @@ const ALIGN_HORIZONTAL_RIGHT = 'R';
 const ALIGN_VERTICAL_TOP = 'T';
 const ALIGN_VERTICAL_BOTTOM = 'B';
 
-// variables for bar
+// variables for bar extension
 let inThrottle;
 
 export default {
