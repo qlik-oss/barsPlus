@@ -125,6 +125,9 @@ const ALIGN_HORIZONTAL_RIGHT = 'R';
 const ALIGN_VERTICAL_TOP = 'T';
 const ALIGN_VERTICAL_BOTTOM = 'B';
 
+// variables for bar extension
+let inThrottle;
+
 export default {
 
   /**
@@ -1883,9 +1886,21 @@ export default {
  *--------------------------------------
  * Refresh chart, no new data
 */
-  refreshChart: function () {
-    this.initChart();
-    this.updateBars();
+  refreshChart: function refreshChart() {
+    try {
+      var refreshData = function() {
+        if (!inThrottle) {
+          inThrottle = true;
+          this.initChart();
+          this.updateBars();
+          setTimeout(() => inThrottle = false, 0);
+        }
+      };
+      refreshData.apply(this);
+    } catch(e) {
+      inThrottle = false;
+      throw e;
+    }
   },
   //--------------------------------------
   // Topological sort
