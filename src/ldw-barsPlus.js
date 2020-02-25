@@ -254,6 +254,8 @@ export default {
       }
       p2 = c2;
     });
+    q = q.map(d=>d ===undefined? '': d);
+
     // Topological sort will throw an error if inconsistent data (sorting by measure)
     // Just ignore errors and use original sort order
     var qs, ps, rs = [];
@@ -272,8 +274,8 @@ export default {
     q = qs;
 
     var n = d3.nest()
-      .key(function (d) { return d[0].qText; })
-      .key(function (d) { return d[1].qText; })
+      .key(function (d) { return d[0].qText === undefined ? '' : d[0].qText; })
+      .key(function (d) { return d[1].qText === undefined ? '' : d[1].qText; })
       .entries(inData)
       ;
     // sort all nodes in order specified by q
@@ -634,7 +636,6 @@ export default {
         .data(g.allDim2);
 
       if (lgnContainer[0][0].clientHeight < itemsHeight) {
-
         // Can't fit all items in the container, so add scroll buttons
         g.lgn.btnContainer = lgn.append('div')
           .attr('class', 'btnContainer');
@@ -650,8 +651,8 @@ export default {
               return;
             }
 
-            lgnContainer[0][0].scrollTop +=
-              g.legendPosition == 'R' || g.legendPosition == 'L' ? g.lgn.height : g.lgn.itmHeight;
+            lgnContainer[0][0].scrollTop
+              += g.legendPosition == 'R' || g.legendPosition == 'L' ? g.lgn.height : g.lgn.itmHeight;
 
             btnUp.style('border-bottom-color', 'black');
             btnUp.property('disabled', false);
@@ -673,8 +674,8 @@ export default {
               return;
             }
 
-            lgnContainer[0][0].scrollTop -=
-              g.legendPosition == 'R' || g.legendPosition == 'L' ? g.lgn.height : g.lgn.itmHeight;
+            lgnContainer[0][0].scrollTop
+              -= g.legendPosition == 'R' || g.legendPosition == 'L' ? g.lgn.height : g.lgn.itmHeight;
 
             btnDown.style('border-top-color', 'black');
             btnDown.property('disabled', false);
@@ -762,7 +763,6 @@ export default {
               g.self.backendApi.selectValues(0, [d.qElemNumber[0]], false);
             }
             else if (g.selectionMode == "CONFIRM") {
-
               let selectedArrayDim1=[];
               if(g.self.selectedArrays){
                 selectedArrayDim1 = g.self.selectedArrays[0];
@@ -849,7 +849,6 @@ export default {
               g.self.backendApi.selectValues(0, [d.qElemNumber[0]], true);
             }
             else if (g.selectionMode == "CONFIRM") {
-
               var t = d3.select(this).classed("selected");
               g.self.selectValues(1, [d.qElemNumber[1]], true);
               g.self.selectValues(0, [d.qElemNumber[0]], true);
@@ -995,7 +994,6 @@ export default {
         .attr("class", "ldwtxt")
         .style("opacity", "0")
         .each(function (dataObject) {
-
           try {
             var txp = g.barText(dataObject, TYPE_INSIDE_BARS);
 
@@ -1337,8 +1335,8 @@ export default {
   barText: function (d, type) {
     var textLength;
     var g = this;
-    var rotation =
-      type == TYPE_INSIDE_BARS && g.rotateLabel && g.orientation === ORIENTATION_VERTICAL;
+    var rotation
+      = type == TYPE_INSIDE_BARS && g.rotateLabel && g.orientation === ORIENTATION_VERTICAL;
     const ellipsis = '\u2026';
     // Relative text sizing, relative to bar width
     // For total, make larger by reducing unneeded padding
@@ -1398,7 +1396,6 @@ export default {
 
     if ((rotation && textBox.height + 2 * innerBarPadH <= barWidth)
       || (!rotation && textBox.height + 2 * innerBarPadV <= barHeight)) {
-
       // Enough room for the height of the characters
 
       if (vAlign == ALIGN_CENTER) {
@@ -1409,7 +1406,6 @@ export default {
 
       let textWidth = rotation ? textBox.height : textBox.width;
       if (textWidth + 2 * innerBarPadH <= barWidth) {
-
         // Enough width to use alignment other than left
         if (hAlign == ALIGN_CENTER) {
           textX = left + (barWidth - textWidth) / 2;
@@ -1909,7 +1905,7 @@ export default {
   toposort: function (nodes, edges) {
     var cursor = nodes.length
       , sorted = new Array(cursor)
-      , visited = {}
+      , visited = []
       , i = cursor;
 
     while (i--) {
