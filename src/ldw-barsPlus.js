@@ -254,6 +254,7 @@ export default {
       }
       p2 = c2;
     });
+    q = q.map(d=>d ===undefined? '': d);
     // Topological sort will throw an error if inconsistent data (sorting by measure)
     // Just ignore errors and use original sort order
     var qs, ps, rs = [];
@@ -272,8 +273,8 @@ export default {
     q = qs;
 
     var n = d3.nest()
-      .key(function (d) { return d[0].qText; })
-      .key(function (d) { return d[1].qText; })
+      .key(function (d) { return d[0].qText === undefined ? '' : d[0].qText; })
+      .key(function (d) { return d[1].qText === undefined ? '' : d[1].qText; })
       .entries(inData)
       ;
     // sort all nodes in order specified by q
